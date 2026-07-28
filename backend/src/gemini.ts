@@ -109,3 +109,47 @@ Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adic
 
   return parsed;
 }
+
+export type Recipe = {
+  servings: string;
+  time: string;
+  ingredients: string[];
+  steps: string[];
+};
+
+function isRecipe(value: unknown): value is Recipe {
+  if (typeof value !== "object" || value === null) return false;
+  const r = value as Record<string, unknown>;
+  return (
+    typeof r.servings === "string" &&
+    typeof r.time === "string" &&
+    Array.isArray(r.ingredients) &&
+    r.ingredients.every((i) => typeof i === "string") &&
+    Array.isArray(r.steps) &&
+    r.steps.every((s) => typeof s === "string")
+  );
+}
+
+export async function generateRecipe(
+  mealName: string,
+  options: { description?: string; restrictions?: string } = {}
+): Promise<Recipe> {
+  const description = options.description?.trim();
+  const restrictions = options.restrictions?.trim();
+
+  const prompt = `Escribí la receta completa para preparar: ${mealName}.
+${description ? `Descripción de la comida: ${description}.` : ""}
+${restrictions ? `Respetá estrictamente estas restricciones alimentarias: ${restrictions}.` : ""}
+Usá medidas caseras en español rioplatense (tazas, cucharadas, gramos). Los pasos tienen que ser claros y cortos.
+Respondé UNICAMENTE con un objeto JSON con esta forma, sin texto adicional ni markdown:
+{"servings": "2 porciones", "time": "30 min", "ingredients": ["200 g de fideos", "1 tomate"], "steps": ["Hervir agua con sal.", "Cocinar los fideos 8 minutos."]}`;
+
+  const result = await model.generateContent(prompt);
+  const parsed = extractJson(result.response.text());
+
+  if (!isRecipe(parsed)) {
+    throw new Error("Gemini no devolvió una receta con el formato esperado.");
+  }
+
+  return parsed;
+}

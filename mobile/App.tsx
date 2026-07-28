@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Button,
   Image,
   Platform,
   Pressable,
@@ -19,6 +18,10 @@ import type { Session } from '@supabase/supabase-js';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from './lib/supabase';
 import AuthScreen from './components/AuthScreen';
+import { PrimaryButton, SecondaryButton } from './components/Buttons';
+import Checkbox from './components/Checkbox';
+import RecipeModal, { Recipe } from './components/RecipeModal';
+import { radii, Theme, useAppTheme } from './theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -65,6 +68,9 @@ type PersistedState = {
 };
 
 export default function App() {
+  const { theme, mode, toggleMode } = useAppTheme();
+  const styles = getStyles(theme);
+
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -96,6 +102,10 @@ export default function App() {
   const [restrictionOption, setRestrictionOption] = useState<string>('Ninguna');
   const [customRestriction, setCustomRestriction] = useState('');
   const [hydrated, setHydrated] = useState(false);
+  const [recipeMeal, setRecipeMeal] = useState<Meal | null>(null);
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [recipeError, setRecipeError] = useState<string | null>(null);
 
   const effectiveRestrictions =
     restrictionOption === 'Ninguna'
@@ -272,6 +282,39 @@ export default function App() {
     }
   }
 
+  async function openRecipe(meal: Meal) {
+    setRecipeMeal(meal);
+    setRecipe(null);
+    setRecipeError(null);
+    setRecipeLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/generate-recipe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mealName: meal.name,
+          description: meal.description,
+          restrictions: effectiveRestrictions || undefined,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Error desconocido');
+      }
+      setRecipe(data.recipe);
+    } catch (err) {
+      setRecipeError(err instanceof Error ? err.message : 'No se pudo generar la receta.');
+    } finally {
+      setRecipeLoading(false);
+    }
+  }
+
+  function closeRecipe() {
+    setRecipeMeal(null);
+    setRecipe(null);
+    setRecipeError(null);
+  }
+
   function removeIngredient(index: number) {
     setIngredients((prev) => prev?.filter((_, i) => i !== index) ?? prev);
   }
@@ -373,8 +416,8 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+      <View style={[styles.centered, { backgroundColor: theme.bg }]}>
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }
@@ -384,64 +427,77 @@ export default function App() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <StatusBar style="auto" />
-      <Text style={styles.title}>¿Qué hay en tu heladera?</Text>
-      <Button
-        title="Cerrar sesión"
-        onPress={() => supabase.auth.signOut()}
-        color="#999"
-      />
+    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={styles.container}>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
 
-      {ingredients && (
-        <Button title="Empezar semana nueva" onPress={startNewWeek} color="#999" />
-      )}
+      <View style={styles.topRow}>
+        <SecondaryButton title="Cerrar sesión" onPress={() => supabase.auth.signOut()} theme={theme} />
+        {ingredients && (
+          <SecondaryButton title="Semana nueva" onPress={startNewWeek} theme={theme} />
+        )}
+        <SecondaryButton
+          title={mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          onPress={toggleMode}
+          theme={theme}
+        />
+      </View>
+
+      <Text style={styles.title}>¿Qué hay en tu heladera?</Text>
+      <View style={styles.rule} />
 
       <View style={styles.buttonRow}>
-        <Button title="Sacar foto" onPress={takePhoto} />
-        <Button title="Elegir de galería" onPress={pickFromLibrary} />
+        <SecondaryButton title="Sacar foto" onPress={takePhoto} theme={theme} />
+        <SecondaryButton title="Elegir de galería" onPress={pickFromLibrary} theme={theme} />
       </View>
-      <Button title="Escribir lista a mano" onPress={startTextEntry} />
+      <SecondaryButton title="Escribir lista a mano" onPress={startTextEntry} theme={theme} />
 
       {image && <Image source={{ uri: image.uri }} style={styles.preview} />}
 
-      {loading && <ActivityIndicator size="large" style={styles.spacing} />}
+      {loading && <ActivityIndicator size="large" color={theme.accent} style={styles.spacing} />}
 
       {error && <Text style={styles.error}>{error}</Text>}
 
       {ingredients && (
         <View style={styles.spacing}>
-          <Text style={styles.subtitle}>Ingredientes:</Text>
+          <Text style={styles.fieldLabel}>Ingredientes</Text>
           {ingredients.length === 0 ? (
-            <Text>
+            <Text style={styles.bodyText}>
               {image ? 'No se detectó ningún ingrediente.' : 'Agregá los ingredientes que tengas.'}
             </Text>
           ) : (
-            ingredients.map((item, i) => (
-              <View key={`${item}-${i}`} style={styles.ingredientRow}>
-                <Text style={styles.ingredientText}>• {item}</Text>
-                <Pressable onPress={() => removeIngredient(i)} hitSlop={8}>
-                  <Text style={styles.removeText}>✕</Text>
-                </Pressable>
-              </View>
-            ))
+            <View style={styles.chipsWrap}>
+              {ingredients.map((item, i) => (
+                <View key={`${item}-${i}`} style={styles.chip}>
+                  <Text style={styles.chipText}>{item}</Text>
+                  <Pressable onPress={() => removeIngredient(i)} hitSlop={8}>
+                    <Text style={styles.removeText}>✕</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
           )}
 
           <View style={styles.addRow}>
             <TextInput
               style={styles.input}
               placeholder="Ej: crema de maní"
+              placeholderTextColor={theme.inkSoft}
               value={newIngredient}
               onChangeText={setNewIngredient}
               onSubmitEditing={addIngredient}
             />
-            <Button title="Agregar" onPress={addIngredient} />
+            <SecondaryButton title="Agregar" onPress={addIngredient} theme={theme} />
           </View>
 
           <View style={styles.spacing}>
-            <Text style={styles.subtitle}>Restricciones (opcional):</Text>
+            <Text style={styles.fieldLabel}>Restricciones (opcional)</Text>
             <View style={styles.pickerWrapper}>
-              <Picker selectedValue={restrictionOption} onValueChange={setRestrictionOption}>
+              <Picker
+                selectedValue={restrictionOption}
+                onValueChange={setRestrictionOption}
+                dropdownIconColor={theme.ink}
+                style={{ color: theme.ink }}
+              >
                 {RESTRICTION_OPTIONS.map((option) => (
                   <Picker.Item key={option} label={option} value={option} />
                 ))}
@@ -451,6 +507,7 @@ export default function App() {
               <TextInput
                 style={[styles.input, styles.spacing]}
                 placeholder="Ej: sin frutos secos"
+                placeholderTextColor={theme.inkSoft}
                 value={customRestriction}
                 onChangeText={setCustomRestriction}
               />
@@ -458,60 +515,72 @@ export default function App() {
           </View>
 
           <View style={styles.spacing}>
-            <Button title="Generar menú semanal" onPress={generateMenu} disabled={menuLoading} />
+            <PrimaryButton
+              title="Generar menú semanal"
+              onPress={generateMenu}
+              disabled={menuLoading}
+              theme={theme}
+            />
           </View>
         </View>
       )}
 
-      {menuLoading && <ActivityIndicator size="large" style={styles.spacing} />}
+      {menuLoading && <ActivityIndicator size="large" color={theme.accent} style={styles.spacing} />}
 
       {menuError && <Text style={styles.error}>{menuError}</Text>}
 
       {menu && (
         <View style={styles.spacing}>
-          <Text style={styles.subtitle}>Menú de la semana:</Text>
+          <Text style={styles.fieldLabel}>Menú de la semana</Text>
           {menu.map((meal, i) => {
             const selected = selectedMeals.has(i);
             return (
               <View key={`${meal.name}-${i}`} style={styles.mealCard}>
-                <Pressable
-                  style={styles.ingredientRow}
-                  onPress={() => toggleMealSelected(i)}
-                >
+                <View style={styles.mealTop}>
+                  <Checkbox checked={selected} onPress={() => toggleMealSelected(i)} theme={theme} />
                   <Text style={selected ? styles.mealName : styles.mealNameUnselected}>
-                    {selected ? '☑' : '☐'} {meal.name}
+                    {meal.name}
                   </Text>
-                </Pressable>
-                <Text>{meal.description}</Text>
+                </View>
+                <Text style={styles.mealDesc}>{meal.description}</Text>
                 {meal.ingredientsToBuy.length > 0 && (
                   <Text style={styles.mealBuy}>
                     Comprar: {meal.ingredientsToBuy.join(', ')}
                   </Text>
                 )}
-                <Button
-                  title={regeneratingIndex === i ? 'Regenerando...' : 'Regenerar'}
-                  onPress={() => regenerateMeal(i)}
-                  disabled={regeneratingIndex !== null}
-                />
+                <View style={styles.mealActions}>
+                  <SecondaryButton
+                    title={regeneratingIndex === i ? 'Regenerando...' : 'Regenerar'}
+                    onPress={() => regenerateMeal(i)}
+                    disabled={regeneratingIndex !== null}
+                    theme={theme}
+                  />
+                  <SecondaryButton
+                    title="Ver receta"
+                    onPress={() => openRecipe(meal)}
+                    theme={theme}
+                  />
+                </View>
               </View>
             );
           })}
 
-          <Button
+          <PrimaryButton
             title="Ver lista de compras"
             onPress={generateShoppingList}
             disabled={shoppingLoading || selectedMeals.size === 0}
+            theme={theme}
           />
         </View>
       )}
 
-      {shoppingLoading && <ActivityIndicator size="large" style={styles.spacing} />}
+      {shoppingLoading && <ActivityIndicator size="large" color={theme.accent} style={styles.spacing} />}
 
       {shoppingError && <Text style={styles.error}>{shoppingError}</Text>}
 
       {shoppingList && (
         <View style={styles.spacing}>
-          <Text style={styles.subtitle}>Lista de compras:</Text>
+          <Text style={styles.fieldLabel}>Lista de compras</Text>
           {shoppingList.map((cat) => (
             <View key={cat.category} style={styles.spacing}>
               <Text style={styles.categoryTitle}>{cat.category}</Text>
@@ -521,12 +590,11 @@ export default function App() {
                 return (
                   <Pressable
                     key={key}
-                    style={styles.ingredientRow}
+                    style={styles.itemRow}
                     onPress={() => toggleChecked(key)}
                   >
-                    <Text style={checked ? styles.itemChecked : styles.ingredientText}>
-                      {checked ? '☑' : '☐'} {item}
-                    </Text>
+                    <Checkbox checked={checked} theme={theme} />
+                    <Text style={checked ? styles.itemChecked : styles.bodyText}>{item}</Text>
                   </Pressable>
                 );
               })}
@@ -534,112 +602,214 @@ export default function App() {
           ))}
         </View>
       )}
+
+      <RecipeModal
+        visible={recipeMeal !== null}
+        onClose={closeRecipe}
+        mealName={recipeMeal?.name ?? ''}
+        recipe={recipe}
+        loading={recipeLoading}
+        error={recipeError}
+        theme={theme}
+      />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 20,
-    gap: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  preview: {
-    width: 250,
-    height: 250,
-    borderRadius: 8,
-  },
-  spacing: {
-    marginTop: 16,
-    alignSelf: 'stretch',
-  },
-  error: {
-    color: 'red',
-  },
-  ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  ingredientText: {
-    fontSize: 15,
-  },
-  removeText: {
-    color: '#999',
-    fontSize: 16,
-    paddingHorizontal: 8,
-  },
-  addRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  pickerWrapper: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  mealCard: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    gap: 6,
-  },
-  mealName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  mealNameUnselected: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#999',
-    textDecorationLine: 'line-through',
-  },
-  mealBuy: {
-    color: '#666',
-    fontSize: 13,
-  },
-  categoryTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  itemChecked: {
-    fontSize: 15,
-    color: '#999',
-    textDecorationLine: 'line-through',
-  },
-});
+function getStyles(theme: Theme) {
+  return StyleSheet.create({
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    container: {
+      flexGrow: 1,
+      alignItems: 'stretch',
+      paddingTop: 56,
+      paddingHorizontal: 26,
+      paddingBottom: 48,
+      gap: 4,
+    },
+    topRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 20,
+    },
+    title: {
+      fontFamily: theme.fontDisplay,
+      fontWeight: '400',
+      fontSize: 26,
+      color: theme.ink,
+      letterSpacing: -0.3,
+    },
+    rule: {
+      width: 44,
+      height: 1,
+      backgroundColor: theme.accent,
+      marginTop: 10,
+      marginBottom: 18,
+    },
+    fieldLabel: {
+      fontFamily: theme.fontDisplay,
+      fontStyle: 'italic',
+      fontSize: 14,
+      color: theme.accentText,
+      marginBottom: 8,
+    },
+    bodyText: {
+      fontFamily: theme.fontBody,
+      fontSize: 14,
+      color: theme.ink,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 8,
+    },
+    preview: {
+      width: '100%',
+      height: 220,
+      borderRadius: radii.card,
+      marginTop: 16,
+    },
+    spacing: {
+      marginTop: 20,
+      alignSelf: 'stretch',
+    },
+    error: {
+      color: theme.accent2,
+      fontFamily: theme.fontBody,
+      marginTop: 8,
+    },
+    chipsWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 14,
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.chipBg,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: radii.chip,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+    },
+    chipText: {
+      fontFamily: theme.fontBody,
+      fontSize: 13.5,
+      color: theme.ink,
+    },
+    removeText: {
+      color: theme.inkSoft,
+      fontSize: 14,
+    },
+    addRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 8,
+    },
+    input: {
+      flex: 1,
+      fontFamily: theme.fontBody,
+      color: theme.ink,
+      backgroundColor: theme.surface,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: radii.btn,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    pickerWrapper: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: radii.btn,
+      backgroundColor: theme.surface,
+      overflow: 'hidden',
+    },
+    mealCard: {
+      backgroundColor: theme.surface,
+      borderTopWidth: 2,
+      borderTopColor: theme.accent,
+      borderRadius: radii.card,
+      padding: 16,
+      marginBottom: 14,
+      gap: 6,
+      shadowColor: '#000',
+      shadowOpacity: 0.18,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 3,
+    },
+    mealTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    mealActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginLeft: 30,
+      marginTop: 2,
+    },
+    mealName: {
+      fontFamily: theme.fontDisplay,
+      fontSize: 15.5,
+      fontWeight: '500',
+      color: theme.ink,
+      flexShrink: 1,
+    },
+    mealNameUnselected: {
+      fontFamily: theme.fontDisplay,
+      fontSize: 15.5,
+      fontWeight: '500',
+      color: theme.inkSoft,
+      textDecorationLine: 'line-through',
+      flexShrink: 1,
+    },
+    mealDesc: {
+      fontFamily: theme.fontBody,
+      fontSize: 13,
+      color: theme.inkSoft,
+      marginLeft: 30,
+    },
+    mealBuy: {
+      fontFamily: theme.fontBody,
+      color: theme.inkSoft,
+      fontSize: 12,
+      marginLeft: 30,
+      marginBottom: 4,
+    },
+    categoryTitle: {
+      fontFamily: theme.fontDisplay,
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+      fontSize: 13,
+      fontWeight: '500',
+      color: theme.accentText,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.accent,
+      paddingBottom: 6,
+      marginBottom: 8,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 8,
+    },
+    itemChecked: {
+      fontFamily: theme.fontBody,
+      fontSize: 14,
+      color: theme.inkSoft,
+      textDecorationLine: 'line-through',
+    },
+  });
+}

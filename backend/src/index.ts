@@ -2,7 +2,7 @@ import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import multer from "multer";
-import { detectIngredients, generateMenu, generateShoppingList } from "./gemini";
+import { detectIngredients, generateMenu, generateRecipe, generateShoppingList } from "./gemini";
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -23,6 +23,17 @@ const upload = multer({
 app.use(cors());
 app.use(express.json());
 
+function respondWithGeminiError(res: Response, err: unknown, genericMessage: string) {
+  const status = (err as { status?: number } | null)?.status;
+  if (status === 429) {
+    res.status(429).json({
+      error: "Se alcanzó el límite gratuito diario de la IA (Gemini). Probá de nuevo más tarde, cuando se resetee la cuota.",
+    });
+    return;
+  }
+  res.status(502).json({ error: genericMessage });
+}
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -38,7 +49,7 @@ app.post("/api/detect-ingredients", upload.single("photo"), async (req: Request,
     res.json({ ingredients });
   } catch (err) {
     console.error("detect-ingredients failed:", err);
-    res.status(502).json({ error: "No se pudo procesar la imagen. Probá de nuevo." });
+    respondWithGeminiError(res, err, "No se pudo procesar la imagen. Probá de nuevo.");
   }
 });
 
@@ -67,7 +78,7 @@ app.post("/api/generate-menu", async (req: Request, res: Response) => {
     res.json({ menu });
   } catch (err) {
     console.error("generate-menu failed:", err);
-    res.status(502).json({ error: "No se pudo generar el menú. Probá de nuevo." });
+    respondWithGeminiError(res, err, "No se pudo generar el menú. Probá de nuevo.");
   }
 });
 
@@ -86,7 +97,32 @@ app.post("/api/generate-shopping-list", async (req: Request, res: Response) => {
     res.json({ categories });
   } catch (err) {
     console.error("generate-shopping-list failed:", err);
-    res.status(502).json({ error: "No se pudo generar la lista de compras. Probá de nuevo." });
+    respondWithGeminiError(res, err, "No se pudo generar la lista de compras. Probá de nuevo.");
+  }
+});
+
+app.post("/api/generate-recipe", async (req: Request, res: Response) => {
+  const { mealName, description, restrictions } = req.body ?? {};
+
+  if (typeof mealName !== "string" || mealName.trim().length === 0 || mealName.length > 200) {
+    res.status(400).json({ error: "Falta 'mealName' (string no vacío de hasta 200 caracteres)." });
+    return;
+  }
+  if (description !== undefined && (typeof description !== "string" || description.length > 500)) {
+    res.status(400).json({ error: "'description' debe ser un string de hasta 500 caracteres." });
+    return;
+  }
+  if (restrictions !== undefined && (typeof restrictions !== "string" || restrictions.length > 300)) {
+    res.status(400).json({ error: "'restrictions' debe ser un string de hasta 300 caracteres." });
+    return;
+  }
+
+  try {
+    const recipe = await generateRecipe(mealName, { description, restrictions });
+    res.json({ recipe });
+  } catch (err) {
+    console.error("generate-recipe failed:", err);
+    respondWithGeminiError(res, err, "No se pudo generar la receta. Probá de nuevo.");
   }
 });
 
