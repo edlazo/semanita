@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import multer from "multer";
 import { detectIngredients, generateMenu, generateRecipe, generateShoppingList } from "./gemini";
+import { requireAuth } from "./auth";
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -38,7 +39,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/detect-ingredients", upload.single("photo"), async (req: Request, res: Response) => {
+app.post("/api/detect-ingredients", requireAuth, upload.single("photo"), async (req: Request, res: Response) => {
   if (!req.file) {
     res.status(400).json({ error: "Falta el archivo 'photo'." });
     return;
@@ -53,7 +54,7 @@ app.post("/api/detect-ingredients", upload.single("photo"), async (req: Request,
   }
 });
 
-app.post("/api/generate-menu", async (req: Request, res: Response) => {
+app.post("/api/generate-menu", requireAuth, async (req: Request, res: Response) => {
   const { ingredients, count, avoidNames, restrictions } = req.body ?? {};
 
   if (!Array.isArray(ingredients) || ingredients.length === 0 || !ingredients.every((i) => typeof i === "string")) {
@@ -82,7 +83,7 @@ app.post("/api/generate-menu", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/generate-shopping-list", async (req: Request, res: Response) => {
+app.post("/api/generate-shopping-list", requireAuth, async (req: Request, res: Response) => {
   const { items } = req.body ?? {};
 
   if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === "string")) {
@@ -101,7 +102,7 @@ app.post("/api/generate-shopping-list", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/generate-recipe", async (req: Request, res: Response) => {
+app.post("/api/generate-recipe", requireAuth, async (req: Request, res: Response) => {
   const { mealName, description, restrictions } = req.body ?? {};
 
   if (typeof mealName !== "string" || mealName.trim().length === 0 || mealName.length > 200) {

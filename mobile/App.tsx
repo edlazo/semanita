@@ -29,6 +29,13 @@ function storageKeyFor(userId: string) {
   return `comida:currentWeek:${userId}`;
 }
 
+/** El backend rechaza cualquier llamada sin un token de sesión válido. */
+async function authHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 const RESTRICTION_OPTIONS = [
   'Ninguna',
   'Vegetariano',
@@ -201,7 +208,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-shopping-list`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ items }),
       });
       const data = await response.json();
@@ -236,7 +243,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ ingredients, restrictions: effectiveRestrictions || undefined }),
       });
       const data = await response.json();
@@ -261,7 +268,7 @@ export default function App() {
       const avoidNames = menu.map((m) => m.name);
       const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
           ingredients,
           count: 1,
@@ -290,7 +297,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-recipe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
           mealName: meal.name,
           description: meal.description,
@@ -400,6 +407,7 @@ export default function App() {
       const response = await fetch(`${API_BASE_URL}/api/detect-ingredients`, {
         method: 'POST',
         body: formData,
+        headers: await authHeaders(),
       });
 
       const data = await response.json();
