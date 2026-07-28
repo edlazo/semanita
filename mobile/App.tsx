@@ -29,7 +29,7 @@ initTelemetry();
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 function storageKeyFor(userId: string) {
-  return `comida:currentWeek:${userId}`;
+  return `semanita:currentWeek:${userId}`;
 }
 
 /** El backend rechaza cualquier llamada sin un token de sesión válido. */
