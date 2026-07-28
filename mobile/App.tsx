@@ -22,6 +22,9 @@ import { PrimaryButton, SecondaryButton } from './components/Buttons';
 import Checkbox from './components/Checkbox';
 import RecipeModal, { Recipe } from './components/RecipeModal';
 import { radii, Theme, useAppTheme } from './theme';
+import { captureError, clearUser, identifyUser, initTelemetry, track } from './lib/telemetry';
+
+initTelemetry();
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -88,6 +91,11 @@ export default function App() {
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+      if (newSession?.user) {
+        identifyUser(newSession.user.id, newSession.user.email ?? undefined);
+      } else {
+        clearUser();
+      }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -217,7 +225,13 @@ export default function App() {
       }
       setShoppingList(data.categories);
       setCheckedItems(new Set());
+      track('lista_compras_generada', {
+        categorias: data.categories.length,
+        items: items.length,
+        comidas_elegidas: chosenMeals.length,
+      });
     } catch (err) {
+      captureError(err, { paso: 'generate-shopping-list' });
       setShoppingError(err instanceof Error ? err.message : 'No se pudo generar la lista de compras.');
     } finally {
       setShoppingLoading(false);
@@ -253,7 +267,13 @@ export default function App() {
       const newMenu = data.menu as Meal[];
       setMenu(newMenu);
       setSelectedMeals(new Set(newMenu.map((_, i) => i)));
+      track('menu_generado', {
+        comidas: newMenu.length,
+        ingredientes: ingredients.length,
+        con_restricciones: effectiveRestrictions.length > 0,
+      });
     } catch (err) {
+      captureError(err, { paso: 'generate-menu' });
       setMenuError(err instanceof Error ? err.message : 'No se pudo generar el menú.');
     } finally {
       setMenuLoading(false);
@@ -282,7 +302,9 @@ export default function App() {
       }
       const [newMeal] = data.menu as Meal[];
       setMenu((prev) => prev?.map((m, i) => (i === index ? newMeal : m)) ?? prev);
+      track('comida_regenerada');
     } catch (err) {
+      captureError(err, { paso: 'regenerate-meal' });
       setMenuError(err instanceof Error ? err.message : 'No se pudo regenerar la comida.');
     } finally {
       setRegeneratingIndex(null);
@@ -309,7 +331,9 @@ export default function App() {
         throw new Error(data.error ?? 'Error desconocido');
       }
       setRecipe(data.recipe);
+      track('receta_vista', { pasos: data.recipe.steps.length });
     } catch (err) {
+      captureError(err, { paso: 'generate-recipe' });
       setRecipeError(err instanceof Error ? err.message : 'No se pudo generar la receta.');
     } finally {
       setRecipeLoading(false);
@@ -415,7 +439,9 @@ export default function App() {
         throw new Error(data.error ?? 'Error desconocido');
       }
       setIngredients(data.ingredients);
+      track('ingredientes_detectados', { cantidad: data.ingredients.length });
     } catch (err) {
+      captureError(err, { paso: 'detect-ingredients' });
       setError(err instanceof Error ? err.message : 'No se pudo conectar con el servidor.');
     } finally {
       setLoading(false);
