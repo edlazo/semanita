@@ -154,7 +154,7 @@ function getStyles(theme: Theme) {
       paddingTop: 52,
     },
     header: {
-      flex: 0,
+      flexShrink: 0,
       paddingHorizontal: 30,
       paddingBottom: 6,
       flexDirection: 'row',

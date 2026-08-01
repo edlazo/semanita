@@ -159,7 +159,7 @@ function getStyles(theme: Theme) {
     closeBtn: {
       width: 36,
       height: 36,
-      flex: 0,
+      flexShrink: 0,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,

@@ -38,7 +38,9 @@ export default function Checkbox({ checked, onPress, size = 22, theme }: Props) 
 
 const styles = StyleSheet.create({
   box: {
-    flex: 0,
+    // `flex: 0` compila a `flex: 0 1 0%`: base cero y encogible, así que en una
+    // fila la casilla colapsa. flexShrink solo evita que se achique.
+    flexShrink: 0,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
