@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { fonts, radii, Theme } from '../theme';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CheckMark } from './Glyphs';
+import { radii, Theme } from '../theme';
 
 type Props = {
   checked: boolean;
@@ -20,9 +21,7 @@ export default function Checkbox({ checked, onPress, size = 22, theme }: Props) 
       backgroundColor: checked ? theme.accent : 'transparent',
     },
   ];
-  const mark = checked ? (
-    <Text style={[styles.mark, { color: theme.accentInk }]}>✓</Text>
-  ) : null;
+  const mark = checked ? <CheckMark size={size} color={theme.accentInk} /> : null;
 
   if (!onPress) {
     return <View style={box}>{mark}</View>;
@@ -43,10 +42,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  mark: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    lineHeight: 13,
   },
 });

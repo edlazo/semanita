@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { CrossMark } from './Glyphs';
 import { fonts, radii, Theme } from '../theme';
 
 export type RecipeIngredient = {
@@ -66,7 +67,7 @@ export default function RecipeModal({
             style={styles.closeBtn}
             accessibilityLabel="Cerrar receta"
           >
-            <Text style={styles.closeIcon}>✕</Text>
+            <CrossMark size={13} color={theme.ink} thickness={1.5} />
           </Pressable>
         </View>
 
@@ -164,11 +165,6 @@ function getStyles(theme: Theme) {
       borderWidth: 1,
       borderColor: theme.border,
       borderRadius: radii.chip,
-    },
-    closeIcon: {
-      fontFamily: fonts.body,
-      fontSize: 14,
-      color: theme.ink,
     },
     metaStrip: {
       marginHorizontal: 26,

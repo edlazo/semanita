@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { AccentChipButton, PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { CrossMark } from '../components/Glyphs';
 import { fonts, radii, Mode, Theme } from '../theme';
 
 export type PhotoState = 'none' | 'loading' | 'ok' | 'empty';
@@ -181,7 +182,7 @@ export default function IngredientsScreen(props: Props) {
                 style={styles.chip}
               >
                 <Text style={styles.chipText}>{item}</Text>
-                <Text style={styles.chipX}>✕</Text>
+                <CrossMark size={9} color={theme.accent} thickness={1.5} />
               </Pressable>
             ))}
           </View>
@@ -386,7 +387,6 @@ function getStyles(theme: Theme) {
       paddingHorizontal: 13,
     },
     chipText: { fontFamily: fonts.body, fontSize: 13.5, color: theme.ink },
-    chipX: { fontFamily: fonts.body, fontSize: 11, color: theme.accent },
     addRow: {
       flexDirection: 'row',
       alignItems: 'center',
