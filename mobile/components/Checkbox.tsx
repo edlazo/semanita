@@ -1,30 +1,37 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { radii, Theme } from '../theme';
+import { fonts, radii, Theme } from '../theme';
 
 type Props = {
   checked: boolean;
-  /** Omit when a wrapping Pressable already handles the tap (avoids double-toggling on web, where clicks bubble). */
+  /** Omitir cuando un Pressable padre ya maneja el toque: evita el doble toggle en web. */
   onPress?: () => void;
+  size?: number;
   theme: Theme;
 };
 
-export default function Checkbox({ checked, onPress, theme }: Props) {
-  const boxStyle = [
+export default function Checkbox({ checked, onPress, size = 22, theme }: Props) {
+  const box = [
     styles.box,
     {
+      width: size,
+      height: size,
       borderRadius: radii.check,
-      borderColor: checked ? theme.accent2 : theme.inkSoft,
-      backgroundColor: checked ? theme.accent2 : 'transparent',
+      borderColor: checked ? theme.accent : theme.mut60,
+      backgroundColor: checked ? theme.accent : 'transparent',
     },
   ];
-  const mark = checked && <Text style={[styles.check, { color: theme.onAccent2 }]}>✓</Text>;
+  const mark = checked ? (
+    <Text style={[styles.mark, { color: theme.accentInk }]}>✓</Text>
+  ) : null;
 
   if (!onPress) {
-    return <View style={boxStyle}>{mark}</View>;
+    return <View style={box}>{mark}</View>;
   }
 
+  // hitSlop lleva el área tocable real a 44x44 sin agrandar la casilla.
+  const slop = Math.max(0, (44 - size) / 2);
   return (
-    <Pressable onPress={onPress} hitSlop={8} style={boxStyle}>
+    <Pressable onPress={onPress} hitSlop={slop} style={box}>
       {mark}
     </Pressable>
   );
@@ -32,15 +39,14 @@ export default function Checkbox({ checked, onPress, theme }: Props) {
 
 const styles = StyleSheet.create({
   box: {
-    width: 20,
-    height: 20,
+    flex: 0,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  check: {
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 14,
+  mark: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    lineHeight: 13,
   },
 });

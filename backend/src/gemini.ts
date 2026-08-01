@@ -110,12 +110,25 @@ Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adic
   return parsed;
 }
 
+/** El diseño muestra nombre y cantidad en columnas separadas, unidas por una línea de puntos. */
+export type RecipeIngredient = {
+  name: string;
+  qty: string;
+};
+
 export type Recipe = {
   servings: string;
   time: string;
-  ingredients: string[];
+  difficulty: string;
+  ingredients: RecipeIngredient[];
   steps: string[];
 };
+
+function isRecipeIngredient(value: unknown): value is RecipeIngredient {
+  if (typeof value !== "object" || value === null) return false;
+  const i = value as Record<string, unknown>;
+  return typeof i.name === "string" && typeof i.qty === "string";
+}
 
 function isRecipe(value: unknown): value is Recipe {
   if (typeof value !== "object" || value === null) return false;
@@ -123,8 +136,9 @@ function isRecipe(value: unknown): value is Recipe {
   return (
     typeof r.servings === "string" &&
     typeof r.time === "string" &&
+    typeof r.difficulty === "string" &&
     Array.isArray(r.ingredients) &&
-    r.ingredients.every((i) => typeof i === "string") &&
+    r.ingredients.every(isRecipeIngredient) &&
     Array.isArray(r.steps) &&
     r.steps.every((s) => typeof s === "string")
   );
@@ -140,9 +154,13 @@ export async function generateRecipe(
   const prompt = `Escribí la receta completa para preparar: ${mealName}.
 ${description ? `Descripción de la comida: ${description}.` : ""}
 ${restrictions ? `Respetá estrictamente estas restricciones alimentarias: ${restrictions}.` : ""}
-Usá medidas caseras en español rioplatense (tazas, cucharadas, gramos). Los pasos tienen que ser claros y cortos.
+Escribí en español rioplatense con voseo ("herví", "salpimentá", "poné"). Usá medidas caseras
+(tazas, cucharadas, gramos). Los pasos van cortos y directos, e incluí el truco práctico cuando
+lo haya (por ejemplo: "Usá arroz del día anterior: seco saltea mucho mejor").
+"difficulty" es una sola palabra: Fácil, Media o Difícil.
+Separá cada ingrediente en su nombre y su cantidad.
 Respondé UNICAMENTE con un objeto JSON con esta forma, sin texto adicional ni markdown:
-{"servings": "2 porciones", "time": "30 min", "ingredients": ["200 g de fideos", "1 tomate"], "steps": ["Hervir agua con sal.", "Cocinar los fideos 8 minutos."]}`;
+{"servings": "2 porciones", "time": "30 min", "difficulty": "Fácil", "ingredients": [{"name": "fideos", "qty": "200 g"}, {"name": "tomate", "qty": "1"}], "steps": ["Herví agua con sal.", "Cociná los fideos 8 minutos."]}`;
 
   const result = await model.generateContent(prompt);
   const parsed = extractJson(result.response.text());

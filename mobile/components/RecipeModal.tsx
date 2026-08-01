@@ -7,12 +7,18 @@ import {
   Text,
   View,
 } from 'react-native';
-import { radii, Theme } from '../theme';
+import { fonts, radii, Theme } from '../theme';
+
+export type RecipeIngredient = {
+  name: string;
+  qty: string;
+};
 
 export type Recipe = {
   servings: string;
   time: string;
-  ingredients: string[];
+  difficulty: string;
+  ingredients: RecipeIngredient[];
   steps: string[];
 };
 
@@ -20,6 +26,8 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   mealName: string;
+  /** Día de la semana de la comida, para el eyebrow "RECETA · LUNES". */
+  day?: string;
   recipe: Recipe | null;
   loading: boolean;
   error: string | null;
@@ -30,6 +38,7 @@ export default function RecipeModal({
   visible,
   onClose,
   mealName,
+  day,
   recipe,
   loading,
   error,
@@ -48,40 +57,61 @@ export default function RecipeModal({
       <View style={styles.sheet}>
         <View style={styles.header}>
           <View style={styles.headerText}>
+            <Text style={styles.eyebrow}>{day ? `RECETA · ${day}` : 'RECETA'}</Text>
             <Text style={styles.title}>{mealName}</Text>
-            <View style={styles.rule} />
           </View>
-          <Pressable onPress={onClose} hitSlop={12} style={styles.closeBtn} accessibilityLabel="Cerrar receta">
+          <Pressable
+            onPress={onClose}
+            hitSlop={8}
+            style={styles.closeBtn}
+            accessibilityLabel="Cerrar receta"
+          >
             <Text style={styles.closeIcon}>✕</Text>
           </Pressable>
         </View>
 
+        {recipe && (
+          <View style={styles.metaStrip}>
+            <View style={styles.metaCell}>
+              <Text style={styles.metaLabel}>PORCIONES</Text>
+              <Text style={styles.metaValue}>{recipe.servings}</Text>
+            </View>
+            <View style={styles.metaDivider} />
+            <View style={[styles.metaCell, styles.metaCellPadded]}>
+              <Text style={styles.metaLabel}>TIEMPO</Text>
+              <Text style={styles.metaValue}>{recipe.time}</Text>
+            </View>
+            <View style={styles.metaDivider} />
+            <View style={[styles.metaCell, styles.metaCellPadded]}>
+              <Text style={styles.metaLabel}>DIFICULTAD</Text>
+              <Text style={styles.metaValue}>{recipe.difficulty}</Text>
+            </View>
+          </View>
+        )}
+
         <ScrollView contentContainerStyle={styles.body}>
-          {loading && <ActivityIndicator size="large" color={theme.accent} style={styles.spacing} />}
+          {loading && <ActivityIndicator size="large" color={theme.accent} style={styles.loader} />}
 
           {error && <Text style={styles.error}>{error}</Text>}
 
           {recipe && (
             <>
-              <View style={styles.metaRow}>
-                <Text style={styles.meta}>{recipe.servings}</Text>
-                <Text style={styles.metaDot}>·</Text>
-                <Text style={styles.meta}>{recipe.time}</Text>
+              <Text style={styles.sectionLabel}>INGREDIENTES</Text>
+              <View style={styles.ingredientBlock}>
+                {recipe.ingredients.map((item, i) => (
+                  <View key={`${item.name}-${i}`} style={styles.ingredientRow}>
+                    <Text style={styles.ingredientName}>{item.name}</Text>
+                    <View style={styles.leader} />
+                    <Text style={styles.ingredientQty}>{item.qty}</Text>
+                  </View>
+                ))}
               </View>
 
-              <Text style={styles.sectionLabel}>Ingredientes</Text>
-              {recipe.ingredients.map((item, i) => (
-                <View key={`${item}-${i}`} style={styles.ingredientRow}>
-                  <Text style={styles.bullet}>—</Text>
-                  <Text style={styles.bodyText}>{item}</Text>
-                </View>
-              ))}
-
-              <Text style={[styles.sectionLabel, styles.spacing]}>Preparación</Text>
+              <Text style={styles.sectionLabel}>PREPARACIÓN</Text>
               {recipe.steps.map((step, i) => (
                 <View key={`step-${i}`} style={styles.stepRow}>
                   <Text style={styles.stepNumber}>{i + 1}</Text>
-                  <Text style={styles.bodyText}>{step}</Text>
+                  <Text style={styles.stepText}>{step}</Text>
                 </View>
               ))}
             </>
@@ -96,112 +126,147 @@ function getStyles(theme: Theme) {
   return StyleSheet.create({
     sheet: {
       flex: 1,
-      backgroundColor: theme.bg,
+      // La receta va sobre `surface`, no sobre `bg`: se lee como una ficha aparte.
+      backgroundColor: theme.surface,
       paddingTop: 56,
-      paddingHorizontal: 26,
+      paddingBottom: 26,
     },
     header: {
+      paddingHorizontal: 26,
       flexDirection: 'row',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
-      gap: 12,
+      gap: 14,
     },
     headerText: {
       flexShrink: 1,
     },
-    title: {
-      fontFamily: theme.fontDisplay,
-      fontWeight: '400',
-      fontSize: 24,
-      color: theme.ink,
-      letterSpacing: -0.3,
+    eyebrow: {
+      fontFamily: fonts.bodySemi,
+      fontSize: 9.5,
+      letterSpacing: 2.09,
+      color: theme.accent,
+      marginBottom: 10,
     },
-    rule: {
-      width: 44,
-      height: 1,
-      backgroundColor: theme.accent,
-      marginTop: 10,
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 30,
+      lineHeight: 32,
+      color: theme.ink,
+      letterSpacing: -0.45,
     },
     closeBtn: {
       width: 36,
       height: 36,
+      flex: 0,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: radii.btn,
-      backgroundColor: theme.surface,
+      borderRadius: radii.chip,
     },
     closeIcon: {
+      fontFamily: fonts.body,
+      fontSize: 14,
       color: theme.ink,
-      fontSize: 15,
-      lineHeight: 18,
+    },
+    metaStrip: {
+      marginHorizontal: 26,
+      marginVertical: 20,
+      flexDirection: 'row',
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: theme.line26,
+    },
+    metaCell: {
+      flex: 1,
+      paddingVertical: 12,
+    },
+    metaCellPadded: {
+      paddingLeft: 16,
+    },
+    metaDivider: {
+      width: 1,
+      backgroundColor: theme.line26,
+    },
+    metaLabel: {
+      fontFamily: fonts.bodySemi,
+      fontSize: 9,
+      letterSpacing: 1.62,
+      color: theme.accent,
+      marginBottom: 4,
+    },
+    metaValue: {
+      fontFamily: fonts.display,
+      fontSize: 17,
+      color: theme.ink,
     },
     body: {
-      paddingTop: 24,
-      paddingBottom: 48,
+      paddingHorizontal: 26,
+      paddingBottom: 20,
     },
-    metaRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      marginBottom: 24,
-    },
-    meta: {
-      fontFamily: theme.fontDisplay,
-      fontStyle: 'italic',
-      fontSize: 14,
-      color: theme.accentText,
-    },
-    metaDot: {
-      color: theme.inkSoft,
-      fontSize: 14,
+    loader: {
+      marginTop: 40,
     },
     sectionLabel: {
-      fontFamily: theme.fontDisplay,
-      textTransform: 'uppercase',
-      letterSpacing: 1.2,
-      fontSize: 13,
-      fontWeight: '500',
-      color: theme.accentText,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.accent,
-      paddingBottom: 6,
-      marginBottom: 12,
+      fontFamily: fonts.bodySemi,
+      fontSize: 9.5,
+      letterSpacing: 2.09,
+      color: theme.accent,
+      marginBottom: 8,
+    },
+    ingredientBlock: {
+      marginBottom: 20,
     },
     ingredientRow: {
       flexDirection: 'row',
-      gap: 10,
-      paddingVertical: 5,
+      alignItems: 'baseline',
+      gap: 8,
+      paddingVertical: 7,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.line14,
     },
-    bullet: {
-      color: theme.accent,
-      fontSize: 14,
-    },
-    stepRow: {
-      flexDirection: 'row',
-      gap: 12,
-      paddingVertical: 8,
-    },
-    stepNumber: {
-      fontFamily: theme.fontDisplay,
-      fontSize: 15,
-      color: theme.accentText,
-      minWidth: 18,
-    },
-    bodyText: {
-      fontFamily: theme.fontBody,
-      fontSize: 14,
-      lineHeight: 21,
+    ingredientName: {
+      fontFamily: fonts.body,
+      fontSize: 14.5,
       color: theme.ink,
       flexShrink: 1,
     },
-    spacing: {
-      marginTop: 24,
+    leader: {
+      flex: 1,
+      borderBottomWidth: 1,
+      borderStyle: 'dotted',
+      borderBottomColor: theme.mut40,
+    },
+    ingredientQty: {
+      fontFamily: fonts.display,
+      fontSize: 13.5,
+      color: theme.inkSoft,
+    },
+    stepRow: {
+      flexDirection: 'row',
+      gap: 14,
+      paddingBottom: 14,
+    },
+    stepNumber: {
+      fontFamily: fonts.display,
+      fontSize: 22,
+      lineHeight: 24,
+      color: theme.accent,
+      minWidth: 22,
+    },
+    stepText: {
+      fontFamily: fonts.body,
+      fontSize: 14.5,
+      lineHeight: 23,
+      color: theme.ink,
+      flexShrink: 1,
     },
     error: {
-      color: theme.accent2,
-      fontFamily: theme.fontBody,
+      fontFamily: fonts.body,
+      fontSize: 13,
+      lineHeight: 19,
+      color: theme.accent,
       marginTop: 16,
     },
   });

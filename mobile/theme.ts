@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 export type Theme = {
   bg: string;
@@ -8,59 +8,70 @@ export type Theme = {
   inkSoft: string;
   accent: string;
   accentInk: string;
-  accentText: string;
-  accent2: string;
-  onAccent2: string;
   border: string;
+  line14: string;
+  line20: string;
+  line26: string;
+  mut40: string;
+  mut60: string;
+  mut75: string;
+  ph1: string;
+  ph2: string;
   chipBg: string;
-  fontDisplay: string;
-  fontBody: string;
 };
 
-const fontDisplay = Platform.select({
-  ios: 'Didot',
-  android: 'serif',
-  default: 'Georgia, "Times New Roman", serif',
-}) as string;
+/**
+ * En React Native los pesos de una fuente cargada por archivo son familias
+ * distintas: `fontWeight` no las selecciona. Se referencian por nombre.
+ */
+export const fonts = {
+  display: 'BodoniModa_400Regular',
+  displayMedium: 'BodoniModa_500Medium',
+  displayItalic: 'BodoniModa_400Regular_Italic',
+  body: 'Karla_400Regular',
+  bodyMedium: 'Karla_500Medium',
+  bodySemi: 'Karla_600SemiBold',
+  bodyBold: 'Karla_700Bold',
+} as const;
 
-const fontBody = Platform.select({
-  ios: 'System',
-  android: 'sans-serif',
-  default: '-apple-system, "Helvetica Neue", Arial, sans-serif',
-}) as string;
-
-export const radii = { card: 12, btn: 4, chip: 999, check: 3 };
+export const radii = { card: 8, btn: 3, chip: 999, check: 2, photo: 6, field: 4 };
 
 export const lightTheme: Theme = {
-  bg: '#F7F1E4',
-  surface: '#FFFEF9',
-  ink: '#211A11',
-  inkSoft: '#6B5D45',
-  accent: '#A9812E',
-  accentInk: '#1B140A',
-  accentText: '#8C6A1F',
-  accent2: '#8C2C34',
-  onAccent2: '#F7F1E4',
-  border: 'rgba(169,129,46,0.28)',
-  chipBg: 'rgba(169,129,46,0.08)',
-  fontDisplay,
-  fontBody,
+  bg: '#F4EEE6',
+  surface: '#FFFBF5',
+  ink: '#211C18',
+  inkSoft: '#6B5D52',
+  accent: '#A9552C',
+  accentInk: '#FBF3EC',
+  border: 'rgba(169,85,44,0.40)',
+  line14: 'rgba(169,85,44,0.14)',
+  line20: 'rgba(169,85,44,0.20)',
+  line26: 'rgba(169,85,44,0.26)',
+  mut40: 'rgba(107,93,82,0.40)',
+  mut60: 'rgba(107,93,82,0.60)',
+  mut75: 'rgba(107,93,82,0.75)',
+  ph1: '#E6DCCF',
+  ph2: '#DCCFC0',
+  chipBg: '#FFFBF5',
 };
 
 export const darkTheme: Theme = {
-  bg: '#16241B',
-  surface: '#1E3024',
-  ink: '#F4ECDA',
-  inkSoft: '#B4A98F',
-  accent: '#C9A227',
-  accentInk: '#1B140A',
-  accentText: '#C9A227',
-  accent2: '#9C2E37',
-  onAccent2: '#F7F1E4',
-  border: 'rgba(201,162,39,0.32)',
-  chipBg: 'rgba(201,162,39,0.10)',
-  fontDisplay,
-  fontBody,
+  bg: '#1B1816',
+  surface: '#241F1C',
+  ink: '#F1E8DE',
+  inkSoft: '#ABA096',
+  accent: '#D9834A',
+  accentInk: '#1B1816',
+  border: 'rgba(217,131,74,0.40)',
+  line14: 'rgba(217,131,74,0.14)',
+  line20: 'rgba(217,131,74,0.20)',
+  line26: 'rgba(217,131,74,0.26)',
+  mut40: 'rgba(171,160,150,0.40)',
+  mut60: 'rgba(171,160,150,0.60)',
+  mut75: 'rgba(171,160,150,0.75)',
+  ph1: '#2C2622',
+  ph2: '#221D1A',
+  chipBg: '#241F1C',
 };
 
 export type Mode = 'light' | 'dark';
