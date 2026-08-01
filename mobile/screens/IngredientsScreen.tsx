@@ -29,6 +29,7 @@ type Props = {
   mode: Mode;
   toggleMode: () => void;
   onLogout: () => void;
+  enabledSteps: Step[];
   onGoTo: (step: Step) => void;
 
   source: Source;
@@ -79,7 +80,7 @@ export default function IngredientsScreen(props: Props) {
           actionLabel="SALIR"
           onAction={props.onLogout}
         />
-        <StepIndicator theme={theme} current={1} onGoTo={props.onGoTo} />
+        <StepIndicator theme={theme} current={1} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollBody}>

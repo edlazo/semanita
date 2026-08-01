@@ -16,6 +16,7 @@ type Props = {
   mode: Mode;
   toggleMode: () => void;
   onNewWeek: () => void;
+  enabledSteps: Step[];
   onGoTo: (step: Step) => void;
 
   meals: Meal[];
@@ -47,7 +48,7 @@ export default function MenuScreen(props: Props) {
           actionLabel="SEMANA NUEVA"
           onAction={props.onNewWeek}
         />
-        <StepIndicator theme={theme} current={2} onGoTo={props.onGoTo} />
+        <StepIndicator theme={theme} current={2} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 
         <View style={styles.titleRow}>
           <View style={styles.titleBlock}>

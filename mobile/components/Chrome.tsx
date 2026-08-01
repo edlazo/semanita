@@ -40,10 +40,15 @@ export function Header({ theme, mode, toggleMode, actionLabel, onAction }: Heade
 type StepIndicatorProps = {
   theme: Theme;
   current: Step;
+  /**
+   * Pasos con datos ya cargados. Incluye los de adelante: si el menú ya está
+   * generado, volver a Ingredientes no puede obligar a regenerarlo para seguir.
+   */
+  enabled: Step[];
   onGoTo: (step: Step) => void;
 };
 
-export function StepIndicator({ theme, current, onGoTo }: StepIndicatorProps) {
+export function StepIndicator({ theme, current, enabled, onGoTo }: StepIndicatorProps) {
   const styles = getStyles(theme);
   const steps: Step[] = [1, 2, 3];
 
@@ -51,8 +56,7 @@ export function StepIndicator({ theme, current, onGoTo }: StepIndicatorProps) {
     <View style={styles.steps}>
       {steps.map((step, i) => {
         const active = step === current;
-        // Solo los pasos ya recorridos son navegables hacia atrás.
-        const reachable = step < current;
+        const reachable = !active && enabled.includes(step);
         return (
           <View key={step} style={styles.stepGroup}>
             {i > 0 && <View style={styles.stepLine} />}
@@ -60,7 +64,10 @@ export function StepIndicator({ theme, current, onGoTo }: StepIndicatorProps) {
               onPress={reachable ? () => onGoTo(step) : undefined}
               disabled={!reachable}
               hitSlop={8}
-              style={[styles.step, !active && styles.stepInactive]}
+              style={[
+                styles.step,
+                !active && (reachable ? styles.stepReachable : styles.stepInactive),
+              ]}
             >
               <Text style={[styles.stepNumber, active && styles.stepNumberActive]}>{step}</Text>
               <Text style={[styles.stepLabel, active && styles.stepLabelActive]}>
@@ -169,6 +176,10 @@ function getStyles(theme: Theme) {
     },
     stepInactive: {
       opacity: 0.4,
+    },
+    // Un paso navegable se distingue del que todavía no tiene datos.
+    stepReachable: {
+      opacity: 0.75,
     },
     stepNumber: {
       fontFamily: fonts.display,

@@ -134,6 +134,12 @@ export default function App() {
 
   const storageKey = session ? storageKeyFor(session.user.id) : null;
 
+  // Un paso queda navegable en cuanto tiene datos, hacia adelante también: volver
+  // a Ingredientes no debe obligar a regenerar un menú que ya existe.
+  const enabledSteps: Step[] = [1];
+  if (meals) enabledSteps.push(2);
+  if (shoppingList) enabledSteps.push(3);
+
   function resetWeek() {
     setStep(1);
     setSource(null);
@@ -517,6 +523,7 @@ export default function App() {
           mode={mode}
           toggleMode={toggleMode}
           onLogout={logout}
+          enabledSteps={enabledSteps}
           onGoTo={setStep}
           source={source}
           photoState={photoState}
@@ -549,6 +556,7 @@ export default function App() {
           mode={mode}
           toggleMode={toggleMode}
           onNewWeek={resetWeek}
+          enabledSteps={enabledSteps}
           onGoTo={setStep}
           meals={meals}
           days={DAYS}
@@ -571,6 +579,7 @@ export default function App() {
           mode={mode}
           toggleMode={toggleMode}
           onNewWeek={resetWeek}
+          enabledSteps={enabledSteps}
           onGoTo={setStep}
           categories={shoppingList}
           checked={checkedItems}
