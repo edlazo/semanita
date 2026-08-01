@@ -22,7 +22,13 @@ import RecipeModal, { Recipe } from './components/RecipeModal';
 import { Step } from './components/Chrome';
 import IngredientsScreen, { PhotoState, Source } from './screens/IngredientsScreen';
 import MenuScreen, { Meal } from './screens/MenuScreen';
-import ShoppingScreen, { ShoppingCategory } from './screens/ShoppingScreen';
+import ShoppingScreen from './screens/ShoppingScreen';
+import {
+  checkedNamesFrom,
+  needsCategorization,
+  ShoppingCategory,
+  visibleCategories,
+} from './lib/shopping';
 import { useAppTheme } from './theme';
 import { captureError, clearUser, identifyUser, initTelemetry, track } from './lib/telemetry';
 
@@ -132,13 +138,18 @@ export default function App() {
   const chosenMeals = (meals ?? []).filter((_, i) => selectedMeals.has(i));
   const pendingItems = [...new Set(chosenMeals.flatMap((m) => m.ingredientsToBuy))];
 
+  const checkedNames = checkedNamesFrom(checkedItems);
+  // La lista guardada es la categorización completa; se muestra recortada a lo
+  // que las comidas elegidas necesitan ahora.
+  const shownCategories = shoppingList ? visibleCategories(shoppingList, pendingItems) : [];
+
   const storageKey = session ? storageKeyFor(session.user.id) : null;
 
   // Un paso queda navegable en cuanto tiene datos, hacia adelante también: volver
   // a Ingredientes no debe obligar a regenerar un menú que ya existe.
   const enabledSteps: Step[] = [1];
   if (meals) enabledSteps.push(2);
-  if (shoppingList) enabledSteps.push(3);
+  if (shownCategories.length > 0) enabledSteps.push(3);
 
   function resetWeek() {
     setStep(1);
@@ -383,9 +394,8 @@ export default function App() {
       const [newMeal] = data.menu as Meal[];
       setMeals((prev) => prev?.map((m, i) => (i === index ? newMeal : m)) ?? prev);
       setRegenCounts((prev) => ({ ...prev, [index]: (prev[index] ?? 0) + 1 }));
-      // El menú cambió: la lista derivada y sus tachados ya no valen.
-      setShoppingList(null);
-      setCheckedItems(new Set());
+      // No se toca la lista: los ingredientes nuevos de esta comida quedan sin
+      // categorizar y eso solo dispara el pedido cuando el usuario vaya a compras.
       track('comida_regenerada', { veces: (regenCounts[index] ?? 0) + 1 });
     } catch (err) {
       captureError(err, { paso: 'regenerate-meal' });
@@ -402,16 +412,16 @@ export default function App() {
       else next.add(index);
       return next;
     });
-    setShoppingList(null);
-    setCheckedItems(new Set());
+    // La lista y los tachados se conservan: la vista se recorta sola a lo que
+    // sigue haciendo falta, y volver a tildar la comida recupera el progreso.
     track('comida_destildada');
   }
 
   async function goShopping() {
     if (pendingItems.length === 0) return;
 
-    // Si la lista ya está calculada para esta selección, no gastamos otra llamada.
-    if (shoppingList) {
+    // Sólo se le pide a Gemini que categorice si aparecieron ítems nuevos.
+    if (!needsCategorization(shoppingList, pendingItems)) {
       setStep(3);
       return;
     }
@@ -427,8 +437,9 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
 
+      // Los tachados sobreviven: están indexados por categoría e ítem, así que
+      // recategorizar no debería perder lo que ya compraste.
       setShoppingList(data.categories);
-      setCheckedItems(new Set());
       setStep(3);
       track('lista_compras_generada', {
         categorias: data.categories.length,
@@ -568,12 +579,13 @@ export default function App() {
           onOpenRecipe={openRecipe}
           error={menuError}
           shoppingLoading={shoppingLoading}
+          checkedNames={checkedNames}
           itemCount={pendingItems.length}
           onGoShopping={goShopping}
         />
       )}
 
-      {step === 3 && shoppingList && (
+      {step === 3 && shownCategories.length > 0 && (
         <ShoppingScreen
           theme={theme}
           mode={mode}
@@ -581,7 +593,7 @@ export default function App() {
           onNewWeek={resetWeek}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
-          categories={shoppingList}
+          categories={shownCategories}
           checked={checkedItems}
           onToggleItem={toggleShoppingItem}
         />

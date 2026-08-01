@@ -1,12 +1,10 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Checkbox from '../components/Checkbox';
 import { Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { itemKey, ShoppingCategory } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
 
-export type ShoppingCategory = {
-  category: string;
-  items: string[];
-};
+export type { ShoppingCategory };
 
 /** El diseño fija este orden; las categorías que no vengan simplemente no se muestran. */
 const CATEGORY_ORDER = ['Verdulería', 'Almacén', 'Carnicería'];
@@ -39,7 +37,12 @@ export default function ShoppingScreen(props: Props) {
 
   const ordered = orderCategories(props.categories.filter((c) => c.items.length > 0));
   const total = ordered.reduce((sum, c) => sum + c.items.length, 0);
-  const done = props.checked.size;
+  // Contar sobre lo visible: `checked` puede conservar ítems de comidas que se
+  // destildaron, y esos ya no cuentan para el progreso.
+  const done = ordered.reduce(
+    (sum, c) => sum + c.items.filter((i) => props.checked.has(itemKey(c.category, i))).length,
+    0
+  );
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   const allDone = total > 0 && done >= total;
 
@@ -74,7 +77,7 @@ export default function ShoppingScreen(props: Props) {
               {cat.category.toUpperCase()}
             </Eyebrow>
             {cat.items.map((item) => {
-              const key = `${cat.category}::${item}`;
+              const key = itemKey(cat.category, item);
               const isChecked = props.checked.has(key);
               return (
                 <Pressable

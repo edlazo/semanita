@@ -2,6 +2,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { PrimaryButton } from '../components/Buttons';
 import Checkbox from '../components/Checkbox';
 import { CtaBar, Header, StepIndicator, Step } from '../components/Chrome';
+import { CheckMark } from '../components/Glyphs';
+import { pendingFor } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
 
 export type Meal = {
@@ -27,6 +29,9 @@ type Props = {
   onToggleMeal: (index: number) => void;
   onRegenerate: (index: number) => void;
   onOpenRecipe: (index: number) => void;
+
+  /** Ingredientes ya tachados en la lista de compras, normalizados. */
+  checkedNames: Set<string>;
 
   error: string | null;
   shoppingLoading: boolean;
@@ -93,12 +98,25 @@ export default function MenuScreen(props: Props) {
               <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
               <Text style={styles.mealDesc}>{meal.description}</Text>
 
-              {meal.ingredientsToBuy.length > 0 && (
-                <View style={styles.missingRow}>
-                  <Text style={styles.missingLabel}>FALTA</Text>
-                  <Text style={styles.missingText}>{meal.ingredientsToBuy.join(', ')}</Text>
-                </View>
-              )}
+              {(() => {
+                const pending = pendingFor(meal.ingredientsToBuy, props.checkedNames);
+                if (pending.length === 0) {
+                  return (
+                    <View style={styles.readyRow}>
+                      <View style={styles.readyBadge}>
+                        <CheckMark size={12} color={theme.accentInk} thickness={1.5} />
+                      </View>
+                      <Text style={styles.readyLabel}>LISTO PARA COCINAR</Text>
+                    </View>
+                  );
+                }
+                return (
+                  <View style={styles.missingRow}>
+                    <Text style={styles.missingLabel}>FALTA</Text>
+                    <Text style={styles.missingText}>{pending.join(', ')}</Text>
+                  </View>
+                );
+              })()}
 
               {on && (
                 <View style={styles.actions}>
@@ -237,6 +255,29 @@ function getStyles(theme: Theme) {
       fontSize: 13,
       color: theme.ink,
       flexShrink: 1,
+    },
+    readyRow: {
+      flexDirection: 'row',
+      gap: 8,
+      alignItems: 'center',
+      paddingVertical: 7,
+      borderTopWidth: 1,
+      borderTopColor: theme.line20,
+    },
+    readyBadge: {
+      width: 18,
+      height: 18,
+      flexShrink: 0,
+      borderRadius: radii.chip,
+      backgroundColor: theme.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    readyLabel: {
+      fontFamily: fonts.bodySemi,
+      fontSize: 9.5,
+      letterSpacing: 1.9,
+      color: theme.accent,
     },
     actions: {
       flexDirection: 'row',
