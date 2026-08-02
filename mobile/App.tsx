@@ -25,6 +25,8 @@ import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import PaywallScreen from './screens/PaywallScreen';
 import { Entitlement, showRewardedAd, startSubscription, trialLabel } from './lib/plan';
+import ProfileModal from './components/ProfileModal';
+import AdGateModal from './components/AdGateModal';
 import {
   checkedNamesFrom,
   needsCategorization,
@@ -89,12 +91,14 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      setDisplayName((data.session?.user.user_metadata?.name as string) ?? '');
       setAuthLoading(false);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
         identifyUser(newSession.user.id, newSession.user.email ?? undefined);
+        setDisplayName((newSession.user.user_metadata?.name as string) ?? '');
       } else {
         clearUser();
       }
@@ -137,6 +141,11 @@ export default function App() {
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [subscribing, setSubscribing] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  /** Comida esperando confirmación para regenerar con anuncio. */
+  const [adGateIndex, setAdGateIndex] = useState<number | null>(null);
+  const [watchingAd, setWatchingAd] = useState(false);
 
   const effectiveRestrictions =
     restriction === 'Ninguna' ? '' : restriction === 'Otros' ? otherText.trim() : restriction;
@@ -256,6 +265,15 @@ export default function App() {
     if (status !== 402) return false;
     setEntitlement({ status: 'expired', trialDaysLeft: 0, subscribed: false });
     return true;
+  }
+
+  async function saveDisplayName(name: string) {
+    const { error } = await supabase.auth.updateUser({ data: { name } });
+    if (error) {
+      captureError(error, { paso: 'guardar-nombre' });
+      return;
+    }
+    setDisplayName(name);
   }
 
   async function subscribe() {
@@ -425,20 +443,39 @@ export default function App() {
     }
   }
 
-  async function regenerateMeal(index: number) {
-    if (!meals) return;
+  /**
+   * Regenerar es la acción repetida: se cobra con un anuncio a quien no paga,
+   * en vez de cobrarle al primer uso, que es donde se juega la retención.
+   * Con suscripción va directo, sin diálogo.
+   */
+  function requestRegenerate(index: number) {
+    if (entitlement?.subscribed) {
+      regenerateMeal(index);
+      return;
+    }
+    setAdGateIndex(index);
+  }
 
-    // Regenerar es la acción repetida: se cobra con un anuncio a quien no paga,
-    // en vez de cobrarle al primer uso, que es donde se juega la retención.
-    if (!entitlement?.subscribed) {
+  async function confirmAdAndRegenerate() {
+    const index = adGateIndex;
+    if (index === null) return;
+    setWatchingAd(true);
+    try {
       const vio = await showRewardedAd();
       if (!vio) {
-        setMenuError('Necesitás ver el anuncio para regenerar esta comida.');
+        setMenuError('Necesitás ver el anuncio completo para regenerar esta comida.');
         return;
       }
       track('anuncio_visto', { motivo: 'regenerar' });
+      setAdGateIndex(null);
+      await regenerateMeal(index);
+    } finally {
+      setWatchingAd(false);
     }
+  }
 
+  async function regenerateMeal(index: number) {
+    if (!meals) return;
     setRegeneratingIndex(index);
     setMenuError(null);
     try {
@@ -626,7 +663,7 @@ export default function App() {
           theme={theme}
           mode={mode}
           toggleMode={toggleMode}
-          onLogout={logout}
+          onOpenProfile={() => setProfileOpen(true)}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
           planLabel={planLabel}
@@ -661,6 +698,7 @@ export default function App() {
           mode={mode}
           toggleMode={toggleMode}
           onNewWeek={resetWeek}
+          onOpenProfile={() => setProfileOpen(true)}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
           planLabel={planLabel}
@@ -671,7 +709,7 @@ export default function App() {
           regenCounts={regenCounts}
           regeneratingIndex={regeneratingIndex}
           onToggleMeal={toggleMeal}
-          onRegenerate={regenerateMeal}
+          onRegenerate={requestRegenerate}
           onOpenRecipe={openRecipe}
           error={menuError}
           shoppingLoading={shoppingLoading}
@@ -687,6 +725,7 @@ export default function App() {
           mode={mode}
           toggleMode={toggleMode}
           onNewWeek={resetWeek}
+          onOpenProfile={() => setProfileOpen(true)}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
           planLabel={planLabel}
@@ -696,6 +735,35 @@ export default function App() {
           onBackToMenu={() => setStep(2)}
         />
       )}
+
+      <AdGateModal
+        visible={adGateIndex !== null}
+        onCancel={() => setAdGateIndex(null)}
+        onWatch={confirmAdAndRegenerate}
+        onSubscribe={() => {
+          setAdGateIndex(null);
+          setProfileOpen(true);
+        }}
+        loading={watchingAd}
+        mealName={adGateIndex !== null ? (meals?.[adGateIndex]?.name ?? '') : ''}
+        theme={theme}
+      />
+
+      <ProfileModal
+        visible={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        email={session.user.email ?? ''}
+        name={displayName}
+        onSaveName={saveDisplayName}
+        entitlement={entitlement}
+        onSubscribe={subscribe}
+        subscribing={subscribing}
+        onLogout={() => {
+          setProfileOpen(false);
+          logout();
+        }}
+        theme={theme}
+      />
 
       <RecipeModal
         visible={recipeIndex !== null}

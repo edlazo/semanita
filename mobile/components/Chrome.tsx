@@ -18,16 +18,32 @@ type HeaderProps = {
   onAction?: () => void;
   /** Ej. "12 DÍAS DE PRUEBA". Se omite en cuentas suscriptas. */
   planLabel?: string | null;
+  onOpenProfile?: () => void;
 };
 
-export function Header({ theme, mode, toggleMode, actionLabel, onAction, planLabel }: HeaderProps) {
+export function Header({
+  theme,
+  mode,
+  toggleMode,
+  actionLabel,
+  onAction,
+  planLabel,
+  onOpenProfile,
+}: HeaderProps) {
   const styles = getStyles(theme);
   return (
     <View style={styles.header}>
-      <View style={styles.brandBlock}>
+      {/* La marca es la entrada al perfil desde cualquier pantalla del flujo. */}
+      <Pressable
+        onPress={onOpenProfile}
+        disabled={!onOpenProfile}
+        hitSlop={8}
+        style={styles.brandBlock}
+        accessibilityLabel="Abrir tu perfil"
+      >
         <Text style={styles.brand}>SEMANITA</Text>
         {planLabel && <Text style={styles.planLabel}>{planLabel}</Text>}
-      </View>
+      </Pressable>
       <View style={styles.headerActions}>
         <Pressable onPress={toggleMode} hitSlop={10}>
           <Text style={styles.modeAction}>{mode === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}</Text>

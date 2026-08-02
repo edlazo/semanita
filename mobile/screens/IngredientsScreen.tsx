@@ -28,7 +28,7 @@ type Props = {
   theme: Theme;
   mode: Mode;
   toggleMode: () => void;
-  onLogout: () => void;
+  onOpenProfile: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
   planLabel?: string | null;
@@ -78,9 +78,8 @@ export default function IngredientsScreen(props: Props) {
           theme={theme}
           mode={props.mode}
           toggleMode={props.toggleMode}
-          actionLabel="SALIR"
-          onAction={props.onLogout}
           planLabel={props.planLabel}
+          onOpenProfile={props.onOpenProfile}
         />
         <StepIndicator theme={theme} current={1} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
       </View>

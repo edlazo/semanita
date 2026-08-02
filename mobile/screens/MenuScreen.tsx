@@ -18,6 +18,7 @@ type Props = {
   mode: Mode;
   toggleMode: () => void;
   onNewWeek: () => void;
+  onOpenProfile: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
   planLabel?: string | null;
@@ -56,6 +57,7 @@ export default function MenuScreen(props: Props) {
           actionLabel="SEMANA NUEVA"
           onAction={props.onNewWeek}
           planLabel={props.planLabel}
+          onOpenProfile={props.onOpenProfile}
         />
         <StepIndicator theme={theme} current={2} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 
