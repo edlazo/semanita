@@ -6,7 +6,27 @@ if (!apiKey) {
 }
 
 const client = new GoogleGenerativeAI(apiKey);
-const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
+
+/**
+ * La cuota gratuita se cuenta por modelo, no por proyecto: el error de tope la
+ * identifica como `GenerateRequestsPerDayPerProjectPerModel-FreeTier`. Repartir
+ * las operaciones entre modelos distintos les da a cada una su propio cupo
+ * diario en lugar de competir por uno solo.
+ *
+ * No usar alias `-latest`: resuelven a un modelo concreto y comparten su cupo.
+ * El reparto pesa calidad contra volumen esperado — la visión es el paso más
+ * delicado del producto, y las recetas son las que más se piden por sesión.
+ */
+const MODELS = {
+  vision: process.env.GEMINI_MODEL_VISION ?? "gemini-3.5-flash",
+  menu: process.env.GEMINI_MODEL_MENU ?? "gemini-3.6-flash",
+  recipe: process.env.GEMINI_MODEL_RECIPE ?? "gemini-3.5-flash-lite",
+  shopping: process.env.GEMINI_MODEL_SHOPPING ?? "gemini-3.1-flash-lite",
+} as const;
+
+function modelFor(task: keyof typeof MODELS) {
+  return client.getGenerativeModel({ model: MODELS[task] });
+}
 
 const DETECT_PROMPT = `Mirá esta foto de una heladera o alacena y listá todos los ingredientes y alimentos que puedas identificar.
 Respondé UNICAMENTE con un array JSON de strings en español, sin texto adicional ni markdown. Ejemplo: ["tomate", "leche", "arroz"]`;
@@ -21,7 +41,7 @@ function extractJson(rawText: string): unknown {
 }
 
 export async function detectIngredients(imageBuffer: Buffer, mimeType: string): Promise<string[]> {
-  const result = await model.generateContent([
+  const result = await modelFor("vision").generateContent([
     { inlineData: { data: imageBuffer.toString("base64"), mimeType } },
     { text: DETECT_PROMPT },
   ]);
@@ -70,7 +90,7 @@ ${restrictions ? `Restricciones alimentarias a respetar estrictamente: ${restric
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
 [{"name": "nombre de la comida", "description": "descripción corta de 1 línea", "ingredientsUsed": ["ingrediente1"], "ingredientsToBuy": ["ingrediente2"]}]`;
 
-  const result = await model.generateContent(prompt);
+  const result = await modelFor("menu").generateContent(prompt);
   const parsed = extractJson(result.response.text());
 
   if (!Array.isArray(parsed) || !parsed.every(isMeal)) {
@@ -100,7 +120,7 @@ export async function generateShoppingList(items: string[]): Promise<ShoppingCat
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
 [{"category": "Verdulería", "items": ["tomate", "lechuga"]}]`;
 
-  const result = await model.generateContent(prompt);
+  const result = await modelFor("shopping").generateContent(prompt);
   const parsed = extractJson(result.response.text());
 
   if (!Array.isArray(parsed) || !parsed.every(isShoppingCategory)) {
@@ -162,7 +182,7 @@ Separá cada ingrediente en su nombre y su cantidad.
 Respondé UNICAMENTE con un objeto JSON con esta forma, sin texto adicional ni markdown:
 {"servings": "2 porciones", "time": "30 min", "difficulty": "Fácil", "ingredients": [{"name": "fideos", "qty": "200 g"}, {"name": "tomate", "qty": "1"}], "steps": ["Herví agua con sal.", "Cociná los fideos 8 minutos."]}`;
 
-  const result = await model.generateContent(prompt);
+  const result = await modelFor("recipe").generateContent(prompt);
   const parsed = extractJson(result.response.text());
 
   if (!isRecipe(parsed)) {
