@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
@@ -23,6 +23,8 @@ import { Step } from './components/Chrome';
 import IngredientsScreen, { PhotoState, Source } from './screens/IngredientsScreen';
 import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
+import PaywallScreen from './screens/PaywallScreen';
+import { Entitlement, showRewardedAd, startSubscription, trialLabel } from './lib/plan';
 import {
   checkedNamesFrom,
   needsCategorization,
@@ -132,6 +134,10 @@ export default function App() {
 
   const [hydrated, setHydrated] = useState(false);
 
+  const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
+
   const effectiveRestrictions =
     restriction === 'Ninguna' ? '' : restriction === 'Otros' ? otherText.trim() : restriction;
 
@@ -228,6 +234,47 @@ export default function App() {
     otherText,
   ]);
 
+  const refreshEntitlement = useCallback(async () => {
+    if (!session) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/me`, { headers: await authHeaders() });
+      if (!response.ok) return;
+      const data = await response.json();
+      setEntitlement(data.entitlement);
+    } catch (err) {
+      // Sin conexión no se bloquea nada: el backend es el que decide de verdad.
+      captureError(err, { paso: 'refresh-entitlement' });
+    }
+  }, [session]);
+
+  useEffect(() => {
+    refreshEntitlement();
+  }, [refreshEntitlement]);
+
+  /** El 402 del backend significa prueba vencida: se muestra el paywall. */
+  function handlePlanBlocked(status: number): boolean {
+    if (status !== 402) return false;
+    setEntitlement({ status: 'expired', trialDaysLeft: 0, subscribed: false });
+    return true;
+  }
+
+  async function subscribe() {
+    setSubscribing(true);
+    setPlanError(null);
+    try {
+      const ok = await startSubscription();
+      if (!ok) {
+        setPlanError(
+          'Todavía no está habilitado el cobro: falta publicar la app en las tiendas. Escribinos y te damos acceso mientras tanto.'
+        );
+        return;
+      }
+      await refreshEntitlement();
+    } finally {
+      setSubscribing(false);
+    }
+  }
+
   function addIngredients(values: string[]) {
     const cleaned = values
       .flatMap((v) => v.split(/[,\n]/))
@@ -318,7 +365,10 @@ export default function App() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!response.ok) {
+        if (handlePlanBlocked(response.status)) return;
+        throw new Error(data.error ?? 'Error desconocido');
+      }
 
       const found: string[] = data.ingredients ?? [];
       setDetectedCount(found.length);
@@ -350,7 +400,10 @@ export default function App() {
         body: JSON.stringify({ ingredients, restrictions: effectiveRestrictions || undefined }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!response.ok) {
+        if (handlePlanBlocked(response.status)) return;
+        throw new Error(data.error ?? 'Error desconocido');
+      }
 
       const newMenu = data.menu as Meal[];
       setMeals(newMenu);
@@ -374,6 +427,18 @@ export default function App() {
 
   async function regenerateMeal(index: number) {
     if (!meals) return;
+
+    // Regenerar es la acción repetida: se cobra con un anuncio a quien no paga,
+    // en vez de cobrarle al primer uso, que es donde se juega la retención.
+    if (!entitlement?.subscribed) {
+      const vio = await showRewardedAd();
+      if (!vio) {
+        setMenuError('Necesitás ver el anuncio para regenerar esta comida.');
+        return;
+      }
+      track('anuncio_visto', { motivo: 'regenerar' });
+    }
+
     setRegeneratingIndex(index);
     setMenuError(null);
     try {
@@ -389,7 +454,10 @@ export default function App() {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!response.ok) {
+        if (handlePlanBlocked(response.status)) return;
+        throw new Error(data.error ?? 'Error desconocido');
+      }
 
       const [newMeal] = data.menu as Meal[];
       setMeals((prev) => prev?.map((m, i) => (i === index ? newMeal : m)) ?? prev);
@@ -435,7 +503,10 @@ export default function App() {
         body: JSON.stringify({ items: pendingItems }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!response.ok) {
+        if (handlePlanBlocked(response.status)) return;
+        throw new Error(data.error ?? 'Error desconocido');
+      }
 
       // Los tachados sobreviven: están indexados por categoría e ítem, así que
       // recategorizar no debería perder lo que ya compraste.
@@ -485,7 +556,10 @@ export default function App() {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!response.ok) {
+        if (handlePlanBlocked(response.status)) return;
+        throw new Error(data.error ?? 'Error desconocido');
+      }
       setRecipe(data.recipe);
       track('receta_vista', { pasos: data.recipe.steps.length });
     } catch (err) {
@@ -524,6 +598,25 @@ export default function App() {
     );
   }
 
+  if (entitlement?.status === 'expired') {
+    return (
+      <>
+        <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+        <PaywallScreen
+          theme={theme}
+          mode={mode}
+          toggleMode={toggleMode}
+          onLogout={logout}
+          onSubscribe={subscribe}
+          subscribing={subscribing}
+          error={planError}
+        />
+      </>
+    );
+  }
+
+  const planLabel = trialLabel(entitlement);
+
   return (
     <>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
@@ -536,6 +629,7 @@ export default function App() {
           onLogout={logout}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
+          planLabel={planLabel}
           source={source}
           photoState={photoState}
           detectedCount={detectedCount}
@@ -569,6 +663,8 @@ export default function App() {
           onNewWeek={resetWeek}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
+          planLabel={planLabel}
+          regenNeedsAd={!entitlement?.subscribed}
           meals={meals}
           days={DAYS}
           selected={selectedMeals}
@@ -593,6 +689,7 @@ export default function App() {
           onNewWeek={resetWeek}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
+          planLabel={planLabel}
           categories={shownCategories}
           checked={checkedItems}
           onToggleItem={toggleShoppingItem}

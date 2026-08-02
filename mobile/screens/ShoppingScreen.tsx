@@ -26,6 +26,7 @@ type Props = {
   onNewWeek: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
+  planLabel?: string | null;
 
   categories: ShoppingCategory[];
   checked: Set<string>;
@@ -57,6 +58,7 @@ export default function ShoppingScreen(props: Props) {
           toggleMode={props.toggleMode}
           actionLabel="SEMANA NUEVA"
           onAction={props.onNewWeek}
+          planLabel={props.planLabel}
         />
         <StepIndicator theme={theme} current={3} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 

@@ -3,7 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import multer from "multer";
 import { detectIngredients, generateMenu, generateRecipe, generateShoppingList } from "./gemini";
-import { requireAuth } from "./auth";
+import { AuthedRequest, requireAuth, requirePlan } from "./auth";
+import { getEntitlement, TRIAL_DAYS } from "./entitlements";
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -39,7 +40,19 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/detect-ingredients", requireAuth, upload.single("photo"), async (req: Request, res: Response) => {
+// Deliberadamente sin `requirePlan`: la app tiene que poder consultar su estado
+// justamente cuando está vencida, para mostrar el aviso de suscripción.
+app.get("/api/me", requireAuth, async (req: AuthedRequest, res: Response) => {
+  try {
+    const entitlement = await getEntitlement(req.accessToken!, req.userId!);
+    res.json({ entitlement, trialDays: TRIAL_DAYS });
+  } catch (err) {
+    console.error("entitlement lookup failed:", err);
+    res.status(503).json({ error: "No se pudo leer tu plan. Probá de nuevo." });
+  }
+});
+
+app.post("/api/detect-ingredients", requireAuth, requirePlan, upload.single("photo"), async (req: Request, res: Response) => {
   if (!req.file) {
     res.status(400).json({ error: "Falta el archivo 'photo'." });
     return;
@@ -54,7 +67,7 @@ app.post("/api/detect-ingredients", requireAuth, upload.single("photo"), async (
   }
 });
 
-app.post("/api/generate-menu", requireAuth, async (req: Request, res: Response) => {
+app.post("/api/generate-menu", requireAuth, requirePlan, async (req: Request, res: Response) => {
   const { ingredients, count, avoidNames, restrictions } = req.body ?? {};
 
   if (!Array.isArray(ingredients) || ingredients.length === 0 || !ingredients.every((i) => typeof i === "string")) {
@@ -83,7 +96,7 @@ app.post("/api/generate-menu", requireAuth, async (req: Request, res: Response) 
   }
 });
 
-app.post("/api/generate-shopping-list", requireAuth, async (req: Request, res: Response) => {
+app.post("/api/generate-shopping-list", requireAuth, requirePlan, async (req: Request, res: Response) => {
   const { items } = req.body ?? {};
 
   if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === "string")) {
@@ -102,7 +115,7 @@ app.post("/api/generate-shopping-list", requireAuth, async (req: Request, res: R
   }
 });
 
-app.post("/api/generate-recipe", requireAuth, async (req: Request, res: Response) => {
+app.post("/api/generate-recipe", requireAuth, requirePlan, async (req: Request, res: Response) => {
   const { mealName, description, restrictions } = req.body ?? {};
 
   if (typeof mealName !== "string" || mealName.trim().length === 0 || mealName.length > 200) {

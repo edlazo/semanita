@@ -16,13 +16,18 @@ type HeaderProps = {
   toggleMode: () => void;
   actionLabel?: string;
   onAction?: () => void;
+  /** Ej. "12 DÍAS DE PRUEBA". Se omite en cuentas suscriptas. */
+  planLabel?: string | null;
 };
 
-export function Header({ theme, mode, toggleMode, actionLabel, onAction }: HeaderProps) {
+export function Header({ theme, mode, toggleMode, actionLabel, onAction, planLabel }: HeaderProps) {
   const styles = getStyles(theme);
   return (
     <View style={styles.header}>
-      <Text style={styles.brand}>SEMANITA</Text>
+      <View style={styles.brandBlock}>
+        <Text style={styles.brand}>SEMANITA</Text>
+        {planLabel && <Text style={styles.planLabel}>{planLabel}</Text>}
+      </View>
       <View style={styles.headerActions}>
         <Pressable onPress={toggleMode} hitSlop={10}>
           <Text style={styles.modeAction}>{mode === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}</Text>
@@ -126,11 +131,21 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
       paddingBottom: 10,
     },
+    brandBlock: {
+      flexShrink: 1,
+      gap: 3,
+    },
     brand: {
       fontFamily: fonts.bodySemi,
       fontSize: 11,
       letterSpacing: 3.3,
       color: theme.ink,
+    },
+    planLabel: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 8.5,
+      letterSpacing: 1.36,
+      color: theme.accent,
     },
     headerActions: {
       flexDirection: 'row',

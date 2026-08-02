@@ -20,6 +20,9 @@ type Props = {
   onNewWeek: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
+  planLabel?: string | null;
+  /** Sin suscripción, regenerar pide ver un anuncio: el botón lo anuncia. */
+  regenNeedsAd: boolean;
 
   meals: Meal[];
   days: string[];
@@ -52,6 +55,7 @@ export default function MenuScreen(props: Props) {
           toggleMode={props.toggleMode}
           actionLabel="SEMANA NUEVA"
           onAction={props.onNewWeek}
+          planLabel={props.planLabel}
         />
         <StepIndicator theme={theme} current={2} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 
@@ -133,9 +137,11 @@ export default function MenuScreen(props: Props) {
                     <Text style={styles.regenAction}>
                       {regenerating
                         ? 'REGENERANDO…'
-                        : (props.regenCounts[i] ?? 0) > 0
-                          ? 'REGENERAR OTRA VEZ'
-                          : 'REGENERAR'}
+                        : props.regenNeedsAd
+                          ? 'REGENERAR · VER ANUNCIO'
+                          : (props.regenCounts[i] ?? 0) > 0
+                            ? 'REGENERAR OTRA VEZ'
+                            : 'REGENERAR'}
                     </Text>
                   </Pressable>
                 </View>
