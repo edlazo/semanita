@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Checkbox from '../components/Checkbox';
-import { Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
 import { itemKey, ShoppingCategory } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
 
@@ -29,6 +30,7 @@ type Props = {
   categories: ShoppingCategory[];
   checked: Set<string>;
   onToggleItem: (key: string) => void;
+  onBackToMenu: () => void;
 };
 
 export default function ShoppingScreen(props: Props) {
@@ -100,13 +102,23 @@ export default function ShoppingScreen(props: Props) {
           </View>
         )}
       </ScrollView>
+
+      <CtaBar theme={theme}>
+        {allDone ? (
+          // Con todo comprado, volver al menú deja de ser una salida y pasa a ser
+          // el próximo paso: ahí están las comidas listas y sus recetas.
+          <PrimaryButton title="VOLVER AL MENÚ" onPress={props.onBackToMenu} theme={theme} />
+        ) : (
+          <SecondaryButton title="VOLVER AL MENÚ" onPress={props.onBackToMenu} fullWidth theme={theme} />
+        )}
+      </CtaBar>
     </View>
   );
 }
 
 function getStyles(theme: Theme) {
   return StyleSheet.create({
-    root: { flex: 1, backgroundColor: theme.bg, paddingTop: 52, paddingBottom: 26 },
+    root: { flex: 1, backgroundColor: theme.bg, paddingTop: 52 },
     top: { paddingHorizontal: 26 },
     scroll: { flex: 1 },
     scrollBody: { paddingHorizontal: 26, paddingTop: 14, paddingBottom: 10 },

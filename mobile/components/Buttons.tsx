@@ -39,16 +39,19 @@ type SecondaryProps = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  /** Ocupa el ancho y toma la altura del botón principal, para usarlo como CTA. */
+  fullWidth?: boolean;
   theme: Theme;
 };
 
-export function SecondaryButton({ title, onPress, disabled, theme }: SecondaryProps) {
+export function SecondaryButton({ title, onPress, disabled, fullWidth, theme }: SecondaryProps) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
         styles.secondary,
+        fullWidth && styles.secondaryFull,
         {
           borderColor: theme.border,
           borderRadius: radii.btn,
@@ -56,7 +59,9 @@ export function SecondaryButton({ title, onPress, disabled, theme }: SecondaryPr
         },
       ]}
     >
-      <Text style={[styles.secondaryText, { color: theme.ink }]}>{title}</Text>
+      <Text style={[styles.secondaryText, fullWidth && styles.secondaryTextFull, { color: theme.ink }]}>
+        {title}
+      </Text>
     </Pressable>
   );
 }
@@ -105,10 +110,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignSelf: 'flex-start',
   },
+  secondaryFull: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    paddingVertical: 17,
+  },
   secondaryText: {
     fontFamily: fonts.bodySemi,
     fontSize: 10,
     letterSpacing: 1.4,
+  },
+  secondaryTextFull: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11.5,
+    letterSpacing: 2.07,
   },
   chipBtn: {
     paddingVertical: 10,

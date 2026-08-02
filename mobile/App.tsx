@@ -596,6 +596,7 @@ export default function App() {
           categories={shownCategories}
           checked={checkedItems}
           onToggleItem={toggleShoppingItem}
+          onBackToMenu={() => setStep(2)}
         />
       )}
 
