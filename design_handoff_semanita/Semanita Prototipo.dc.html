@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#141110;font-family:'Plus Jakarta Sans',system-ui,sans-serif;--bg:#F4EEE6;--card:#FFFBF5;--ink:#211C18;--mut:#6B5D52;--acc:#A9552C;--onAcc:#FBF3EC;--ph1:#E6DCCF;--ph2:#DCCFC0;--l14:rgba(169,85,44,.14);--l20:rgba(169,85,44,.20);--l26:rgba(169,85,44,.26);--l40:rgba(169,85,44,.40);--mut40:rgba(107,93,82,.40);--mut60:rgba(107,93,82,.60)}
+[data-theme="dark"]{--bg:#1B1816;--card:#241F1C;--ink:#F1E8DE;--mut:#ABA096;--acc:#D9834A;--onAcc:#1B1816;--ph1:#2C2622;--ph2:#221D1A;--l14:rgba(217,131,74,.14);--l20:rgba(217,131,74,.20);--l26:rgba(217,131,74,.26);--l40:rgba(217,131,74,.40);--mut40:rgba(171,160,150,.40);--mut60:rgba(171,160,150,.60)}
+a{color:var(--acc)}a:hover{color:var(--ink)}
+input,textarea,button{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+input::placeholder,textarea::placeholder{color:var(--mut)}
+*{-webkit-tap-highlight-color:transparent}
+[data-tap]{position:relative}
+[data-tap]::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;min-width:44px;min-height:44px}
+@keyframes scr{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.82)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+::-webkit-scrollbar{width:0}
+</style></helmet>
+
+<div style="width:100%;height:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#141110">
+<div data-theme="{{ themeAttr }}" style="position:relative;width:390px;height:844px;max-height:100vh;overflow:hidden;background:var(--bg);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.5)">
+
+<div style="position:absolute;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--ink);z-index:40;pointer-events:none">9:41<div style="width:17px;height:9px;border:1px solid var(--mut60);border-radius:2px;padding:1px"><div style="width:100%;height:100%;background:var(--ink);border-radius:1px"></div></div></div>
+
+<sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:52px 0 0;display:flex;flex-direction:column;animation:scr .4s ease both">
+<div style="flex:none;padding:0 30px 6px;display:flex;justify-content:space-between;align-items:center">
+<div style="font:700 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">Semanita</div>
+<div onClick="{{ onToggleTheme }}" style="min-height:44px;display:flex;align-items:center;padding:0 4px;margin-right:-4px;cursor:pointer;font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ themeLabel }}</div>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:16px 30px 26px">
+<div style="margin-block:auto">
+<div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);margin-bottom:14px">Desde 2026 · cocina de semana</div>
+<div style="font:700 38px/1.03 Newsreader,Georgia,serif;letter-spacing:-.015em">Comé bien<br>toda la<br><span style="font-style:italic;color:var(--acc)">semanita</span>.</div>
+<div style="width:100%;height:1px;background:var(--l26);margin:20px 0 6px"></div>
+<div style="font:400 14px/1.55 'Plus Jakarta Sans',sans-serif;color:var(--mut);max-width:30ch;margin-bottom:22px">{{ authBlurb }}</div>
+<div style="display:flex;flex-direction:column;gap:13px">
+<div><div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px">Email</div>
+<input type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="rocio@correo.com" style="width:100%;box-sizing:border-box;padding:11px 0;border:0;border-bottom:1px solid var(--l40);background:transparent;font:15px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none"></div>
+<div><div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px">Contraseña</div>
+<input type="password" value="{{ pass }}" onChange="{{ onPass }}" onKeyDown="{{ onAuthKey }}" placeholder="mínimo 6 caracteres" style="width:100%;box-sizing:border-box;padding:11px 0;border:0;border-bottom:1px solid var(--l40);background:transparent;font:15px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none"></div>
+</div>
+<sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:12px;font:13px/1.45 'Plus Jakarta Sans',sans-serif;color:var(--acc);animation:shake .3s ease">{{ authError }}</div></sc-if>
+<div onClick="{{ onAuth }}" style="margin-top:22px;display:flex;justify-content:center;padding:16px;background:var(--acc);border-radius:10px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer;transition:opacity .18s ease;opacity:{{ authOpacity }}" style-active="opacity:.7">{{ authCta }}</div>
+<div style="margin-top:16px;text-align:center;font:14px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">{{ authSwitchText }} <span onClick="{{ onSwitchMode }}" style="color:var(--acc);border-bottom:1px solid var(--l40);cursor:pointer">{{ authSwitchCta }}</span></div>
+<div style="margin-top:30px;text-align:center;font:12px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">Emporio de comida casera</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isIng }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:52px 0 152px;display:flex;flex-direction:column;animation:scr .35s ease both">
+<div style="padding:0 26px">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px">
+<div style="font:700 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">Semanita</div>
+<div data-tap onClick="{{ goProfile }}" style="width:36px;height:36px;box-sizing:border-box;flex:none;border-radius:999px;overflow:hidden;border:1px solid var(--l20);background:repeating-linear-gradient(135deg,var(--ph1) 0 6px,var(--ph2) 6px 12px);display:flex;align-items:center;justify-content:center;font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer">{{ initials }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--l26);border-bottom:1px solid var(--l26)">
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">1</span><span style="font:600 13px 'Plus Jakarta Sans',sans-serif">Ingredientes</span></div>
+<div style="flex:1;height:1px;background:var(--l26)"></div>
+<div data-tap onClick="{{ goMenu }}" style="display:flex;align-items:center;gap:6px;cursor:pointer;opacity:{{ step2Opacity }}"><span style="font:500 13px 'Plus Jakarta Sans',sans-serif">Menú</span><span style="font:500 14px 'Plus Jakarta Sans',sans-serif">→</span></div>
+</div>
+</div>
+
+<div style="flex:1;overflow-y:auto;padding:0 26px">
+<div style="font:600 32px/1.06 Newsreader,Georgia,serif;letter-spacing:-.015em;margin:14px 0 2px">¿Qué hay en<br>tu heladera?</div>
+<div style="font:14px/1.55 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:12px">Una foto alcanza. Si preferís, escribila.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+<div onClick="{{ onCamera }}" style="padding:11px 8px;border:1px solid var(--l20);border-radius:10px;text-align:center;font:600 12.5px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;cursor:pointer;background-color:{{ camBg }};color:{{ camInk }}">Sacar<br>foto</div>
+<div onClick="{{ onGallery }}" style="padding:11px 8px;border:1px solid var(--l20);border-radius:10px;text-align:center;font:600 12.5px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;cursor:pointer;background-color:{{ galBg }};color:{{ galInk }}">De la<br>galería</div>
+<div onClick="{{ onManual }}" style="padding:11px 8px;border:1px solid var(--l20);border-radius:10px;text-align:center;font:600 12.5px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;cursor:pointer;background-color:{{ manBg }};color:{{ manInk }}">Escribir<br>a mano</div>
+</div>
+
+<sc-if value="{{ photoLoading }}" hint-placeholder-val="{{ false }}">
+<div style="height:112px;border-radius:6px;background:repeating-linear-gradient(135deg,var(--ph1) 0 8px,var(--ph2) 8px 16px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;margin-bottom:16px">
+<div style="width:26px;height:26px;border:2px solid var(--l40);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite"></div>
+<div style="font:12px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">Analizando la foto…</div>
+</div></sc-if>
+
+<sc-if value="{{ photoOk }}" hint-placeholder-val="{{ false }}">
+<div style="position:relative;height:112px;border-radius:6px;overflow:hidden;background:repeating-linear-gradient(135deg,var(--ph1) 0 8px,var(--ph2) 8px 16px);display:flex;align-items:flex-end;padding:12px;margin-bottom:16px;animation:scr .35s ease both">
+<span style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.05em;color:var(--mut)">foto tomada · heladera</span>
+<span style="position:absolute;top:10px;right:10px;padding:5px 10px;background:var(--acc);border-radius:999px;font:600 12px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">{{ detectedLabel }}</span>
+</div></sc-if>
+
+<sc-if value="{{ photoEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="border:1px solid var(--l40);border-radius:6px;padding:16px;margin-bottom:16px;animation:scr .35s ease both">
+<div style="font:600 17px/1.3 Newsreader,Georgia,serif;margin-bottom:6px">No reconocimos nada</div>
+<div style="font:13px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:12px">La foto salió muy oscura. Probá de nuevo con la puerta abierta, o escribí la lista a mano.</div>
+<div style="display:flex;gap:8px">
+<div onClick="{{ onCamera }}" data-tap style="min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 16px;font:600 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;background-color:var(--acc);border-radius:11px;color:var(--onAcc)">Probar de nuevo</div>
+<div onClick="{{ onManual }}" data-tap style="min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 16px;font:600 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;border:1px solid var(--l20);border-radius:10px">Escribir a mano</div>
+</div></div></sc-if>
+
+<sc-if value="{{ manualOpen }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:16px;animation:scr .3s ease both">
+<div style="font:13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:8px">Una por línea, o separadas por coma.</div>
+<textarea value="{{ manualText }}" onChange="{{ onManualText }}" placeholder="tomate, fideos, queso…" style="width:100%;box-sizing:border-box;height:74px;resize:none;padding:11px 12px;border:1px solid var(--l40);border-radius:4px;background:var(--card);font:14px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none"></textarea>
+<div onClick="{{ onManualAdd }}" data-tap style="margin-top:8px;min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 16px;font:600 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;background-color:var(--acc);border-radius:11px;color:var(--onAcc)">Sumar a la lista</div>
+</div></sc-if>
+
+<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--l26);padding-bottom:6px;margin-bottom:10px">
+<span style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink)">Tenés en casa</span>
+<span style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ chipCount }}</span>
+</div>
+<sc-if value="{{ noChips }}" hint-placeholder-val="{{ false }}"><div style="font:13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:10px">Todavía no hay nada. Sacá una foto o agregá el primero acá abajo.</div></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px">
+<sc-for list="{{ chips }}" as="chip" hint-placeholder-count="7">
+<div onClick="{{ chip.onDelete }}" style="display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--l20);border-radius:999px;padding:0 14px;min-height:44px;box-sizing:border-box;font:13.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink);cursor:pointer;animation:pop .22s ease both;transition:opacity .15s ease" style-hover="opacity:.6">{{ chip.name }}<span style="font-size:11px;color:var(--acc)">✕</span></div>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--l40);padding-bottom:8px;margin-bottom:16px">
+<span style="font:15px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">+</span>
+<input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="Ej: crema de maní" style="flex:1;border:0;background:transparent;font:14.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none">
+<span data-tap onClick="{{ onAddChip }}" style="font:600 13.5px 'Plus Jakarta Sans',sans-serif;color:var(--acc);cursor:pointer">Agregar</span>
+</div>
+
+<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--l26);padding-bottom:6px;margin-bottom:9px">
+<span style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink)">Restricciones</span>
+<span data-tap onClick="{{ goProfile }}" style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer">guardadas en tu perfil ›</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px">
+<sc-for list="{{ restrictions }}" as="r" hint-placeholder-count="6">
+<div onClick="{{ r.onPick }}" style="min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 15px;border:1px solid var(--l20);border-radius:999px;font:13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;background-color:{{ r.bg }};color:{{ r.ink }}">{{ r.label }}</div>
+</sc-for>
+</div>
+<sc-if value="{{ showOther }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--l40);padding-bottom:8px;margin-top:12px;animation:scr .3s ease both">
+<input value="{{ otherText }}" onChange="{{ onOther }}" placeholder="Ej: sin frutos secos" style="flex:1;border:0;background:transparent;font:14.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none">
+</div></sc-if>
+
+<sc-if value="{{ genError }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:16px;padding:12px 14px;border:1px solid var(--acc);border-radius:4px;font:13px/1.45 'Plus Jakarta Sans',sans-serif;color:var(--acc);animation:shake .3s ease">{{ genError }}</div></sc-if>
+<div style="height:14px"></div>
+</div>
+
+<div style="position:absolute;bottom:62px;left:0;right:0;padding:14px 26px 16px;background:linear-gradient(to top,var(--bg) 62%,transparent)">
+<div onClick="{{ onGenerate }}" style="display:flex;justify-content:center;align-items:center;gap:10px;padding:17px;background:var(--acc);border-radius:11px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer;transition:opacity .18s ease;opacity:{{ genOpacity }}">
+<sc-if value="{{ generating }}" hint-placeholder-val="{{ false }}"><div style="width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:var(--onAcc);border-radius:50%;animation:spin .7s linear infinite"></div></sc-if>
+{{ genLabel }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMenu }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:52px 0 152px;display:flex;flex-direction:column;animation:scr .35s ease both">
+<div style="padding:0 26px">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px">
+<div style="font:700 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">Semanita</div>
+<div data-tap onClick="{{ goProfile }}" style="width:36px;height:36px;box-sizing:border-box;flex:none;border-radius:999px;overflow:hidden;border:1px solid var(--l20);background:repeating-linear-gradient(135deg,var(--ph1) 0 6px,var(--ph2) 6px 12px);display:flex;align-items:center;justify-content:center;font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer">{{ initials }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--l26);border-bottom:1px solid var(--l26)">
+<div data-tap onClick="{{ goIng }}" style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--acc)"><span style="font:500 14px 'Plus Jakarta Sans',sans-serif">←</span><span style="font:600 13px 'Plus Jakarta Sans',sans-serif">Ingredientes</span></div>
+<div style="flex:1;height:1px;background:var(--l26)"></div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">2</span><span style="font:600 13px 'Plus Jakarta Sans',sans-serif">Menú</span></div>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;margin:12px 0 10px">
+<div><div style="font:600 27px/1.06 Newsreader,Georgia,serif;letter-spacing:-.015em">Tu semana</div>
+<div style="font:13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:3px">{{ menuSub }}</div></div>
+<div style="font:500 13.5px 'Plus Jakarta Sans',sans-serif;color:var(--acc);white-space:nowrap">{{ menuCount }}</div>
+</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:0 26px 14px">
+<sc-for list="{{ meals }}" as="m" hint-placeholder-count="5">
+<div style="border-radius:14px;padding:13px 16px 12px;margin-bottom:9px;background-color:{{ m.cardBg }};border:1px {{ m.borderStyle }} {{ m.borderColor }};opacity:{{ m.opacity }}">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+<span style="font:600 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ m.day }}</span>
+<div data-tap onClick="{{ m.onToggle }}" style="width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:999px;cursor:pointer;border:1.5px solid {{ m.tickBorder }};background-color:{{ m.tickBg }};font:500 11px/1 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">{{ m.tickMark }}</div>
+</div>
+<div style="font:600 20px/1.2 Newsreader,Georgia,serif;margin-bottom:7px;color:{{ m.nameColor }};text-decoration:{{ m.nameDeco }}">{{ m.name }}</div>
+<div style="font:13.5px/1.55 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:9px">{{ m.desc }}</div>
+<sc-if value="{{ m.ready }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;animation:scr .3s ease both">
+<div style="width:20px;height:20px;flex:none;border-radius:999px;background-color:var(--acc);display:flex;align-items:center;justify-content:center;font:500 11px/1 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">✓</div>
+<span style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">Listo para cocinar</span>
+</div></sc-if>
+<sc-if value="{{ m.hasPending }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px">
+<sc-for list="{{ m.missingList }}" as="mi" hint-placeholder-count="2">
+<span style="padding:5px 11px;border-radius:999px;background:var(--l14);font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink)">{{ mi.name }}</span>
+</sc-for>
+</div></sc-if>
+<div style="display:flex;gap:8px">
+<div onClick="{{ m.onRecipe }}" style="flex:1;min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--acc);font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer">Ver receta</div>
+<div onClick="{{ m.onRegen }}" style="min-height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 16px;border-radius:10px;border:1px solid var(--l20);font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--ink);cursor:pointer">{{ m.regenLabel }}</div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position:absolute;bottom:62px;left:0;right:0;padding:14px 26px 16px;background:linear-gradient(to top,var(--bg) 62%,transparent)">
+<div onClick="{{ goShop }}" style="display:flex;justify-content:space-between;align-items:center;padding:17px 20px;background:var(--acc);border-radius:11px;cursor:pointer;transition:opacity .18s ease;opacity:{{ shopOpacity }}">
+<span style="font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">Ver lista de compras</span>
+<span style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">{{ shopMeta }}</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:52px 0 138px;display:flex;flex-direction:column;animation:scr .35s ease both">
+<div style="padding:0 26px">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px">
+<div style="font:700 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">Semanita</div>
+<div data-tap onClick="{{ goProfile }}" style="width:36px;height:36px;box-sizing:border-box;flex:none;border-radius:999px;overflow:hidden;border:1px solid var(--l20);background:repeating-linear-gradient(135deg,var(--ph1) 0 6px,var(--ph2) 6px 12px);display:flex;align-items:center;justify-content:center;font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer">{{ initials }}</div>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;padding-top:14px;border-top:1px solid var(--l26);margin-bottom:12px">
+<div><div style="font:600 30px/1.06 Newsreader,Georgia,serif;letter-spacing:-.015em">Lo que falta</div>
+<div style="font:13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:3px">{{ shopSub }}</div></div>
+<div style="font:500 13.5px 'Plus Jakarta Sans',sans-serif;color:var(--acc);white-space:nowrap">{{ shopProgress }}</div>
+</div>
+<div style="height:2px;background:var(--l20)"><div style="height:2px;background:var(--acc);width:{{ shopPct }};transition:width .3s ease"></div></div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:16px 26px 0">
+<sc-if value="{{ shopEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="padding:16px;border:1px dashed var(--l40);border-radius:6px">
+<div style="font:600 19px/1.25 Newsreader,Georgia,serif;margin-bottom:5px">Todavía no hay lista</div>
+<div style="font:13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut)">Armá el menú de la semana y acá te juntamos lo que falta comprar.</div>
+</div></sc-if>
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="3">
+<div style="margin-bottom:20px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--acc);padding-bottom:6px;margin-bottom:2px">
+<span style="font:600 15px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink)">{{ c.name }}</span>
+<span style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ c.count }}</span>
+</div>
+<sc-for list="{{ c.items }}" as="it" hint-placeholder-count="3">
+<div onClick="{{ it.onToggle }}" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--l14);cursor:pointer">
+<div style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:2px;border:1.5px solid {{ it.tickBorder }};background-color:{{ it.tickBg }};font:500 11px/1 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">{{ it.tickMark }}</div>
+<span style="font:15px 'Plus Jakarta Sans',sans-serif;color:{{ it.color }};text-decoration:{{ it.deco }};transition:color .18s ease">{{ it.name }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+<div style="padding:18px;border-radius:16px;background:var(--acc);margin-bottom:20px;animation:scr .35s ease both">
+<div style="font:600 22px/1.15 Newsreader,Georgia,serif;color:var(--onAcc);margin-bottom:6px">Listo, ya está todo</div>
+<div style="font:13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--onAcc)">Andá a cocinar. Volvé al menú para ver las recetas.</div>
+</div></sc-if>
+<div style="height:10px"></div>
+</div>
+<div style="position:absolute;bottom:60px;left:0;right:0;padding:12px 26px 16px;background:linear-gradient(to top,var(--bg) 62%,transparent)">
+<div onClick="{{ goMenu }}" style="display:flex;justify-content:center;align-items:center;padding:17px;border-radius:11px;cursor:pointer;background-color:{{ backBg }};border:1px solid {{ backBorder }};font:600 15px 'Plus Jakarta Sans',sans-serif;color:{{ backInk }}">Volver al menú</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:52px 0 20px;display:flex;flex-direction:column;animation:scr .35s ease both">
+<div style="padding:0 22px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div onClick="{{ goBackFromProfile }}" style="width:44px;height:44px;flex:none;margin-left:-8px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:17px 'Plus Jakarta Sans',sans-serif;color:var(--ink);cursor:pointer">←</div>
+<div style="flex:1;font:700 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">Tu perfil</div>
+<div onClick="{{ onToggleTheme }}" style="min-height:44px;display:flex;align-items:center;padding:0 4px;margin-right:-4px;cursor:pointer;font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ themeLabel }}</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:0 22px">
+
+<div style="display:flex;align-items:center;gap:14px;padding:8px 0 18px">
+<div style="width:76px;height:76px;box-sizing:border-box;flex:none;border-radius:999px;overflow:hidden;border:1px solid var(--l20);background:repeating-linear-gradient(135deg,var(--ph1) 0 7px,var(--ph2) 7px 14px);display:flex;align-items:center;justify-content:center;font:600 26px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">{{ initials }}</div>
+<div style="flex:1;min-width:0">
+<div style="font:600 24px/1.1 Newsreader,Georgia,serif;letter-spacing:-.01em">{{ userName }}</div>
+<div style="font:13.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ userEmail }}</div>
+</div>
+<div onClick="{{ goAccount }}" style="flex:none;min-height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 15px;border:1px solid var(--l20);border-radius:10px;font:600 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer">Editar</div>
+</div>
+
+<div style="border-radius:16px;border:1px solid {{ memBorder }};background-color:{{ memBg }};padding:18px;margin-bottom:18px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+<span style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:{{ memSoft }}">Membresía</span>
+<span style="font:600 12px 'Plus Jakarta Sans',sans-serif;padding:5px 11px;border-radius:999px;background-color:{{ memBadgeBg }};color:{{ memBadgeInk }}">{{ memBadge }}</span>
+</div>
+<div style="font:600 26px/1.1 Newsreader,Georgia,serif;letter-spacing:-.015em;color:{{ memInk }}">{{ memTitle }}</div>
+<div style="font:13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:{{ memSoft }};margin-top:7px">{{ memBody }}</div>
+
+<sc-if value="{{ isTrial }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:14px">
+<div style="height:2px;background-color:{{ memTrack }}"><div style="height:2px;background-color:{{ memBar }};width:{{ trialPct }};transition:width .3s ease"></div></div>
+<div style="display:flex;justify-content:space-between;margin-top:7px">
+<span style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:{{ memSoft }}">{{ trialDayLabel }}</span>
+<span style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:{{ memSoft }}">{{ trialEnds }}</span>
+</div>
+</div></sc-if>
+
+<div style="display:flex;gap:18px;align-items:center;margin-top:15px;padding-top:14px;border-top:1px solid {{ memRule }}">
+<div onClick="{{ goPlans }}" style="min-height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 17px;border-radius:10px;background-color:{{ memCtaBg }};color:{{ memCtaInk }};font:600 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer">{{ memCta }}</div>
+<sc-if value="{{ isPlus }}" hint-placeholder-val="{{ false }}">
+<span onClick="{{ onCancel }}" style="min-height:44px;display:inline-flex;align-items:center;font:500 13px 'Plus Jakarta Sans',sans-serif;color:{{ memSoft }};cursor:pointer">Cancelar renovación</span></sc-if>
+</div>
+</div>
+
+<div style="display:flex;gap:9px;margin-bottom:20px">
+<div style="flex:1;background:var(--card);border:1px solid var(--l20);border-radius:12px;padding:13px"><div style="font:700 21px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">{{ statWeeks }}</div><div style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:4px">semanas</div></div>
+<div style="flex:1;background:var(--card);border:1px solid var(--l20);border-radius:12px;padding:13px"><div style="font:700 21px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">{{ statMeals }}</div><div style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:4px">comidas</div></div>
+<div style="flex:1;background:var(--card);border:1px solid var(--l20);border-radius:12px;padding:13px"><div style="font:700 21px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em">{{ statSaved }}</div><div style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:4px">sin gastar</div></div>
+</div>
+
+<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--l26);padding-bottom:6px;margin-bottom:9px">
+<span style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink)">Restricciones</span>
+<span style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">se guarda solo</span>
+</div>
+<div style="font:13px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:11px">Las tenemos en cuenta cada vez que armamos tu menú.</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px">
+<sc-for list="{{ restrictions }}" as="r" hint-placeholder-count="6">
+<div onClick="{{ r.onPick }}" style="min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 15px;border:1px solid var(--l20);border-radius:999px;font:13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;background-color:{{ r.bg }};color:{{ r.ink }}">{{ r.label }}</div>
+</sc-for>
+</div>
+<sc-if value="{{ showOther }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--l40);padding-bottom:8px;margin-top:12px;animation:scr .3s ease both">
+<input value="{{ otherText }}" onChange="{{ onOther }}" placeholder="Ej: sin frutos secos" style="flex:1;border:0;background:transparent;font:14.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none">
+</div></sc-if>
+
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);border-bottom:1px solid var(--l20);padding-bottom:8px;margin:24px 0 2px">Avisos</div>
+<sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3">
+<div onClick="{{ t.onToggle }}" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--l14);cursor:pointer">
+<div style="flex:1">
+<div style="font:14.5px 'Plus Jakarta Sans',sans-serif">{{ t.label }}</div>
+<div style="font:12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:2px">{{ t.hint }}</div>
+</div>
+<div style="width:42px;height:24px;flex:none;box-sizing:border-box;border-radius:999px;padding:2px;background-color:{{ t.trackBg }};border:1px solid {{ t.trackBorder }};display:flex;justify-content:{{ t.knobPos }}">
+<div style="width:18px;height:18px;border-radius:999px;background-color:{{ t.knobBg }}"></div>
+</div>
+</div>
+</sc-for>
+
+<div onClick="{{ openCountry }}" style="margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;box-sizing:border-box;padding:13px 0;border-top:1px solid var(--l20);cursor:pointer">
+<div><div style="font:600 15px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink)">País de residencia</div>
+<div style="font:12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:2px">Define en qué moneda te cobramos.</div></div>
+<span style="font:600 13.5px 'Plus Jakarta Sans',sans-serif;color:var(--acc);white-space:nowrap">{{ countryCur }} ›</span>
+</div>
+
+<div onClick="{{ onLogout }}" style="margin:24px 0 8px;padding:15px;text-align:center;border:1px solid var(--l20);border-radius:10px;font:600 14px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer">Cerrar sesión</div>
+<div style="text-align:center;font:12px 'Plus Jakarta Sans',sans-serif;color:var(--mut);padding-bottom:6px">Emporio de comida casera</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:25;box-sizing:border-box;background:var(--card);padding:56px 0 26px;display:flex;flex-direction:column;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
+<div style="padding:6px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+<div><div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);margin-bottom:10px">Tu cuenta</div>
+<div style="font:600 30px/1.08 Newsreader,Georgia,serif;letter-spacing:-.015em">Datos personales</div></div>
+<div data-tap onClick="{{ closeLayer }}" style="width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--l40);border-radius:999px;font:14px 'Plus Jakarta Sans',sans-serif;cursor:pointer">✕</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:26px 26px 0">
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);border-bottom:1px solid var(--l20);padding-bottom:8px;margin-bottom:10px">Nombre</div>
+<input value="{{ nameDraft }}" onChange="{{ onNameDraft }}" placeholder="Cómo querés que te llamemos" style="width:100%;box-sizing:border-box;padding:11px 0;border:0;border-bottom:1px solid var(--l40);background:transparent;font:15px 'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none">
+
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);border-bottom:1px solid var(--l20);padding-bottom:8px;margin:26px 0 10px">Email</div>
+<div style="font:15px 'Plus Jakarta Sans',sans-serif;color:var(--mut);padding:6px 0">{{ userEmail }}</div>
+<div style="font:12.5px/1.45 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:4px">Para cambiarlo escribinos: es la llave de tu cuenta.</div>
+
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);border-bottom:1px solid var(--l20);padding-bottom:8px;margin:26px 0 10px">Contraseña</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 0">
+<span style="font:15px 'Plus Jakarta Sans',sans-serif;color:var(--mut);letter-spacing:.06em">••••••••</span>
+<span data-tap style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);cursor:pointer;border-bottom:1px solid var(--l40)">Cambiar</span>
+</div>
+
+<div onClick="{{ onSaveName }}" style="margin-top:30px;padding:16px;text-align:center;background:var(--acc);border-radius:11px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer;transition:opacity .18s ease;opacity:{{ saveOpacity }}">{{ saveLabel }}</div>
+<div style="height:20px"></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPlans }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:28;box-sizing:border-box;background:var(--card);padding:56px 0 26px;display:flex;flex-direction:column;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
+<div style="padding:6px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+<div><div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);margin-bottom:10px">Membresía</div>
+<div style="font:600 30px/1.08 Newsreader,Georgia,serif;letter-spacing:-.015em">Elegí tu plan</div></div>
+<div data-tap onClick="{{ closeLayer }}" style="width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--l40);border-radius:999px;font:14px 'Plus Jakarta Sans',sans-serif;cursor:pointer">✕</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:22px 26px 0">
+<sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+<div onClick="{{ p.onPick }}" style="position:relative;border-radius:14px;border:1px solid {{ p.border }};background-color:{{ p.bg }};padding:15px 16px;margin-bottom:10px;cursor:pointer">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<span style="font:600 18px/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:{{ p.ink }}">{{ p.name }}</span>
+<span style="font:600 17px 'Plus Jakarta Sans',sans-serif;color:{{ p.priceColor }};white-space:nowrap">{{ p.price }}</span>
+</div>
+<div style="font:13px/1.5 'Plus Jakarta Sans',sans-serif;color:{{ p.soft }};margin-top:6px">{{ p.desc }}</div>
+<sc-if value="{{ p.tag }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:10px;display:inline-block;padding:5px 11px;border-radius:999px;background-color:{{ p.tagBg }};color:{{ p.tagInk }};font:600 12px 'Plus Jakarta Sans',sans-serif">{{ p.tag }}</div></sc-if>
+</div>
+</sc-for>
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);border-bottom:1px solid var(--l20);padding-bottom:8px;margin:20px 0 4px">Con Plus tenés</div>
+<sc-for list="{{ perks }}" as="pk" hint-placeholder-count="4">
+<div style="display:flex;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--l14)">
+<span style="font:400 13px Newsreader,Georgia,serif;color:var(--acc);min-width:14px">{{ pk.n }}</span>
+<span style="font:14px/1.5 'Plus Jakarta Sans',sans-serif">{{ pk.text }}</span>
+</div>
+</sc-for>
+<div onClick="{{ openCountry }}" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;box-sizing:border-box;padding:10px 14px;border:1px solid var(--l20);border-radius:11px;cursor:pointer">
+<div><div style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">Cobramos en</div>
+<div style="font:600 14.5px 'Plus Jakarta Sans',sans-serif;color:var(--ink);margin-top:2px">{{ countryName }} · {{ countryCur }}</div></div>
+<span style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);white-space:nowrap">Cambiar</span>
+</div>
+<div style="font:12.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:8px">{{ priceNote }}</div>
+<div style="font:12.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:16px">Se renueva solo. Lo cancelás cuando quieras desde tu perfil.</div>
+<div style="height:16px"></div>
+</div>
+<div style="padding:12px 26px 0;background:var(--card)">
+<div onClick="{{ onConfirmPlan }}" style="display:flex;justify-content:center;padding:17px;background:var(--acc);border-radius:11px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer;transition:opacity .18s ease;opacity:{{ planCtaOpacity }}">{{ planCta }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCountry }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:29;box-sizing:border-box;background:var(--card);padding:56px 0 26px;display:flex;flex-direction:column;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
+<div style="padding:6px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+<div><div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);margin-bottom:10px">Moneda</div>
+<div style="font:600 30px/1.08 Newsreader,Georgia,serif;letter-spacing:-.015em">¿Dónde vivís?</div></div>
+<div data-tap onClick="{{ closeCountry }}" style="width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--l40);border-radius:999px;font:14px 'Plus Jakarta Sans',sans-serif;cursor:pointer">✕</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:20px 26px 0">
+<div style="font:13px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:14px">Los planes están en dólares. Elegí tu país y te mostramos cuánto es en tu moneda.</div>
+<sc-for list="{{ countries }}" as="c" hint-placeholder-count="8">
+<div onClick="{{ c.onPick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;box-sizing:border-box;padding:12px 14px;margin-bottom:8px;border-radius:11px;border:1px solid {{ c.border }};background-color:{{ c.bg }};cursor:pointer">
+<div><div style="font:{{ c.weight }} 15px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:{{ c.ink }}">{{ c.name }}</div>
+<div style="font:12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-top:2px">{{ c.cur }}</div></div>
+<span style="font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">{{ c.mark }}</span>
+</div>
+</sc-for>
+<div style="height:12px"></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ recipe }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:30;box-sizing:border-box;background:var(--card);padding:56px 0 26px;display:flex;flex-direction:column;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
+<div style="padding:6px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+<div><div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc);margin-bottom:10px">{{ recipe.eyebrow }}</div>
+<div style="font:600 30px/1.08 Newsreader,Georgia,serif;letter-spacing:-.015em">{{ recipe.name }}</div></div>
+<div data-tap onClick="{{ onCloseRecipe }}" style="width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--l40);border-radius:999px;font:14px 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="background:var(--l14)">✕</div>
+</div>
+<div style="margin:20px 26px 20px;display:flex;border-top:1px solid var(--l26);border-bottom:1px solid var(--l26)">
+<div style="flex:1;padding:12px 0"><div style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:4px">Porciones</div><div style="font:500 17px 'Plus Jakarta Sans',sans-serif">{{ recipe.servings }}</div></div>
+<div style="width:1px;background:var(--l26)"></div>
+<div style="flex:1;padding:12px 0 12px 16px"><div style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:4px">Tiempo</div><div style="font:500 17px 'Plus Jakarta Sans',sans-serif">{{ recipe.time }}</div></div>
+<div style="width:1px;background:var(--l26)"></div>
+<div style="flex:1;padding:12px 0 12px 16px"><div style="font:500 12.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:4px">Dificultad</div><div style="font:500 17px 'Plus Jakarta Sans',sans-serif">{{ recipe.difficulty }}</div></div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:0 26px">
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);margin-bottom:8px">Ingredientes</div>
+<div style="margin-bottom:20px">
+<sc-for list="{{ recipe.ingredients }}" as="ri" hint-placeholder-count="6">
+<div style="display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid var(--l14)">
+<span style="font:14.5px 'Plus Jakarta Sans',sans-serif">{{ ri.name }}</span>
+<div style="flex:1;border-bottom:1px dotted var(--mut40)"></div>
+<span style="font:500 13.5px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">{{ ri.qty }}</span>
+</div>
+</sc-for>
+</div>
+<div style="font:600 16px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;color:var(--ink);margin-bottom:12px">Preparación</div>
+<sc-for list="{{ recipe.steps }}" as="st" hint-placeholder-count="4">
+<div style="display:flex;gap:14px;padding-bottom:14px">
+<span style="font:600 20px/1 'Plus Jakarta Sans',sans-serif;color:var(--acc);min-width:22px">{{ st.n }}</span>
+<span style="font:14.5px/1.6 'Plus Jakarta Sans',sans-serif">{{ st.text }}</span>
+</div>
+</sc-for>
+<div style="height:6px"></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;bottom:0;left:0;right:0;height:60px;z-index:20;display:flex;background:var(--card);border-top:1px solid var(--l26)">
+<sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="2">
+<div onClick="{{ tb.onGo }}" style="flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font:{{ tb.weight }} 14px 'Plus Jakarta Sans',sans-serif;color:{{ tb.color }};transition:color .2s ease">{{ tb.label }}</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;oscuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Identidad&quot;},&quot;membresia&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;prueba&quot;,&quot;activa&quot;],&quot;default&quot;:&quot;prueba&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Perfil&quot;},&quot;comidas&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:5,&quot;min&quot;:5,&quot;max&quot;:7,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Menú&quot;}}">
+// Espejo en JS de los tokens del helmet. Los valores que viajan por {{ huecos }} deben ser
+// colores literales: var() no es interpolable y congela cualquier transición.
+const LIGHT = {'--bg':'#F4EEE6','--card':'#FFFBF5','--ink':'#211C18','--mut':'#6B5D52','--acc':'#A9552C','--onAcc':'#FBF3EC','--l14':'rgba(169,85,44,.14)','--l20':'rgba(169,85,44,.20)','--l40':'rgba(169,85,44,.40)','--mut60':'rgba(107,93,82,.60)'};
+const DARK  = {'--bg':'#1B1816','--card':'#241F1C','--ink':'#F1E8DE','--mut':'#ABA096','--acc':'#D9834A','--onAcc':'#1B1816','--l14':'rgba(217,131,74,.14)','--l20':'rgba(217,131,74,.20)','--l40':'rgba(217,131,74,.40)','--mut60':'rgba(171,160,150,.60)'};
+
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+const CAT = {'limón':'VERDULERÍA','cebolla':'VERDULERÍA','ajo':'VERDULERÍA','cebolla de verdeo':'VERDULERÍA','papas':'VERDULERÍA','morrón':'VERDULERÍA','zanahoria':'VERDULERÍA','zapallito':'VERDULERÍA','albahaca':'VERDULERÍA','aceite de oliva':'ALMACÉN','orégano':'ALMACÉN','salsa de soja':'ALMACÉN','pan rallado':'ALMACÉN','mayonesa':'ALMACÉN','choclo':'ALMACÉN','caldo de verdura':'ALMACÉN','curry':'ALMACÉN','leche':'ALMACÉN','manteca':'ALMACÉN','pechuga de pollo':'CARNICERÍA','carne picada':'CARNICERÍA','panceta':'CARNICERÍA'};
+const CAT_ORDER = ['VERDULERÍA','ALMACÉN','CARNICERÍA'];
+
+const BASE = [
+  {name:'Pollo al horno con ensalada mixta', desc:'Pollo dorado al horno con ensalada fresca de lechuga, tomate y queso.', missing:['aceite de oliva','limón'], servings:'2', time:'45 min', difficulty:'Fácil',
+   ing:[['Muslos de pollo','2 u.'],['Aceite de oliva','2 cdas'],['Limón','1 u.'],['Lechuga','4 hojas'],['Tomate grande','1 u.'],['Queso en cubos','60 g']],
+   steps:['Precalentá el horno a 200 °C y forrá una asadera.','Salpimentá el pollo, rociá con aceite y el jugo de medio limón.','Horneá 35 a 40 minutos hasta que la piel quede bien dorada.','Mezclá la lechuga, el tomate y el queso; aliñá recién al servir.']},
+  {name:'Fideos con pollo y salsa de tomate', desc:'Pasta rendidora con salsa casera, pollo salteado y queso derretido.', missing:['cebolla','ajo','orégano'], servings:'2', time:'30 min', difficulty:'Fácil',
+   ing:[['Fideos secos','250 g'],['Tomate','3 u.'],['Cebolla','1 u.'],['Ajo','2 dientes'],['Pollo','200 g'],['Orégano','1 cdita'],['Queso rallado','40 g']],
+   steps:['Picá la cebolla y el ajo; rehogá a fuego bajo 6 minutos.','Sumá el tomate en cubos y el orégano; cociná 15 minutos tapado.','Aparte, salteá el pollo en tiras hasta que dore y sumalo a la salsa.','Herví los fideos al dente, mezclá con la salsa y terminá con queso.']},
+  {name:'Arroz chaufa con huevo', desc:'Arroz salteado a la sartén con huevo revuelto y vegetales picados.', missing:['salsa de soja','cebolla de verdeo'], servings:'2', time:'25 min', difficulty:'Fácil',
+   ing:[['Arroz cocido frío','3 tazas'],['Huevos','3 u.'],['Cebolla de verdeo','3 tallos'],['Salsa de soja','3 cdas'],['Pollo','150 g'],['Aceite','2 cdas']],
+   steps:['Usá arroz del día anterior: seco saltea mucho mejor.','Revolvé los huevos en la sartén bien caliente y reservá.','Salteá el pollo en cubos, sumá el arroz y la salsa de soja.','Devolvé el huevo, sumá la verdeo picada y servís al toque.']},
+  {name:'Milanesas de pollo con puré', desc:'Milanesas finas al horno con puré de papa cremoso, clásico de casa.', missing:['pechuga de pollo','pan rallado','papas'], servings:'2', time:'50 min', difficulty:'Media',
+   ing:[['Pechuga de pollo','2 u.'],['Huevos','2 u.'],['Pan rallado','200 g'],['Papas','4 u.'],['Leche','100 ml'],['Manteca','20 g']],
+   steps:['Abrí las pechugas al medio y aplastalas para que queden finas.','Pasá por huevo batido con sal y después por pan rallado, dos veces.','Horneá a 220 °C, 12 minutos de cada lado, sobre rejilla.','Herví las papas, pisalas con leche caliente y manteca; salpimentá.']},
+  {name:'Ensalada tibia de arroz y huevo', desc:'Arroz con huevo duro, queso y mayonesa: rinde y se lleva al trabajo.', missing:['mayonesa','choclo'], servings:'2', time:'20 min', difficulty:'Fácil',
+   ing:[['Arroz','1 taza'],['Huevos','3 u.'],['Choclo','1 lata'],['Mayonesa','3 cdas'],['Queso','80 g'],['Tomate','1 u.']],
+   steps:['Herví el arroz y enfrialo bajo agua fría para cortar la cocción.','Cociná los huevos 10 minutos desde el hervor y pelalos.','Cortá el queso y el tomate en cubos chicos.','Mezclá todo con la mayonesa y un poco de sal; mejor apenas tibia.']}
+];
+
+const ALT = [
+  {name:'Tortilla de papa y cebolla', desc:'Gruesa, jugosa por dentro, se come igual de rica fría al otro día.', missing:['papas','cebolla'], servings:'2', time:'35 min', difficulty:'Media',
+   ing:[['Papas','3 u.'],['Cebolla','1 u.'],['Huevos','5 u.'],['Aceite','4 cdas']],
+   steps:['Cortá las papas en láminas finas y la cebolla en pluma.','Cocinalas en aceite a fuego bajo 15 minutos, sin dorar.','Batí los huevos con sal y mezclá con la papa colada.','Cuajá en sartén chica 4 minutos por lado; que quede jugosa al medio.']},
+  {name:'Guiso de arroz con pollo', desc:'Olla única para el día de frío, con caldo y verduras que rinden.', missing:['zanahoria','caldo de verdura','morrón'], servings:'3', time:'45 min', difficulty:'Fácil',
+   ing:[['Arroz','1 taza'],['Pollo','300 g'],['Zanahoria','1 u.'],['Morrón','1 u.'],['Caldo de verdura','1 l'],['Cebolla','1 u.']],
+   steps:['Sellá el pollo en trozos y reservá en el mismo fondo de la olla.','Rehogá cebolla, zanahoria y morrón hasta que se ablanden.','Sumá el arroz, tostalo un minuto y cubrí con el caldo caliente.','Cociná 18 minutos, devolvé el pollo y dejá reposar tapado.']},
+  {name:'Fideos con crema de queso', desc:'Salsa de tres ingredientes lista en lo que tardan los fideos.', missing:['leche','manteca'], servings:'2', time:'20 min', difficulty:'Fácil',
+   ing:[['Fideos','250 g'],['Queso','120 g'],['Leche','200 ml'],['Manteca','20 g'],['Nuez moscada','1 pizca']],
+   steps:['Poné a hervir el agua con bastante sal.','Derretí la manteca, sumá la leche y el queso en cubos a fuego bajo.','Revolvé hasta que la salsa se una; ajustá con agua de la pasta.','Mezclá con los fideos al dente y serví enseguida.']},
+  {name:'Omelette de queso y tomate', desc:'Cena de diez minutos cuando no queda nada de energía.', missing:['albahaca'], servings:'1', time:'10 min', difficulty:'Fácil',
+   ing:[['Huevos','3 u.'],['Queso','50 g'],['Tomate','1 u.'],['Albahaca','4 hojas'],['Manteca','10 g']],
+   steps:['Batí los huevos con sal, sin excederte: 20 segundos alcanza.','Volcá en sartén con manteca caliente y bajá el fuego.','Cuando cuaje el borde, sumá queso, tomate y albahaca en una mitad.','Plegá, dejá 30 segundos más y pasá al plato.']}
+];
+
+// TRIAL_DAYS del backend (entitlements.ts) — 30 por defecto.
+const TRIAL_DAYS = 30;
+
+// Los precios se definen UNA vez en dólares; cada país es una conversión de esa base.
+const PLANS = [
+  {id:'free', name:'Gratis', usd:0, desc:'Un menú por mes y anuncios para regenerar una comida.'},
+  {id:'mensual', name:'Plus mensual', usd:4.99, desc:'Menús ilimitados, sin anuncios. Se renueva cada mes.'},
+  {id:'anual', name:'Plus anual', usd:44.90, desc:'Lo mismo que el mensual, pagando diez meses en vez de doce.', tag:'Dos meses de regalo'}
+];
+
+// rate = cuántas unidades locales por dólar. dec = decimales a mostrar.
+const COUNTRIES = [
+  {code:'US', name:'Estados Unidos', cur:'USD', sym:'US$', rate:1,     dec:2},
+  {code:'AR', name:'Argentina',      cur:'ARS', sym:'$',   rate:1310,  dec:0},
+  {code:'UY', name:'Uruguay',        cur:'UYU', sym:'$U',  rate:40,    dec:0},
+  {code:'CL', name:'Chile',          cur:'CLP', sym:'$',   rate:945,   dec:0},
+  {code:'MX', name:'México',         cur:'MXN', sym:'$',   rate:18.6,  dec:0},
+  {code:'CO', name:'Colombia',       cur:'COP', sym:'$',   rate:4050,  dec:0},
+  {code:'PE', name:'Perú',           cur:'PEN', sym:'S/',  rate:3.6,   dec:2},
+  {code:'ES', name:'España',         cur:'EUR', sym:'€',   rate:0.92,  dec:2}
+];
+
+const PERKS = [
+  'Menús ilimitados: rehacé la semana las veces que quieras.',
+  'Regenerar una comida es directo, sin ver un anuncio.',
+  'Guardás tus recetas favoritas y volvés a pedirlas.',
+  'Lista de compras con historial de las últimas semanas.'
+];
+
+class Component extends DCLogic {
+  state = {
+    screen:'auth', backTo:'ing', dark:false, signup:false, email:'', pass:'', authError:'',
+    photo:'none', manualOpen:false, manualText:'',
+    chips:[], draft:'', restriction:'Ninguna', otherText:'',
+    generating:false, genError:'',
+    meals:[], altPool:0, recipeIdx:null, bought:[],
+    // Perfil
+    userName:'Rocío Gaite', nameDraft:'Rocío Gaite', nameSaved:false,
+    plan:'trial', trialLeft:9, pickedPlan:'mensual',
+    country:'US', countryFrom:'plans',
+    notifs:{lista:true, receta:true, semana:false},
+    weeksPlanned:12, mealsCooked:47
+  };
+
+  componentDidMount(){
+    if(this.props.modo === 'oscuro' && !this.state.dark) this.setState({dark:true});
+    if(this.props.membresia === 'activa') this.setState({plan:'plus'});
+    document.body.removeAttribute('style');
+  }
+
+  set(patch){ this.setState(patch); }
+
+  buildMeals(){
+    const n = Math.max(5, Math.min(7, this.props.comidas || 5));
+    return BASE.concat(ALT).slice(0, n).map((m,i) => Object.assign({}, m, {day:DAYS[i], on:true, regen:0}));
+  }
+
+  onAuth = () => {
+    const {email, pass} = this.state;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return this.set({authError:'Ese email no parece válido. Revisalo.'});
+    if(pass.length < 6) return this.set({authError:'La contraseña necesita al menos 6 caracteres.'});
+    this.set({authError:'', screen:'ing'});
+  };
+
+  runPhoto(kind){
+    this.set({photo:'loading', manualOpen:false, genError:''});
+    clearTimeout(this._pt);
+    this._pt = setTimeout(() => {
+      if(kind === 'gallery') this.set({photo:'empty'});
+      else this.set({photo:'ok', chips:['tomate','fideos','queso','pollo','arroz','huevos','lechuga']});
+    }, 1700);
+  }
+
+  addChips(raw){
+    const parts = String(raw).split(/[,\n]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+    if(!parts.length) return false;
+    const next = this.state.chips.slice();
+    parts.forEach(p => { if(!next.includes(p)) next.push(p); });
+    this.set({chips:next, genError:''});
+    return true;
+  }
+
+  onGenerate = () => {
+    if(this.state.generating) return;
+    if(!this.state.chips.length) return this.set({genError:'Necesitamos al menos un ingrediente para armarte la semana.'});
+    this.set({generating:true, genError:''});
+    clearTimeout(this._gt);
+    this._gt = setTimeout(() => {
+      this.set({generating:false, screen:'menu', meals:this.buildMeals(), bought:[]});
+    }, 1500);
+  };
+
+  regen(i){
+    const meals = this.state.meals.slice();
+    const used = meals.map(m => m.name);
+    const pool = BASE.concat(ALT).filter(m => !used.includes(m.name));
+    if(!pool.length) return;
+    const pick = pool[this.state.altPool % pool.length];
+    meals[i] = Object.assign({}, pick, {day:meals[i].day, on:meals[i].on, regen:(meals[i].regen||0)+1});
+    this.set({meals, altPool:this.state.altPool + 1, bought:[]});
+  }
+
+  shopItems(){
+    const out = [];
+    this.state.meals.forEach(m => { if(m.on) m.missing.forEach(x => { if(!out.includes(x)) out.push(x); }); });
+    return out;
+  }
+
+  initials(){
+    return this.state.userName.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '·';
+  }
+
+  country(){ return COUNTRIES.find(c => c.code === this.state.country) || COUNTRIES[0]; }
+
+  money(usd){
+    const c = this.country();
+    if(!usd) return c.sym + ' 0';
+    const v = usd * c.rate;
+    const s = v.toLocaleString('es-AR', {minimumFractionDigits:c.dec, maximumFractionDigits:c.dec});
+    return c.sym + ' ' + s;
+  }
+
+  // Variante compacta para las tarjetas de estadística: sin decimales y con miles abreviados.
+  // El formato de precios no sirve acá — la celda mide 84px y "US$ 105.300,00" no entra.
+  moneyShort(usd){
+    const c = this.country();
+    const v = Math.round(usd * c.rate);
+    if(v >= 10000) return c.sym + ' ' + Math.round(v / 1000) + 'k';
+    return c.sym + ' ' + v.toLocaleString('es-AR');
+  }
+
+  renewalDate(){
+    const anual = this.state.pickedPlan === 'anual';
+    const d = new Date(2026, 7, 2);
+    d.setMonth(d.getMonth() + (anual ? 12 : 1));
+    const MES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return d.getDate() + ' de ' + MES[d.getMonth()] + (anual ? ' de ' + d.getFullYear() : '');
+  }
+
+  renderVals(){
+    const s = this.state;
+    const P = s.dark ? DARK : LIGHT;
+    const acc = P['--acc'], ink = P['--ink'], mut = P['--mut'], card = P['--card'], onAcc = P['--onAcc'];
+    const L14 = P['--l14'], L20 = P['--l20'], L40 = P['--l40'], MUT60 = P['--mut60'];
+    const items = this.shopItems();
+    const grouped = CAT_ORDER.map(name => {
+      const list = items.filter(x => (CAT[x] || 'ALMACÉN') === name);
+      return {name, count:list.length, items:list};
+    }).filter(g => g.count);
+
+    const recipe = s.recipeIdx === null ? null : (() => {
+      const m = s.meals[s.recipeIdx];
+      if(!m) return null;
+      return {eyebrow:'Receta · ' + m.day, name:m.name, servings:m.servings, time:m.time, difficulty:m.difficulty,
+        ingredients:m.ing.map(([name,qty]) => ({name, qty})),
+        steps:m.steps.map((text,i) => ({n:i+1, text}))};
+    })();
+
+    const onCount = s.meals.filter(m => m.on).length;
+    const doneCount = s.bought.filter(b => items.includes(b)).length;
+    const isPlus = s.plan === 'plus';
+    const tab = (s.screen === 'ing' || s.screen === 'menu') ? 'semana' : s.screen === 'shop' ? 'compras' : 'perfil';
+    const restrictionList = ['Ninguna','Vegetariano','Vegano','Sin gluten','Sin lactosa','Otros'];
+
+    const tabDefs = [
+      {id:'semana', label:'Semana', go:() => this.set({screen:s.meals.length ? 'menu' : 'ing'})},
+      {id:'compras', label:'Compras', go:() => this.set({screen:'shop'})}
+    ];
+
+    return {
+      themeAttr:s.dark ? 'dark' : 'light',
+      isAuth:s.screen === 'auth', isIng:s.screen === 'ing', isMenu:s.screen === 'menu',
+      isShop:s.screen === 'shop', isProfile:s.screen === 'profile',
+      isAccount:s.screen === 'account', isPlans:s.screen === 'plans',
+      isCountry:s.screen === 'country',
+      showTabs:s.screen === 'ing' || s.screen === 'menu' || s.screen === 'shop',
+      themeLabel:s.dark ? 'Modo claro' : 'Modo oscuro',
+      onToggleTheme:() => this.set({dark:!s.dark}),
+
+      tabs:tabDefs.map(t => ({
+        label:t.label,
+        color:tab === t.id ? acc : mut,
+        weight:tab === t.id ? 600 : 500,
+        onGo:t.go
+      })),
+
+      email:s.email, pass:s.pass, authError:s.authError,
+      onEmail:e => this.set({email:e.target.value, authError:''}),
+      onPass:e => this.set({pass:e.target.value, authError:''}),
+      onAuthKey:e => { if(e.key === 'Enter') this.onAuth(); },
+      onAuth:this.onAuth,
+      authCta:s.signup ? 'Crear cuenta' : 'Iniciar sesión',
+      authBlurb:s.signup ? 'Creá tu cuenta y en dos minutos tenés la semana resuelta con lo que ya hay en casa.' : 'Sacale una foto a la heladera y te armamos la semana con lo que ya tenés.',
+      authSwitchText:s.signup ? '¿Ya tenés cuenta?' : '¿No tenés cuenta?',
+      authSwitchCta:s.signup ? 'Iniciá sesión' : 'Creá una',
+      authOpacity:(s.email && s.pass) ? '1' : '.55',
+      onSwitchMode:() => this.set({signup:!s.signup, authError:''}),
+      onLogout:() => this.set({screen:'auth', pass:'', chips:[], photo:'none', meals:[], bought:[], recipeIdx:null}),
+
+      planChip:isPlus ? 'PLUS' : (s.trialLeft === 1 ? 'ÚLTIMO DÍA' : s.trialLeft + ' DÍAS DE PRUEBA'),
+
+      photoLoading:s.photo === 'loading', photoOk:s.photo === 'ok', photoEmpty:s.photo === 'empty',
+      detectedLabel:s.chips.length + ' detectados',
+      onCamera:() => this.runPhoto('camera'),
+      onGallery:() => this.runPhoto('gallery'),
+      onManual:() => this.set({manualOpen:!s.manualOpen, photo:s.photo === 'empty' ? 'none' : s.photo}),
+      camBg:(s.photo === 'ok' || s.photo === 'loading') ? acc : card,
+      camInk:(s.photo === 'ok' || s.photo === 'loading') ? onAcc : ink,
+      galBg:s.photo === 'empty' ? acc : card,
+      galInk:s.photo === 'empty' ? onAcc : ink,
+      manBg:s.manualOpen ? acc : card,
+      manInk:s.manualOpen ? onAcc : ink,
+      manualOpen:s.manualOpen, manualText:s.manualText,
+      onManualText:e => this.set({manualText:e.target.value}),
+      onManualAdd:() => { if(this.addChips(s.manualText)) this.set({manualText:'', manualOpen:false}); },
+
+      chips:s.chips.map(name => ({name, onDelete:() => this.set({chips:s.chips.filter(c => c !== name)})})),
+      chipCount:String(s.chips.length),
+      noChips:s.chips.length === 0,
+      draft:s.draft,
+      onDraft:e => this.set({draft:e.target.value}),
+      onDraftKey:e => { if(e.key === 'Enter' && this.addChips(s.draft)) this.set({draft:''}); },
+      onAddChip:() => { if(this.addChips(s.draft)) this.set({draft:''}); },
+
+      restrictions:restrictionList.map(label => ({
+        label, bg:s.restriction === label ? acc : 'transparent', ink:s.restriction === label ? onAcc : ink,
+        onPick:() => this.set({restriction:label})
+      })),
+      showOther:s.restriction === 'Otros', otherText:s.otherText,
+      onOther:e => this.set({otherText:e.target.value}),
+
+      generating:s.generating,
+      genLabel:s.generating ? 'Armando tu semana…' : 'Generar menú semanal',
+      genOpacity:s.chips.length ? '1' : '.55',
+      genError:s.genError,
+      onGenerate:this.onGenerate,
+
+      meals:s.meals.map((m,i) => ({
+        day:m.day, name:m.name, desc:m.desc,
+        missingList:m.missing.filter(x => !s.bought.includes(x)).map(name => ({name})),
+        hasPending:m.missing.some(x => !s.bought.includes(x)),
+        ready:m.on && m.missing.length > 0 && m.missing.every(x => s.bought.includes(x)),
+        cardBg:m.on ? card : 'transparent',
+        borderStyle:m.on ? 'solid' : 'dashed',
+        borderColor:m.on ? L20 : L40,
+        opacity:m.on ? '1' : '.6',
+        tickBg:m.on ? acc : 'transparent',
+        tickBorder:m.on ? acc : MUT60,
+        tickMark:m.on ? '✓' : '',
+        nameColor:m.on ? ink : mut,
+        nameDeco:m.on ? 'none' : 'line-through',
+        regenLabel:m.regen ? 'Otra más' : 'Otra',
+        onToggle:() => { const n = s.meals.slice(); n[i] = Object.assign({}, n[i], {on:!n[i].on}); this.set({meals:n}); },
+        onRegen:() => this.regen(i),
+        onRecipe:() => this.set({recipeIdx:i})
+      })),
+      menuSub:onCount + ' de ' + s.meals.length + ' elegidas · destildá lo que no querés',
+      menuCount:onCount + ' de ' + s.meals.length,
+      shopMeta:items.length + (items.length === 1 ? ' ítem' : ' ítems'),
+      shopOpacity:items.length ? '1' : '.55',
+      goShop:() => { if(items.length) this.set({screen:'shop'}); },
+      goIng:() => this.set({screen:'ing'}),
+      goMenu:() => this.set({screen:s.meals.length ? 'menu' : 'ing'}),
+      // El paso 2 solo se ofrece cuando ya hay un menú al que volver.
+      step2Opacity:s.meals.length ? '1' : '.4',
+      // Entrar al perfil desde una pantalla con pestañas: recuerda de dónde vino.
+      goProfile:() => this.set({screen:'profile', backTo:s.screen}),
+      // Cerrar una capa (Datos personales, Planes): vuelve al perfil sin tocar backTo.
+      closeLayer:() => this.set({screen:'profile'}),
+      goBackFromProfile:() => this.set({screen:s.backTo || (s.meals.length ? 'menu' : 'ing')}),
+      goAccount:() => this.set({screen:'account', nameDraft:s.userName, nameSaved:false}),
+      goPlans:() => this.set({screen:'plans'}),
+
+      // ---- País y moneda ----
+      countryName:this.country().name,
+      countryCur:this.country().cur,
+      isUSD:this.country().code === 'US',
+      priceNote:this.country().code === 'US'
+        ? 'Precios en dólares estadounidenses.'
+        : 'Convertido desde dólares al cambio de hoy. Se cobra en ' + this.country().cur + '.',
+      openCountry:() => this.set({screen:'country', countryFrom:s.screen}),
+      closeCountry:() => this.set({screen:s.countryFrom === 'profile' ? 'profile' : 'plans'}),
+      countries:COUNTRIES.map(c => {
+        const on = c.code === s.country;
+        return {name:c.name, cur:c.cur + ' · ' + c.sym,
+          bg:on ? L14 : 'transparent', border:on ? acc : 'transparent',
+          ink:on ? acc : ink, weight:on ? '600' : '500', mark:on ? '✓' : '',
+          onPick:() => this.set({country:c.code, screen:s.countryFrom === 'profile' ? 'profile' : 'plans'})};
+      }),
+      onNewWeek:() => this.set({screen:'ing', photo:'none', chips:[], meals:[], bought:[], manualOpen:false}),
+
+      cats:grouped.map(g => ({
+        name:g.name.charAt(0) + g.name.slice(1).toLowerCase(), count:String(g.count),
+        items:g.items.map(name => {
+          const done = s.bought.includes(name);
+          return {name, tickBg:done ? acc : 'transparent', tickBorder:done ? acc : MUT60, tickMark:done ? '✓' : '',
+            color:done ? mut : ink, deco:done ? 'line-through' : 'none',
+            onToggle:() => this.set({bought:done ? s.bought.filter(b => b !== name) : s.bought.concat([name])})};
+        })
+      })),
+      shopProgress:items.length ? doneCount + ' de ' + items.length : '—',
+      shopPct:(items.length ? Math.round(doneCount / items.length * 100) : 0) + '%',
+      shopSub:items.length ? 'Tocá cada uno cuando lo tengas' : 'Sin comidas elegidas todavía',
+      shopEmpty:items.length === 0,
+      allDone:items.length > 0 && doneCount === items.length,
+      // Con todo comprado, volver al menú deja de ser una salida y pasa a ser el próximo paso.
+      backBg:(items.length > 0 && doneCount === items.length) ? acc : 'transparent',
+      backInk:(items.length > 0 && doneCount === items.length) ? onAcc : ink,
+      backBorder:(items.length > 0 && doneCount === items.length) ? acc : L20,
+
+      // ---- Perfil ----
+      initials:this.initials(),
+      firstName:s.userName.trim().split(/\s+/)[0],
+      userName:s.userName,
+      userEmail:s.email || 'rocio@correo.com',
+      isTrial:!isPlus, isPlus,
+      memBg:isPlus ? acc : card,
+      memBorder:isPlus ? acc : L20,
+      memInk:isPlus ? onAcc : ink,
+      memSoft:isPlus ? onAcc : mut,
+      memRule:isPlus ? 'rgba(255,255,255,.28)' : L20,
+      memBadge:isPlus ? (s.pickedPlan === 'anual' ? 'Plus anual' : 'Plus mensual') : 'Prueba',
+      memBadgeBg:isPlus ? onAcc : L14,
+      memBadgeInk:isPlus ? acc : ink,
+      memTitle:isPlus ? 'Semanita Plus' : (s.trialLeft === 1 ? 'Último día de prueba' : 'Te quedan ' + s.trialLeft + ' días'),
+      memBody:isPlus
+        ? 'Menús ilimitados y sin anuncios. Se renueva el ' + this.renewalDate() + '.'
+        : 'Después de la prueba vas a necesitar una suscripción para seguir armando la semana.',
+      memTrack:L20,
+      memBar:acc,
+      trialPct:Math.round((TRIAL_DAYS - s.trialLeft) / TRIAL_DAYS * 100) + '%',
+      trialDayLabel:'Día ' + (TRIAL_DAYS - s.trialLeft) + ' de ' + TRIAL_DAYS,
+      trialEnds:'termina el 11 de agosto',
+      memCta:isPlus ? 'Cambiar de plan' : 'Ver los planes',
+      memCtaBg:isPlus ? onAcc : acc,
+      memCtaInk:isPlus ? acc : onAcc,
+      onCancel:() => this.set({plan:'trial', trialLeft:9}),
+
+      statWeeks:String(s.weeksPlanned),
+      statMeals:String(s.mealsCooked),
+      // Estimación de ahorro: base en USD como los planes, para que siga al país elegido.
+      statSaved:this.moneyShort(26),
+
+      toggles:[
+        {key:'lista', label:'Recordarme la lista', hint:'El sábado a la mañana, antes de salir a comprar.'},
+        {key:'receta', label:'Aviso de la comida del día', hint:'A las 18, con la receta de esa noche.'},
+        {key:'semana', label:'Novedades de Semanita', hint:'Recetas nuevas y cambios. Como mucho, una vez por mes.'}
+      ].map(t => {
+        const on = s.notifs[t.key];
+        return {label:t.label, hint:t.hint,
+          trackBg:on ? acc : 'transparent',
+          trackBorder:on ? acc : MUT60,
+          knobBg:on ? onAcc : MUT60,
+          knobPos:on ? 'flex-end' : 'flex-start',
+          onToggle:() => this.set({notifs:Object.assign({}, s.notifs, {[t.key]:!on})})};
+      }),
+
+      // ---- Cuenta ----
+      nameDraft:s.nameDraft,
+      onNameDraft:e => this.set({nameDraft:e.target.value, nameSaved:false}),
+      saveLabel:s.nameSaved ? 'Guardado' : 'Guardar cambios',
+      saveOpacity:(s.nameDraft.trim() && s.nameDraft.trim() !== s.userName) ? '1' : '.55',
+      onSaveName:() => {
+        const n = s.nameDraft.trim();
+        if(!n || n === s.userName) return;
+        this.set({userName:n, nameSaved:true});
+      },
+
+      // ---- Planes ----
+      plans:PLANS.map(p => {
+        const on = s.pickedPlan === p.id;
+        return {name:p.name, price:this.money(p.usd), desc:p.desc, tag:p.tag || '',
+          bg:on ? L14 : 'transparent',
+          border:on ? acc : L20,
+          ink:ink, soft:mut, priceColor:on ? acc : mut,
+          tagBg:acc, tagInk:onAcc,
+          onPick:() => this.set({pickedPlan:p.id})};
+      }),
+      perks:PERKS.map((text,i) => ({n:i+1, text})),
+      planCta:s.pickedPlan === 'free' ? 'Seguir con el plan gratis' : (s.pickedPlan === 'anual' ? 'Suscribirme por año' : 'Suscribirme por mes'),
+      planCtaOpacity:'1',
+      onConfirmPlan:() => this.set({screen:'profile', plan:s.pickedPlan === 'free' ? 'trial' : 'plus'}),
+
+      recipe, onCloseRecipe:() => this.set({recipeIdx:null})
+    };
+  }
+}
+
+</script>
+</body>
+</html>

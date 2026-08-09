@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { PrimaryButton } from './Buttons';
+import { ScreenEntrance, Shake } from './Motion';
 import { fonts, Mode, Theme } from '../theme';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,7 +54,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
   }
 
   return (
-    <View style={styles.root}>
+    <ScreenEntrance style={styles.root} duration={400}>
       <View style={styles.header}>
         <Text style={styles.brand}>SEMANITA</Text>
         <Pressable onPress={toggleMode} hitSlop={10}>
@@ -113,7 +114,11 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
           </View>
         </View>
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && (
+          <Shake trigger={error}>
+            <Text style={styles.error}>{error}</Text>
+          </Shake>
+        )}
         {info && <Text style={styles.info}>{info}</Text>}
 
         <View style={styles.ctaWrap}>
@@ -142,7 +147,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
 
         <Text style={styles.footer}>EMPORIO DE COMIDA CASERA</Text>
       </ScrollView>
-    </View>
+    </ScreenEntrance>
   );
 }
 

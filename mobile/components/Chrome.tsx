@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { fonts, Mode, Theme } from '../theme';
 
 export type Step = 1 | 2 | 3;
@@ -109,7 +110,17 @@ type CtaBarProps = {
 
 export function CtaBar({ theme, children }: CtaBarProps) {
   const styles = getStyles(theme);
-  return <View style={styles.ctaBar}>{children}</View>;
+  return (
+    // Degradado en vez de fondo sólido: el contenido pasa por debajo del CTA
+    // desvaneciéndose, en lugar de cortarse contra un borde duro.
+    <LinearGradient
+      colors={[`${theme.bg}00`, theme.bg, theme.bg]}
+      locations={[0, 0.38, 1]}
+      style={styles.ctaBar}
+    >
+      {children}
+    </LinearGradient>
+  );
 }
 
 /** Etiqueta de sección: mayúsculas, tracking abierto, con línea inferior opcional. */
@@ -230,10 +241,13 @@ function getStyles(theme: Theme) {
       fontFamily: fonts.bodySemi,
     },
     ctaBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
       paddingTop: 14,
       paddingHorizontal: 26,
       paddingBottom: 26,
-      backgroundColor: theme.bg,
     },
     eyebrowRow: {
       flexDirection: 'row',

@@ -3,6 +3,7 @@ import { PrimaryButton } from '../components/Buttons';
 import Checkbox from '../components/Checkbox';
 import { CtaBar, Header, StepIndicator, Step } from '../components/Chrome';
 import { CheckMark } from '../components/Glyphs';
+import { ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
 
@@ -48,7 +49,7 @@ export default function MenuScreen(props: Props) {
   const styles = getStyles(theme);
 
   return (
-    <View style={styles.root}>
+    <ScreenEntrance style={styles.root}>
       <View style={styles.top}>
         <Header
           theme={theme}
@@ -75,7 +76,11 @@ export default function MenuScreen(props: Props) {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollBody}>
-        {props.error && <Text style={styles.error}>{props.error}</Text>}
+        {props.error && (
+          <Shake trigger={props.error}>
+            <Text style={styles.error}>{props.error}</Text>
+          </Shake>
+        )}
 
         {meals.map((meal, i) => {
           const on = selected.has(i);
@@ -163,7 +168,7 @@ export default function MenuScreen(props: Props) {
           theme={theme}
         />
       </CtaBar>
-    </View>
+    </ScreenEntrance>
   );
 }
 
@@ -172,7 +177,7 @@ function getStyles(theme: Theme) {
     root: { flex: 1, backgroundColor: theme.bg, paddingTop: 52 },
     top: { paddingHorizontal: 26 },
     scroll: { flex: 1 },
-    scrollBody: { paddingHorizontal: 26, paddingBottom: 14 },
+    scrollBody: { paddingHorizontal: 26, paddingBottom: 104 },
     titleRow: {
       flexDirection: 'row',
       alignItems: 'flex-end',

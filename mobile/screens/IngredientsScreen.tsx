@@ -10,6 +10,7 @@ import {
 import { AccentChipButton, PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
 import { CrossMark } from '../components/Glyphs';
+import { HatchPattern, PopIn, ScreenEntrance, Shake } from '../components/Motion';
 import { fonts, radii, Mode, Theme } from '../theme';
 
 export type PhotoState = 'none' | 'loading' | 'ok' | 'empty';
@@ -72,7 +73,7 @@ export default function IngredientsScreen(props: Props) {
   ];
 
   return (
-    <View style={styles.root}>
+    <ScreenEntrance style={styles.root}>
       <View style={styles.top}>
         <Header
           theme={theme}
@@ -114,6 +115,7 @@ export default function IngredientsScreen(props: Props) {
 
         {props.photoState === 'loading' && (
           <View style={[styles.photoBox, styles.photoCentered]}>
+            <HatchPattern ph1={theme.ph1} ph2={theme.ph2} />
             <ActivityIndicator size="small" color={theme.accent} />
             <Text style={styles.photoLoadingText}>Analizando la foto…</Text>
           </View>
@@ -121,6 +123,7 @@ export default function IngredientsScreen(props: Props) {
 
         {props.photoState === 'ok' && (
           <View style={[styles.photoBox, styles.photoOk]}>
+            <HatchPattern ph1={theme.ph1} ph2={theme.ph2} />
             <Text style={styles.photoCaption}>foto tomada · heladera</Text>
             <View style={styles.detectedBadge}>
               <Text style={styles.detectedText}>{props.detectedCount} DETECTADOS</Text>
@@ -178,14 +181,12 @@ export default function IngredientsScreen(props: Props) {
         ) : (
           <View style={styles.chips}>
             {props.ingredients.map((item, i) => (
-              <Pressable
-                key={`${item}-${i}`}
-                onPress={() => props.onRemoveIngredient(i)}
-                style={styles.chip}
-              >
-                <Text style={styles.chipText}>{item}</Text>
-                <CrossMark size={9} color={theme.accent} thickness={1.5} />
-              </Pressable>
+              <PopIn key={`${item}-${i}`}>
+                <Pressable onPress={() => props.onRemoveIngredient(i)} style={styles.chip}>
+                  <Text style={styles.chipText}>{item}</Text>
+                  <CrossMark size={9} color={theme.accent} thickness={1.5} />
+                </Pressable>
+              </PopIn>
             ))}
           </View>
         )}
@@ -242,9 +243,11 @@ export default function IngredientsScreen(props: Props) {
         )}
 
         {props.genError && (
-          <View style={styles.errorBlock}>
-            <Text style={styles.errorText}>{props.genError}</Text>
-          </View>
+          <Shake trigger={props.genError}>
+            <View style={styles.errorBlock}>
+              <Text style={styles.errorText}>{props.genError}</Text>
+            </View>
+          </Shake>
         )}
       </ScrollView>
 
@@ -257,7 +260,7 @@ export default function IngredientsScreen(props: Props) {
           theme={theme}
         />
       </CtaBar>
-    </View>
+    </ScreenEntrance>
   );
 }
 
@@ -266,7 +269,9 @@ function getStyles(theme: Theme) {
     root: { flex: 1, backgroundColor: theme.bg, paddingTop: 52 },
     top: { paddingHorizontal: 26 },
     scroll: { flex: 1 },
-    scrollBody: { paddingHorizontal: 26, paddingBottom: 14 },
+    // Deja lugar al CTA, que va superpuesto para que el contenido se
+    // desvanezca por debajo en lugar de cortarse.
+    scrollBody: { paddingHorizontal: 26, paddingBottom: 104 },
     title: {
       fontFamily: fonts.display,
       fontSize: 32,

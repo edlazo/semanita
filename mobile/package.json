@@ -13,6 +13,7 @@
     "expo": "~56.0.17",
     "expo-font": "~56.0.7",
     "expo-image-picker": "~56.0.22",
+    "expo-linear-gradient": "~56.0.4",
     "expo-status-bar": "~56.0.4",
     "posthog-react-native": "^4.61.1",
     "react": "19.2.3",

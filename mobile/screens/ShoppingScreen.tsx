@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Checkbox from '../components/Checkbox';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { ScreenEntrance } from '../components/Motion';
 import { itemKey, ShoppingCategory } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
 
@@ -51,7 +52,7 @@ export default function ShoppingScreen(props: Props) {
   const allDone = total > 0 && done >= total;
 
   return (
-    <View style={styles.root}>
+    <ScreenEntrance style={styles.root}>
       <View style={styles.top}>
         <Header
           theme={theme}
@@ -116,7 +117,7 @@ export default function ShoppingScreen(props: Props) {
           <SecondaryButton title="VOLVER AL MENÚ" onPress={props.onBackToMenu} fullWidth theme={theme} />
         )}
       </CtaBar>
-    </View>
+    </ScreenEntrance>
   );
 }
 
@@ -125,7 +126,7 @@ function getStyles(theme: Theme) {
     root: { flex: 1, backgroundColor: theme.bg, paddingTop: 52 },
     top: { paddingHorizontal: 26 },
     scroll: { flex: 1 },
-    scrollBody: { paddingHorizontal: 26, paddingTop: 14, paddingBottom: 10 },
+    scrollBody: { paddingHorizontal: 26, paddingTop: 14, paddingBottom: 104 },
     titleRow: {
       flexDirection: 'row',
       alignItems: 'flex-end',
