@@ -55,14 +55,28 @@ export async function detectIngredients(imageBuffer: Buffer, mimeType: string): 
   return parsed;
 }
 
+export const DAYS = [
+  "LUNES",
+  "MARTES",
+  "MIÉRCOLES",
+  "JUEVES",
+  "VIERNES",
+  "SÁBADO",
+  "DOMINGO",
+] as const;
+
 export type Meal = {
   name: string;
   description: string;
   ingredientsUsed: string[];
   ingredientsToBuy: string[];
+  day: string;
+  moment: string;
 };
 
-function isMeal(value: unknown): value is Meal {
+type RawMeal = Omit<Meal, "day" | "moment">;
+
+function isRawMeal(value: unknown): value is RawMeal {
   if (typeof value !== "object" || value === null) return false;
   const m = value as Record<string, unknown>;
   return (
@@ -75,16 +89,26 @@ function isMeal(value: unknown): value is Meal {
   );
 }
 
-export async function generateMenu(
+/** Qué se espera de cada momento, para que el desayuno no salga un guiso. */
+const MOMENT_HINT: Record<string, string> = {
+  Desayuno: "algo rápido y liviano, de menos de 10 minutos",
+  Almuerzo: "un plato completo, que se pueda llevar en vianda",
+  Merienda: "algo liviano, dulce o salado, sin cocción compleja",
+  Cena: "un plato completo para preparar en casa",
+};
+
+async function generateForMoment(
   ingredients: string[],
-  options: { count?: number; avoidNames?: string[]; restrictions?: string } = {}
-): Promise<Meal[]> {
-  const count = options.count ?? 7;
-  const avoidNames = options.avoidNames ?? [];
-  const restrictions = options.restrictions?.trim();
+  moment: string,
+  count: number,
+  avoidNames: string[],
+  restrictions?: string
+): Promise<RawMeal[]> {
+  const hint = MOMENT_HINT[moment] ?? "un plato completo";
 
   const prompt = `Tengo estos ingredientes disponibles: ${ingredients.join(", ")}.
-Armá un menú de ${count} comida(s) para la semana, priorizando usar lo disponible y sugiriendo qué comprar para completar cada receta.
+Armá ${count} opción(es) de ${moment.toUpperCase()} para la semana: ${hint}.
+Priorizá usar lo disponible y sugerí qué comprar para completar cada receta.
 ${avoidNames.length > 0 ? `No repitas estas comidas ya usadas: ${avoidNames.join(", ")}.` : ""}
 ${restrictions ? `Restricciones alimentarias a respetar estrictamente: ${restrictions}.` : ""}
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
@@ -93,11 +117,45 @@ Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adic
   const result = await modelFor("menu").generateContent(prompt);
   const parsed = extractJson(result.response.text());
 
-  if (!Array.isArray(parsed) || !parsed.every(isMeal)) {
-    throw new Error("Gemini no devolvió un menú con el formato esperado.");
+  if (!Array.isArray(parsed) || !parsed.every(isRawMeal)) {
+    throw new Error(`Gemini no devolvió el ${moment} con el formato esperado.`);
   }
 
   return parsed;
+}
+
+export async function generateMenu(
+  ingredients: string[],
+  options: {
+    count?: number;
+    moments?: string[];
+    avoidNames?: string[];
+    restrictions?: string;
+    /** Día de la comida que se está reemplazando, al regenerar. */
+    day?: string;
+  } = {}
+): Promise<Meal[]> {
+  const count = options.count ?? DAYS.length;
+  const moments = options.moments?.length ? options.moments : ["Cena"];
+  const avoidNames = options.avoidNames ?? [];
+  const restrictions = options.restrictions?.trim();
+
+  // Un pedido por momento, en paralelo. Los cuatro juntos serían 28 comidas en
+  // una sola respuesta, con riesgo de que se corte y quede el JSON inválido;
+  // así cada respuesta mantiene el tamaño que ya sabemos que funciona.
+  const perMoment = await Promise.all(
+    moments.map((moment) =>
+      generateForMoment(ingredients, moment, count, avoidNames, restrictions).then((meals) =>
+        meals.map((meal, i) => ({
+          ...meal,
+          moment,
+          day: options.day ?? DAYS[i % DAYS.length],
+        }))
+      )
+    )
+  );
+
+  return perMoment.flat();
 }
 
 export type ShoppingCategory = {

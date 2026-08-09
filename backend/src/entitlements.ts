@@ -6,12 +6,29 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 /** Días de prueba gratuita desde el alta de la cuenta. */
 export const TRIAL_DAYS = Number(process.env.TRIAL_DAYS ?? 30);
 
+/** Los cuatro momentos, en el orden en que se come. */
+export const ALL_MOMENTS = ["Desayuno", "Almuerzo", "Merienda", "Cena"] as const;
+
+/**
+ * El plan gratuito resuelve la cena, que es el problema real del usuario que
+ * describe el spec: no saber qué comer a último momento. Los otros tres
+ * momentos son la función paga, y además la más cara de generar.
+ */
+export const FREE_MOMENTS = ["Cena"] as const;
+
 export type Entitlement = {
   status: "trial" | "subscribed" | "expired";
   /** Días enteros que le quedan de prueba. 0 si ya venció o si está suscripto. */
   trialDaysLeft: number;
   subscribed: boolean;
+  /** Momentos que este plan puede pedir. El backend recorta a esto. */
+  allowedMoments: string[];
 };
+
+/** Durante la prueba se ve el producto completo; si no, solo la cena. */
+function momentsFor(full: boolean): string[] {
+  return full ? [...ALL_MOMENTS] : [...FREE_MOMENTS];
+}
 
 /**
  * Lee la fila del usuario con SU token, no con una clave de servicio: así la
@@ -42,7 +59,27 @@ export async function getEntitlement(accessToken: string, userId: string): Promi
   const msLeft = trialStart.getTime() + TRIAL_DAYS * 86_400_000 - now;
   const trialDaysLeft = Math.max(0, Math.ceil(msLeft / 86_400_000));
 
-  if (subscribed) return { status: "subscribed", trialDaysLeft: 0, subscribed: true };
-  if (trialDaysLeft > 0) return { status: "trial", trialDaysLeft, subscribed: false };
-  return { status: "expired", trialDaysLeft: 0, subscribed: false };
+  if (subscribed) {
+    return {
+      status: "subscribed",
+      trialDaysLeft: 0,
+      subscribed: true,
+      allowedMoments: momentsFor(true),
+    };
+  }
+  if (trialDaysLeft > 0) {
+    return {
+      status: "trial",
+      trialDaysLeft,
+      subscribed: false,
+      allowedMoments: momentsFor(true),
+    };
+  }
+  // Vencida no significa bloqueada: sigue armando la semana, solo que la cena.
+  return {
+    status: "expired",
+    trialDaysLeft: 0,
+    subscribed: false,
+    allowedMoments: momentsFor(false),
+  };
 }

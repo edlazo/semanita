@@ -3,8 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import multer from "multer";
 import { detectIngredients, generateMenu, generateRecipe, generateShoppingList } from "./gemini";
-import { AuthedRequest, requireAuth, requirePlan } from "./auth";
-import { getEntitlement, TRIAL_DAYS } from "./entitlements";
+import { AuthedRequest, requireAuth, withEntitlement } from "./auth";
+import { ALL_MOMENTS, getEntitlement, TRIAL_DAYS } from "./entitlements";
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -52,7 +52,7 @@ app.get("/api/me", requireAuth, async (req: AuthedRequest, res: Response) => {
   }
 });
 
-app.post("/api/detect-ingredients", requireAuth, requirePlan, upload.single("photo"), async (req: Request, res: Response) => {
+app.post("/api/detect-ingredients", requireAuth, withEntitlement, upload.single("photo"), async (req: Request, res: Response) => {
   if (!req.file) {
     res.status(400).json({ error: "Falta el archivo 'photo'." });
     return;
@@ -67,8 +67,8 @@ app.post("/api/detect-ingredients", requireAuth, requirePlan, upload.single("pho
   }
 });
 
-app.post("/api/generate-menu", requireAuth, requirePlan, async (req: Request, res: Response) => {
-  const { ingredients, count, avoidNames, restrictions } = req.body ?? {};
+app.post("/api/generate-menu", requireAuth, withEntitlement, async (req: AuthedRequest, res: Response) => {
+  const { ingredients, count, avoidNames, restrictions, moments, day } = req.body ?? {};
 
   if (!Array.isArray(ingredients) || ingredients.length === 0 || !ingredients.every((i) => typeof i === "string")) {
     res.status(400).json({ error: "Falta 'ingredients' (array de strings no vacío)." });
@@ -87,16 +87,45 @@ app.post("/api/generate-menu", requireAuth, requirePlan, async (req: Request, re
     return;
   }
 
+  if (moments !== undefined && (!Array.isArray(moments) || !moments.every((m) => typeof m === "string"))) {
+    res.status(400).json({ error: "'moments' debe ser un array de strings." });
+    return;
+  }
+  if (day !== undefined && typeof day !== "string") {
+    res.status(400).json({ error: "'day' debe ser un string." });
+    return;
+  }
+
+  // El recorte por plan se hace acá y no en la app: pedir los cuatro momentos
+  // desde un cliente modificado no debería alcanzar para obtenerlos.
+  const allowed = req.entitlement?.allowedMoments ?? [...ALL_MOMENTS];
+  const requested: string[] = moments?.length ? moments : ["Cena"];
+  const effectiveMoments = requested.filter((m) => allowed.includes(m));
+
+  if (effectiveMoments.length === 0) {
+    res.status(403).json({
+      error: "Tu plan no incluye esos momentos del día.",
+      allowedMoments: allowed,
+    });
+    return;
+  }
+
   try {
-    const menu = await generateMenu(ingredients, { count, avoidNames, restrictions });
-    res.json({ menu });
+    const menu = await generateMenu(ingredients, {
+      count,
+      moments: effectiveMoments,
+      avoidNames,
+      restrictions,
+      day,
+    });
+    res.json({ menu, allowedMoments: allowed });
   } catch (err) {
     console.error("generate-menu failed:", err);
     respondWithGeminiError(res, err, "No se pudo generar el menú. Probá de nuevo.");
   }
 });
 
-app.post("/api/generate-shopping-list", requireAuth, requirePlan, async (req: Request, res: Response) => {
+app.post("/api/generate-shopping-list", requireAuth, withEntitlement, async (req: Request, res: Response) => {
   const { items } = req.body ?? {};
 
   if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === "string")) {
@@ -115,7 +144,7 @@ app.post("/api/generate-shopping-list", requireAuth, requirePlan, async (req: Re
   }
 });
 
-app.post("/api/generate-recipe", requireAuth, requirePlan, async (req: Request, res: Response) => {
+app.post("/api/generate-recipe", requireAuth, withEntitlement, async (req: Request, res: Response) => {
   const { mealName, description, restrictions } = req.body ?? {};
 
   if (typeof mealName !== "string" || mealName.trim().length === 0 || mealName.length > 200) {
