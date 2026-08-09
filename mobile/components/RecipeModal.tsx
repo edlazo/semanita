@@ -150,7 +150,7 @@ function getStyles(theme: Theme) {
       marginBottom: 10,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 30,
       lineHeight: 32,
       color: theme.ink,
@@ -193,7 +193,7 @@ function getStyles(theme: Theme) {
       marginBottom: 4,
     },
     metaValue: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 17,
       color: theme.ink,
     },
@@ -235,7 +235,7 @@ function getStyles(theme: Theme) {
       borderBottomColor: theme.mut40,
     },
     ingredientQty: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 13.5,
       color: theme.inkSoft,
     },
@@ -245,7 +245,7 @@ function getStyles(theme: Theme) {
       paddingBottom: 14,
     },
     stepNumber: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 22,
       lineHeight: 24,
       color: theme.accent,

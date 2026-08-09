@@ -88,7 +88,7 @@ export default function ProfileModal(props: Props) {
           <TextInput
             style={styles.input}
             placeholder="Cómo querés que te llamemos"
-            placeholderTextColor={theme.mut75}
+            placeholderTextColor={theme.mut60}
             value={name}
             onChangeText={(v) => {
               setName(v);
@@ -151,7 +151,7 @@ function getStyles(theme: Theme) {
       marginBottom: 10,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 30,
       lineHeight: 32,
       letterSpacing: -0.45,
@@ -202,7 +202,7 @@ function getStyles(theme: Theme) {
       backgroundColor: theme.bg,
     },
     planTitle: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 19,
       lineHeight: 24,
       color: theme.ink,

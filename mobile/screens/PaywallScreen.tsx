@@ -127,7 +127,7 @@ function getStyles(theme: Theme) {
       marginBottom: 14,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 34,
       lineHeight: 36,
       letterSpacing: -0.51,
@@ -180,7 +180,7 @@ function getStyles(theme: Theme) {
       fontFamily: fonts.body,
       fontSize: 10,
       letterSpacing: 1.6,
-      color: theme.mut75,
+      color: theme.mut60,
     },
   });
 }

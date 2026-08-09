@@ -163,15 +163,14 @@ function getStyles(theme: Theme) {
       gap: 3,
     },
     brand: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 11,
-      letterSpacing: 3.3,
+      fontFamily: fonts.bodyBold,
+      fontSize: 16,
+      letterSpacing: -0.32,
       color: theme.ink,
     },
     planLabel: {
-      fontFamily: fonts.bodyMedium,
-      fontSize: 8.5,
-      letterSpacing: 1.36,
+      fontFamily: fonts.body,
+      fontSize: 12,
       color: theme.accent,
     },
     headerActions: {
@@ -181,14 +180,12 @@ function getStyles(theme: Theme) {
     },
     modeAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.accent,
     },
     secondaryAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.inkSoft,
     },
     steps: {
@@ -224,7 +221,7 @@ function getStyles(theme: Theme) {
       opacity: 0.75,
     },
     stepNumber: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.bodySemi,
       fontSize: 13,
       color: theme.ink,
     },
@@ -233,8 +230,7 @@ function getStyles(theme: Theme) {
     },
     stepLabel: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 9.5,
-      letterSpacing: 1.52,
+      fontSize: 13,
       color: theme.ink,
     },
     stepLabelActive: {
@@ -264,16 +260,18 @@ function getStyles(theme: Theme) {
       borderBottomWidth: 1,
       borderBottomColor: theme.accent,
     },
+    // Encabezado de sección en caja baja: sin mayúsculas ni tracking abierto,
+    // que es la firma visual que este rediseño quiere evitar.
     eyebrowText: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 2.09,
-      color: theme.accent,
+      fontSize: 15,
+      letterSpacing: -0.15,
+      color: theme.ink,
     },
     eyebrowMeta: {
-      fontFamily: fonts.displayItalic,
-      fontSize: 12,
-      color: theme.accent,
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: theme.inkSoft,
     },
   });
 }

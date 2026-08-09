@@ -86,7 +86,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
             <TextInput
               style={styles.input}
               placeholder="rocio@correo.com"
-              placeholderTextColor={theme.mut75}
+              placeholderTextColor={theme.mut60}
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
@@ -102,7 +102,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
             <TextInput
               style={styles.input}
               placeholder="mínimo 6 caracteres"
-              placeholderTextColor={theme.mut75}
+              placeholderTextColor={theme.mut60}
               secureTextEntry
               value={password}
               onChangeText={(v) => {
@@ -194,7 +194,7 @@ function getStyles(theme: Theme) {
       marginBottom: 14,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displayBold,
       fontSize: 38,
       lineHeight: 39,
       letterSpacing: -0.57,
@@ -269,7 +269,7 @@ function getStyles(theme: Theme) {
       fontFamily: fonts.body,
       fontSize: 10,
       letterSpacing: 1.6,
-      color: theme.mut75,
+      color: theme.mut60,
     },
   });
 }

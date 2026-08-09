@@ -188,7 +188,7 @@ function getStyles(theme: Theme) {
     },
     titleBlock: { flexShrink: 1 },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 27,
       lineHeight: 29,
       letterSpacing: -0.4,
@@ -232,7 +232,7 @@ function getStyles(theme: Theme) {
       color: theme.accent,
     },
     mealName: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 20,
       lineHeight: 24,
       color: theme.ink,

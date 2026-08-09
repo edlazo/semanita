@@ -428,6 +428,37 @@ input::placeholder,textarea::placeholder{color:var(--mut)}
 </div>
 </sc-if>
 
+<sc-if value="{{ adOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:34;background:rgba(20,17,16,.55);display:flex;align-items:flex-end;animation:scr .2s ease both">
+<div style="width:100%;box-sizing:border-box;background:var(--card);border-radius:20px 20px 0 0;padding:24px 26px 26px;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
+
+<sc-if value="{{ adOffer }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px">
+<div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">Cambiar comida</div>
+<div data-tap onClick="{{ onCloseAd }}" style="width:32px;height:32px;flex:none;margin:-6px -6px 0 0;display:flex;align-items:center;justify-content:center;border:1px solid var(--l40);border-radius:999px;font:13px 'Plus Jakarta Sans',sans-serif;cursor:pointer">✕</div>
+</div>
+<div style="font:600 25px/1.15 Newsreader,Georgia,serif;letter-spacing:-.015em;margin-bottom:10px">Mirá un anuncio y te la cambio</div>
+<div style="font:14px/1.55 'Plus Jakarta Sans',sans-serif;color:var(--mut);margin-bottom:20px">Son {{ adSeconds }} segundos. Después te propongo otra cosa en lugar de <strong style="font-weight:600;color:var(--ink)">{{ adMealName }}</strong>.</div>
+<div onClick="{{ onPlayAd }}" style="display:flex;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:17px;background:var(--acc);border-radius:11px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:var(--onAcc);cursor:pointer">Ver el anuncio</div>
+<div onClick="{{ onAdToPlans }}" style="display:flex;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;margin-top:10px;padding:15px;border:1px solid var(--l20);border-radius:10px;font:500 14px 'Plus Jakarta Sans',sans-serif;cursor:pointer">Con Plus no hay anuncios</div>
+</sc-if>
+
+<sc-if value="{{ adPlaying }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px">
+<div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--acc)">Anuncio</div>
+<div style="font:600 13px 'Plus Jakarta Sans',sans-serif;color:var(--mut)">{{ adCount }}</div>
+</div>
+<div style="height:150px;border-radius:12px;background:repeating-linear-gradient(135deg,var(--ph1) 0 10px,var(--ph2) 10px 20px);display:flex;align-items:center;justify-content:center;font:11px ui-monospace,Menlo,monospace;color:var(--mut);margin-bottom:16px">espacio publicitario</div>
+<div style="height:3px;border-radius:999px;background:var(--l20);overflow:hidden;margin-bottom:16px"><div style="height:100%;background:var(--acc);width:{{ adBarWidth }}"></div></div>
+<div style="font:13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--mut);text-align:center">Al terminar te propongo otra comida.</div>
+<sc-if value="{{ adCanSkip }}" hint-placeholder-val="{{ false }}">
+<div data-tap onClick="{{ onSkipAd }}" style="display:flex;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;margin-top:10px;font:500 13px 'Plus Jakarta Sans',sans-serif;color:var(--mut);cursor:pointer;animation:scr .25s ease both">Saltear y dejar la comida como está</div>
+</sc-if>
+</sc-if>
+
+</div></div>
+</sc-if>
+
 <sc-if value="{{ recipe }}" hint-placeholder-val="{{ false }}">
 <div style="position:absolute;inset:0;z-index:30;box-sizing:border-box;background:var(--card);padding:56px 0 26px;display:flex;flex-direction:column;animation:rise .32s cubic-bezier(.2,.8,.2,1) both">
 <div style="padding:6px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
@@ -482,6 +513,8 @@ input::placeholder,textarea::placeholder{color:var(--mut)}
 // colores literales: var() no es interpolable y congela cualquier transición.
 const LIGHT = {'--bg':'#F4EEE6','--card':'#FFFBF5','--ink':'#211C18','--mut':'#6B5D52','--acc':'#A9552C','--onAcc':'#FBF3EC','--l14':'rgba(169,85,44,.14)','--l20':'rgba(169,85,44,.20)','--l40':'rgba(169,85,44,.40)','--mut60':'rgba(107,93,82,.60)'};
 const DARK  = {'--bg':'#1B1816','--card':'#241F1C','--ink':'#F1E8DE','--mut':'#ABA096','--acc':'#D9834A','--onAcc':'#1B1816','--l14':'rgba(217,131,74,.14)','--l20':'rgba(217,131,74,.20)','--l40':'rgba(217,131,74,.40)','--mut60':'rgba(171,160,150,.60)'};
+
+const AD_SECONDS = 15;
 
 const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
@@ -560,7 +593,7 @@ class Component extends DCLogic {
     // Perfil
     userName:'Rocío Gaite', nameDraft:'Rocío Gaite', nameSaved:false,
     plan:'trial', trialLeft:9, pickedPlan:'mensual',
-    country:'US', countryFrom:'plans',
+    country:'US', countryFrom:'plans', ad:null,
     notifs:{lista:true, receta:true, semana:false},
     weeksPlanned:12, mealsCooked:47
   };
@@ -612,6 +645,27 @@ class Component extends DCLogic {
       this.set({generating:false, screen:'menu', meals:this.buildMeals(), bought:[]});
     }, 1500);
   };
+
+  // Regenerar es la acción que separa gratis de pago: con suscripción es directa,
+  // sin suscripción cuesta un anuncio. La decisión vive acá, no en el template.
+  askRegen(i){
+    if(this.state.plan === 'plus'){ this.regen(i); return; }
+    this.set({ad:{i, phase:'offer', left:AD_SECONDS}});
+  }
+
+  playAd(){
+    const tick = () => {
+      const ad = this.state.ad;
+      if(!ad || ad.phase !== 'playing') return;
+      if(ad.left <= 1){ this.set({ad:null}); this.regen(ad.i); return; }
+      this.set({ad:Object.assign({}, ad, {left:ad.left - 1})});
+      this.adTimer = setTimeout(tick, 1000);
+    };
+    this.set({ad:Object.assign({}, this.state.ad, {phase:'playing'})});
+    this.adTimer = setTimeout(tick, 1000);
+  }
+
+  closeAd(){ clearTimeout(this.adTimer); this.set({ad:null}); }
 
   regen(i){
     const meals = this.state.meals.slice();
@@ -774,7 +828,7 @@ class Component extends DCLogic {
         nameDeco:m.on ? 'none' : 'line-through',
         regenLabel:m.regen ? 'Otra más' : 'Otra',
         onToggle:() => { const n = s.meals.slice(); n[i] = Object.assign({}, n[i], {on:!n[i].on}); this.set({meals:n}); },
-        onRegen:() => this.regen(i),
+        onRegen:() => this.askRegen(i),
         onRecipe:() => this.set({recipeIdx:i})
       })),
       menuSub:onCount + ' de ' + s.meals.length + ' elegidas · destildá lo que no querés',
@@ -793,6 +847,21 @@ class Component extends DCLogic {
       goBackFromProfile:() => this.set({screen:s.backTo || (s.meals.length ? 'menu' : 'ing')}),
       goAccount:() => this.set({screen:'account', nameDraft:s.userName, nameSaved:false}),
       goPlans:() => this.set({screen:'plans'}),
+
+      // ---- Compuerta de anuncio para regenerar ----
+      adOpen:!!s.ad,
+      adOffer:!!s.ad && s.ad.phase === 'offer',
+      adPlaying:!!s.ad && s.ad.phase === 'playing',
+      adMealName:s.ad ? (s.meals[s.ad.i] || {}).name : '',
+      adCount:s.ad ? s.ad.left + 's' : '',
+      adSeconds:AD_SECONDS,
+      // Como un video con recompensa: se puede salir a los 5s, pero sin premio.
+      adCanSkip:!!s.ad && s.ad.phase === 'playing' && s.ad.left <= AD_SECONDS - 5,
+      onSkipAd:() => this.closeAd(),
+      adBarWidth:s.ad ? Math.round((1 - s.ad.left / AD_SECONDS) * 100) + '%' : '0%',
+      onPlayAd:() => this.playAd(),
+      onCloseAd:() => this.closeAd(),
+      onAdToPlans:() => { clearTimeout(this.adTimer); this.set({ad:null, screen:'plans'}); },
 
       // ---- País y moneda ----
       countryName:this.country().name,

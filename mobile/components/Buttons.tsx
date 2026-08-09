@@ -54,7 +54,7 @@ export function SecondaryButton({ title, onPress, disabled, fullWidth, theme }: 
         fullWidth && styles.secondaryFull,
         {
           borderColor: theme.border,
-          borderRadius: radii.btn,
+          borderRadius: radii.btnSecondary,
           opacity: disabled ? 0.55 : pressed ? 0.7 : 1,
         },
       ]}
@@ -73,7 +73,7 @@ export function AccentChipButton({ title, onPress, theme }: SecondaryProps) {
       onPress={onPress}
       style={({ pressed }) => [
         styles.chipBtn,
-        { backgroundColor: theme.accent, borderRadius: radii.btn, opacity: pressed ? 0.7 : 1 },
+        { backgroundColor: theme.accent, borderRadius: radii.btnSecondary, opacity: pressed ? 0.7 : 1 },
       ]}
     >
       <Text style={[styles.chipBtnText, { color: theme.accentInk }]}>{title}</Text>
@@ -95,14 +95,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  // Caja baja y sin tracking: la jerarquía la hace el peso, no el espaciado.
   primaryText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11.5,
-    letterSpacing: 2.07,
+    fontFamily: fonts.bodySemi,
+    fontSize: 15,
   },
   meta: {
-    fontFamily: fonts.displayItalic,
-    fontSize: 12,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13.5,
   },
   secondary: {
     paddingVertical: 10,
@@ -116,22 +116,19 @@ const styles = StyleSheet.create({
     paddingVertical: 17,
   },
   secondaryText: {
-    fontFamily: fonts.bodySemi,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
   },
   secondaryTextFull: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11.5,
-    letterSpacing: 2.07,
+    fontFamily: fonts.bodySemi,
+    fontSize: 15,
   },
   chipBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 11,
+    paddingHorizontal: 15,
   },
   chipBtnText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    fontFamily: fonts.bodySemi,
+    fontSize: 13,
   },
 });

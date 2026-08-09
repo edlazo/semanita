@@ -92,7 +92,7 @@ export default function ShoppingScreen(props: Props) {
                   onPress={() => props.onToggleItem(key)}
                   style={styles.itemRow}
                 >
-                  <Checkbox checked={isChecked} size={20} theme={theme} />
+                  <Checkbox checked={isChecked} size={20} shape="shopping" theme={theme} />
                   <Text style={[styles.itemText, isChecked && styles.itemTextDone]}>{item}</Text>
                 </Pressable>
               );
@@ -136,7 +136,7 @@ function getStyles(theme: Theme) {
       gap: 12,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 30,
       lineHeight: 32,
       letterSpacing: -0.45,
@@ -184,7 +184,7 @@ function getStyles(theme: Theme) {
       marginBottom: 20,
     },
     doneTitle: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 19,
       lineHeight: 24,
       color: theme.ink,

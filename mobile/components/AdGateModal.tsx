@@ -74,7 +74,7 @@ function getStyles(theme: Theme) {
       marginBottom: 10,
     },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 22,
       lineHeight: 26,
       letterSpacing: -0.33,

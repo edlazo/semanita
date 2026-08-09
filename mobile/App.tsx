@@ -4,16 +4,16 @@ import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import {
-  BodoniModa_400Regular,
-  BodoniModa_400Regular_Italic,
-  BodoniModa_500Medium,
-} from '@expo-google-fonts/bodoni-moda';
+  Newsreader_400Regular_Italic,
+  Newsreader_600SemiBold,
+  Newsreader_700Bold,
+} from '@expo-google-fonts/newsreader';
 import {
-  Karla_400Regular,
-  Karla_500Medium,
-  Karla_600SemiBold,
-  Karla_700Bold,
-} from '@expo-google-fonts/karla';
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
@@ -76,13 +76,13 @@ export default function App() {
   const { theme, mode, toggleMode } = useAppTheme();
 
   const [fontsLoaded] = useFonts({
-    BodoniModa_400Regular,
-    BodoniModa_400Regular_Italic,
-    BodoniModa_500Medium,
-    Karla_400Regular,
-    Karla_500Medium,
-    Karla_600SemiBold,
-    Karla_700Bold,
+    Newsreader_400Regular_Italic,
+    Newsreader_600SemiBold,
+    Newsreader_700Bold,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
   });
 
   const [session, setSession] = useState<Session | null>(null);

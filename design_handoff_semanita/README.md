@@ -203,7 +203,7 @@ El pie "EMPORIO DE COMIDA CASERA" va dentro de esa área, al final.
 - Contraseña de menos de 6 caracteres → "La contraseña necesita al menos 6 caracteres."
 - El error se limpia al tipear. Enter en la contraseña envía el formulario.
 
-### 2. Ingredientes (pestaña I, paso 1)
+### 2. Ingredientes (pestaña Semana, paso 1)
 **Propósito**: cargar lo que hay en casa, por foto o a mano, y fijar restricciones.
 
 **Layout**: header (marca + toggle de modo + SALIR), pasos, título "¿Qué hay en tu heladera?"
@@ -212,21 +212,24 @@ zona de resultado, chips, campo de agregado, restricciones. CTA fijo.
 
 **Componentes**:
 - **Tres fuentes** en grilla de 3 columnas iguales, gap 8px, cada una con dos líneas de
-  texto centrado ("SACAR / FOTO", "DE LA / GALERÍA", "ESCRIBIR / A MANO"), 11px de padding
-  vertical, borde `l40`, radio 3px. **La fuente activa se rellena con el acento** y su
-  texto pasa a `onAcc`, con transición de 200ms.
+  texto centrado ("Sacar / foto", "De la / galería", "Escribir / a mano"), 11px de padding
+  vertical, borde `l20`, radio 10px. **La fuente activa se rellena con el acento** y su
+  texto pasa a `onAcc`. El cambio es **inmediato, sin transición de fondo** (ver Movimiento).
 - **Preview de la foto**: 112px de alto, radio 6px, trama diagonal de `ph1`/`ph2` a 45°
   (bandas de 8px). Etiqueta en monoespaciada 10px abajo a la izquierda ("foto tomada ·
-  heladera") y **badge de acento arriba a la derecha con el conteo** ("7 DETECTADOS").
-- **Chips de ingrediente**: píldoras de fondo `card`, borde `l40`, con una ✕ en acento a
-  la derecha. Se borran al tocarlas. Aparecen con un "pop" de 220ms (escala 0.82 → 1.06 → 1).
+  heladera") y **badge de acento arriba a la derecha con el conteo** ("7 detectados"),
+  píldora de radio 999px con texto en `onAcc` 12px.
+- **Chips de ingrediente**: píldoras de fondo `card`, borde `l20`, alto mínimo 44px, con una
+  ✕ en acento a la derecha. Se borran al tocarlas. Aparecen con un "pop" de 220ms
+  (escala 0.82 → 1.06 → 1) — es la única animación de escala del sistema y sirve para que
+  un ingrediente recién agregado se note sin robar atención.
 - **Campo de agregado** en una fila: "+" en acento, input con placeholder "Ej: crema de maní",
-  y "AGREGAR" en acento a la derecha. Enter agrega. **Acepta varios separados por coma o
+  y "Agregar" en acento a la derecha. Enter agrega. **Acepta varios separados por coma o
   salto de línea**, normaliza a minúsculas y descarta duplicados.
 - **Restricciones**: seis píldoras — Ninguna / Vegetariano / Vegano / Sin gluten / Sin
   lactosa / Otros. Selección única; la activa se rellena de acento. **"Otros" abre un campo
   de texto** debajo con placeholder "Ej: sin frutos secos".
-- **CTA "GENERAR MENÚ SEMANAL"**, opacidad 0.55 sin ingredientes.
+- **CTA "Generar menú semanal"**, opacidad 0.55 sin ingredientes.
 
 **Estados**:
 - *Analizando*: el preview se reemplaza por un bloque del mismo tamaño con un spinner de
@@ -234,16 +237,23 @@ zona de resultado, chips, campo de agregado, restricciones. CTA fijo.
 - *Sin detección*: bloque con borde `l40`, radio 6px, título en Newsreader 17px "No
   reconocimos nada", explicación "La foto salió muy oscura. Probá de nuevo con la puerta
   abierta, o escribí la lista a mano." y dos botones: "Probar de nuevo" (relleno acento) y
-  "ESCRIBIR A MANO" (borde).
-- *Lista vacía*: bajo el eyebrow "TENÉS EN CASA", el texto "Todavía no hay nada. Sacá una
+  "Escribir a mano" (borde).
+- *Lista vacía*: bajo el eyebrow "Tenés en casa", el texto "Todavía no hay nada. Sacá una
   foto o agregá el primero acá abajo."
-- *Generando*: el CTA muestra un spinner de 13px y el texto pasa a "ARMANDO TU SEMANA…".
+- *Generando*: el CTA muestra un spinner de 13px y el texto pasa a "Armando tu semana…".
 - *Error de generación*: si se toca el CTA sin ingredientes, bloque con borde acento y el
   mensaje "Necesitamos al menos un ingrediente para armarte la semana.", con sacudida.
 - *A mano*: se abre un `textarea` de 74px con placeholder "tomate, fideos, queso…", label
-  "ESCRIBILA, UNA POR LÍNEA O SEPARADAS POR COMA" y botón "SUMAR A LA LISTA".
+  "Una por línea, o separadas por coma" y botón "Sumar a la lista".
 
-### 3. Menú semanal (pestaña I, paso 2)
+**Barra del CTA** (patrón compartido con Menú): el botón principal no scrollea con el
+contenido — va fijo, **62px por encima de la barra de pestañas**, sobre un degradado de
+`bg` sólido al 62% hacia transparente que difumina lo que pasa por debajo. El contenido
+scrolleable reserva ese espacio con `padding-bottom: 152px` para que el último elemento no
+quede tapado. En React Native es una `View` absoluta con `LinearGradient` y el mismo
+`contentContainerStyle.paddingBottom` en el `ScrollView`.
+
+### 3. Menú semanal (pestaña Semana, paso 2)
 **Propósito**: revisar las comidas propuestas, descartar las que no van, ver recetas.
 
 **Layout**: header (marca + toggle + SEMANA NUEVA), pasos, título "Tu semana" con subtítulo
@@ -268,7 +278,49 @@ tarjetas con scroll. CTA fijo.
 **CTA**: "VER LISTA DE COMPRAS" con el conteo de ítems en itálica a la derecha ("12 ítems"), en `onAcc` pleno — **no** en una versión pálida del acento (`#F0C9AC` sobre `#A9552C` da 3.39:1; `onAcc` da 4.76:1).
 Opacidad 0.55 y sin acción si no queda ninguna comida incluida.
 
-### 4. Lista de compras (pestaña II)
+### 3b. Regenerar una comida — compuerta de anuncio
+**Propósito**: "Otra" es la acción que separa el plan gratis del pago. Con suscripción
+activa regenera en el acto; sin suscripción cuesta ver un anuncio.
+
+La decisión vive en la lógica (`askRegen`), **no en el template**: el botón es el mismo en
+los dos casos y no anuncia de antemano que va a costar algo. Mostrar un candado o un "ver
+anuncio" en el botón convierte cada tarjeta del menú en un recordatorio de que no pagaste;
+la fricción aparece cuando el usuario ya decidió, que es cuando la oferta de suscribirse
+tiene sentido.
+
+**Hoja inferior** (no pantalla completa: la comida que se va a cambiar tiene que seguir
+visible detrás). Fondo `rgba(20,17,16,.55)`, hoja en `card` con radio 20px arriba, entrada
+con `rise`.
+
+- *Oferta*: eyebrow "Cambiar comida" + ✕ arriba a la derecha. Título "Mirá un anuncio y te
+  la cambio" (Newsreader 25px). Bajada con la duración y **el nombre de la comida en
+  cuestión en negrita** — la hoja tiene que decir qué se está por cambiar. CTA principal
+  "Ver el anuncio"; secundario con borde "Con Plus no hay anuncios", que abre Planes.
+- *Reproduciendo*: eyebrow "Anuncio" con la cuenta regresiva a la derecha, bloque de 150px
+  con la trama de placeholder ("espacio publicitario"), barra de progreso de 3px en acento,
+  y la línea "Al terminar te propongo otra comida." Al llegar a cero la hoja se cierra sola
+  y **la comida ya está cambiada**: no hay un segundo paso de confirmación.
+
+**Salida durante la reproducción**: a los 5 segundos aparece "Saltear y dejar la comida como
+está", que cierra la hoja **sin regenerar**. No está antes porque un anuncio salteable desde
+el segundo cero no es un anuncio; y no está ausente del todo porque encerrar a alguien 15
+segundos sin salida es hostil. Es la misma convención de los videos con recompensa: podés
+irte, pero perdés el premio.
+
+`AD_SECONDS = 15` en el prototipo, con `setTimeout` de 1s. En producción lo reemplaza el SDK
+de anuncios (AdMob), y la regeneración debe dispararse en el callback de "recompensa
+otorgada", **no** al cerrarse el anuncio: si el usuario lo saltea, no hay cambio de comida.
+Tanto el ✕ de la oferta como el "Saltear" limpian el timer y no regeneran.
+
+**Decisión de producto a confirmar**: hoy la compuerta se aplica a todo el que no tenga
+suscripción paga, **incluida la prueba gratis**. La alternativa es que la prueba dé la
+experiencia Plus completa (regeneración directa) y el anuncio aparezca recién al vencer. La
+primera opción muestra el modelo de negocio desde el día uno; la segunda hace que la prueba
+represente de verdad lo que se está comprando. Está implementada la primera porque el estado
+inicial del prototipo es "en prueba" y así la compuerta se puede ver; cambiarla es una línea
+en `askRegen`.
+
+### 4. Lista de compras (pestaña Compras)
 **Propósito**: comprar. Se usa de pie en el almacén, con una mano.
 
 **Layout**: header, pasos, título "Lo que falta" con contador "N de M" a la derecha, **barra
@@ -296,7 +348,7 @@ categoría. El mapa del prototipo:
   (junto con el menú), no de un diccionario en el cliente.
 - Al destildar una comida o regenerarla, la lista se recalcula y **se limpian los tachados**.
 
-### 5. Perfil (pestaña III)
+### 5. Perfil (se entra por el avatar del header, **no** es una pestaña)
 **Propósito**: ver quién sos, en qué estado está tu membresía, y ajustar lo que la app usa
 para armar el menú.
 
@@ -419,10 +471,16 @@ lea como una ficha aparte. Entra deslizándose desde abajo: 24px de traslación 
 
 ## Interactions & Behavior
 
-**Navegación**: barra de pestañas persistente de 62px en Semana, Compras y Perfil — fondo
-`card`, borde superior `l26`, label en 12px. La pestaña activa va en acento, peso 600, con
-un **riel de 2px en acento arriba**; las inactivas en `mut`. Los CTA de Semana quedan
-flotando **62px por encima** de la barra, sobre su degradado.
+**Navegación**: barra de pestañas persistente de 62px con **dos destinos: Semana y
+Compras** — fondo `card`, borde superior `l26`, label 14px. La activa va en acento con peso
+600; la inactiva en `mut` con peso 500. **No hay riel, subrayado ni indicador extra**: la
+distinción es solo color y peso. Los CTA de Semana quedan flotando **62px por encima** de la
+barra, sobre su degradado.
+
+**El Perfil no es una pestaña.** Se entra por el avatar del header y se sale con la flecha
+de volver, que regresa a la pantalla desde la que se entró (`backTo`). Meterlo como tercera
+pestaña le daría el mismo peso que al flujo de comida, que es lo que la app hace; el avatar
+es el patrón que la gente ya reconoce para "mi cuenta".
 
 **Acceso al perfil**: en el header de las tres pantallas del flujo, **solo el avatar** —
 círculo de 36px con las iniciales, sin nombre, sin chevron y sin píldora alrededor. Es el
@@ -437,13 +495,35 @@ capas a pantalla completa con ✕. **Cerrar una capa y entrar al perfil son acci
 distintas** (`closeLayer` vs `goProfile`): si el ✕ reusa el handler de entrada, la capa se
 reabre sola y queda un bucle. "Cerrar sesión" está al final del Perfil.
 
-**Transiciones**: cada pantalla entra con 6px de traslación vertical + fade en 350ms
-(400ms el Ingreso). Los cambios de estado de casillas, chips y botones son **inmediatos, sin transición de
-fondo**: en el prototipo web, una transición sobre el color de fondo dejaba el control
+### Movimiento
+
+Cuatro animaciones en toda la app. No hay más, y no debería haberlas: cada una responde a
+un evento distinto y agregar una quinta las vuelve ruido.
+
+| Nombre | Curva y duración | Dónde | Qué comunica |
+|---|---|---|---|
+| `scr` | 6px ↑ + fade, 350ms ease (400ms el Ingreso) | Entrada de cada pantalla del flujo, y de los bloques que aparecen dentro (sin detección, campo "Otros", "Listo para cocinar", "Listo, ya está todo") | Esto es nuevo, llegó recién |
+| `rise` | 24px ↑ + fade, 320ms `cubic-bezier(.2,.8,.2,1)` | Capas a pantalla completa: Receta, Datos personales, Planes, País | Esto se apoya **encima** de lo anterior, no lo reemplaza |
+| `pop` | escala 0.82 → 1.06 → 1, 220ms | Chips de ingrediente al agregarse | Se sumó un elemento a una lista que ya estabas mirando |
+| `shake` | ±4px horizontal, 300ms | Error de ingreso y error de generación | Algo salió mal acá, no avanzaste |
+
+Más el `spin` de 800ms lineal de los dos spinners (26px en el análisis de foto, 13px dentro
+del CTA al generar), que es indicador de progreso, no animación de interfaz.
+
+La distinción entre `scr` y `rise` es intencional y conviene sostenerla: **la distancia
+codifica la jerarquía**. 6px es "cambió el contenido"; 24px es "se abrió una capa que vas a
+cerrar". Si las dos usan la misma distancia, se pierde la pista de si hay que apretar ✕ o
+volver con la pestaña.
+
+**Los cambios de estado de casillas, chips y botones son inmediatos, sin transición de
+fondo.** En el prototipo web, una transición sobre el color de fondo dejaba el control
 pintado en su valor anterior aunque el estado ya hubiera cambiado. En React Native no aplica
 esa limitación, pero el criterio se mantiene — el feedback correcto vale más que un
-desvanecido de 180ms. Las transiciones de entrada de pantalla (6px + fade) sí se conservan.
-Nada más largo de 400ms: la app tiene que sentirse rápida.
+desvanecido de 180ms. Nada más largo de 400ms: la app tiene que sentirse rápida.
+
+En React Native: `scr`, `rise` y `pop` salen bien con `Animated.timing` sobre
+`translateY`/`opacity`/`scale`; `shake` con una secuencia de cuatro tramos. `LayoutAnimation`
+alcanza para la aparición y borrado de chips.
 
 **Tiempos simulados en el prototipo** (reemplazar por las llamadas reales):
 - Análisis de foto: 1700ms → `POST` de la imagen al backend, que llama a Gemini Vision.
@@ -484,6 +564,7 @@ Estado del prototipo, para mapear a hooks o al store que use la app:
 | `pickedPlan` | `'free' \| 'mensual' \| 'anual'` | Selección en la pantalla de Planes |
 | `country` | string | Código ISO del país. Define moneda y conversión de todos los precios |
 | `countryFrom` | `'plans' \| 'profile'` | A dónde vuelve la capa de país al cerrarse |
+| `ad` | `null \| {i, phase, left}` | Compuerta de regeneración: índice de la comida, `'offer'`/`'playing'`, segundos restantes |
 | `notifs` | `{lista, receta, semana}` | Tres switches de avisos |
 | `weeksPlanned`, `mealsCooked` | number | Estadísticas del perfil |
 
@@ -535,7 +616,7 @@ Mapa de la nomenclatura del prototipo a las claves de `Theme`:
 | `l40` | `border` | `rgba(169,85,44,0.40)` / `rgba(217,131,74,0.40)` |
 | `card` | `chipBg` | los chips ahora van sobre papel, no sobre un tinte del acento |
 | `l14/20/26` | nuevas | tres niveles de hairline |
-| `mut40/60/75` | nuevas | punteado, borde de casilla, placeholder |
+| `mut40/60` | nuevas | punteado, borde de casilla |
 | `ph1`, `ph2` | nuevas | trama del placeholder de foto |
 
 El bordó era el problema principal de la paleta anterior: los tildes de "incluir esta

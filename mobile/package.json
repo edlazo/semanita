@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "main": "index.ts",
   "dependencies": {
-    "@expo-google-fonts/bodoni-moda": "^0.4.2",
-    "@expo-google-fonts/karla": "^0.4.2",
+    "@expo-google-fonts/newsreader": "^0.4.1",
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/metro-runtime": "~56.0.18",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@sentry/react-native": "~7.11.0",

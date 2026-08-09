@@ -67,9 +67,9 @@ export default function IngredientsScreen(props: Props) {
   const styles = getStyles(theme);
 
   const sources: { key: Source; lines: [string, string]; onPress: () => void }[] = [
-    { key: 'camera', lines: ['SACAR', 'FOTO'], onPress: props.onCamera },
-    { key: 'gallery', lines: ['DE LA', 'GALERÍA'], onPress: props.onGallery },
-    { key: 'manual', lines: ['ESCRIBIR', 'A MANO'], onPress: props.onManual },
+    { key: 'camera', lines: ['Sacar', 'foto'], onPress: props.onCamera },
+    { key: 'gallery', lines: ['De la', 'galería'], onPress: props.onGallery },
+    { key: 'manual', lines: ['Escribir', 'a mano'], onPress: props.onManual },
   ];
 
   return (
@@ -98,7 +98,7 @@ export default function IngredientsScreen(props: Props) {
                 onPress={s.onPress}
                 style={[
                   styles.sourceBtn,
-                  { borderColor: theme.border },
+                  { borderColor: theme.line20 },
                   active && { backgroundColor: theme.accent },
                 ]}
               >
@@ -126,7 +126,7 @@ export default function IngredientsScreen(props: Props) {
             <HatchPattern ph1={theme.ph1} ph2={theme.ph2} />
             <Text style={styles.photoCaption}>foto tomada · heladera</Text>
             <View style={styles.detectedBadge}>
-              <Text style={styles.detectedText}>{props.detectedCount} DETECTADOS</Text>
+              <Text style={styles.detectedText}>{props.detectedCount} detectados</Text>
             </View>
           </View>
         )}
@@ -139,26 +139,26 @@ export default function IngredientsScreen(props: Props) {
               mano.
             </Text>
             <View style={styles.emptyActions}>
-              <AccentChipButton title="PROBAR DE NUEVO" onPress={props.onCamera} theme={theme} />
-              <SecondaryButton title="ESCRIBIR A MANO" onPress={props.onManual} theme={theme} />
+              <AccentChipButton title="Probar de nuevo" onPress={props.onCamera} theme={theme} />
+              <SecondaryButton title="Escribir a mano" onPress={props.onManual} theme={theme} />
             </View>
           </View>
         )}
 
         {props.manualOpen && (
           <View style={styles.manualBlock}>
-            <Text style={styles.manualLabel}>ESCRIBILA, UNA POR LÍNEA O SEPARADAS POR COMA</Text>
+            <Text style={styles.manualLabel}>Una por línea, o separadas por coma</Text>
             <TextInput
               style={styles.textarea}
               placeholder="tomate, fideos, queso…"
-              placeholderTextColor={theme.mut75}
+              placeholderTextColor={theme.mut60}
               value={props.manualText}
               onChangeText={props.onManualText}
               multiline
             />
             <View style={styles.manualCta}>
               <AccentChipButton
-                title="SUMAR A LA LISTA"
+                title="Sumar a la lista"
                 onPress={props.onManualAdd}
                 theme={theme}
               />
@@ -171,7 +171,7 @@ export default function IngredientsScreen(props: Props) {
           rule="soft"
           meta={`${props.ingredients.length} ${props.ingredients.length === 1 ? 'ítem' : 'ítems'}`}
         >
-          TENÉS EN CASA
+          Tenés en casa
         </Eyebrow>
 
         {props.ingredients.length === 0 ? (
@@ -196,18 +196,18 @@ export default function IngredientsScreen(props: Props) {
           <TextInput
             style={styles.addInput}
             placeholder="Ej: crema de maní"
-            placeholderTextColor={theme.mut75}
+            placeholderTextColor={theme.mut60}
             value={props.draft}
             onChangeText={props.onDraft}
             onSubmitEditing={props.onAddDraft}
           />
           <Pressable onPress={props.onAddDraft} hitSlop={10}>
-            <Text style={styles.addCta}>AGREGAR</Text>
+            <Text style={styles.addCta}>Agregar</Text>
           </Pressable>
         </View>
 
         <Eyebrow theme={theme} rule="soft">
-          RESTRICCIONES
+          Restricciones
         </Eyebrow>
         <View style={styles.chips}>
           {RESTRICTION_OPTIONS.map((option) => {
@@ -218,7 +218,7 @@ export default function IngredientsScreen(props: Props) {
                 onPress={() => props.onRestriction(option)}
                 style={[
                   styles.pill,
-                  { borderColor: theme.border },
+                  { borderColor: theme.line20 },
                   active && { backgroundColor: theme.accent },
                 ]}
               >
@@ -235,7 +235,7 @@ export default function IngredientsScreen(props: Props) {
             <TextInput
               style={styles.addInput}
               placeholder="Ej: sin frutos secos"
-              placeholderTextColor={theme.mut75}
+              placeholderTextColor={theme.mut60}
               value={props.otherText}
               onChangeText={props.onOtherText}
             />
@@ -253,7 +253,7 @@ export default function IngredientsScreen(props: Props) {
 
       <CtaBar theme={theme}>
         <PrimaryButton
-          title={props.generating ? 'ARMANDO TU SEMANA…' : 'GENERAR MENÚ SEMANAL'}
+          title={props.generating ? 'Armando tu semana…' : 'Generar menú semanal'}
           onPress={props.onGenerate}
           loading={props.generating}
           disabled={props.ingredients.length === 0}
@@ -273,7 +273,7 @@ function getStyles(theme: Theme) {
     // desvanezca por debajo en lugar de cortarse.
     scrollBody: { paddingHorizontal: 26, paddingBottom: 104 },
     title: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 32,
       lineHeight: 34,
       letterSpacing: -0.48,
@@ -294,13 +294,12 @@ function getStyles(theme: Theme) {
       paddingVertical: 11,
       paddingHorizontal: 8,
       borderWidth: 1,
-      borderRadius: radii.btn,
+      borderRadius: radii.btnSecondary,
       alignItems: 'center',
     },
     sourceText: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 10,
-      letterSpacing: 1.2,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
       color: theme.ink,
     },
     photoBox: {
@@ -324,9 +323,8 @@ function getStyles(theme: Theme) {
       borderRadius: 2,
     },
     detectedText: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 9,
-      letterSpacing: 1.26,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
       color: theme.accentInk,
     },
     emptyBlock: {
@@ -337,7 +335,7 @@ function getStyles(theme: Theme) {
       marginBottom: 16,
     },
     emptyTitle: {
-      fontFamily: fonts.display,
+      fontFamily: fonts.displaySemi,
       fontSize: 17,
       lineHeight: 22,
       color: theme.ink,
@@ -353,10 +351,9 @@ function getStyles(theme: Theme) {
     emptyActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
     manualBlock: { marginBottom: 16 },
     manualLabel: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 1.9,
-      color: theme.accent,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: theme.inkSoft,
       marginBottom: 7,
     },
     textarea: {
@@ -388,12 +385,14 @@ function getStyles(theme: Theme) {
       gap: 7,
       backgroundColor: theme.chipBg,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.line20,
       borderRadius: radii.chip,
       paddingVertical: 7,
-      paddingHorizontal: 13,
+      paddingHorizontal: 15,
+      // El handoff pide 44px de alto mínimo: es el área táctil accesible.
+      minHeight: 44,
     },
-    chipText: { fontFamily: fonts.body, fontSize: 13.5, color: theme.ink },
+    chipText: { fontFamily: fonts.body, fontSize: 13, color: theme.ink },
     addRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -407,8 +406,7 @@ function getStyles(theme: Theme) {
     addInput: { flex: 1, fontFamily: fonts.body, fontSize: 14.5, color: theme.ink, paddingVertical: 4 },
     addCta: {
       fontFamily: fonts.bodySemi,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.accent,
     },
     pill: {

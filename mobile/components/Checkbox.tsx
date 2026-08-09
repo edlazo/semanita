@@ -7,16 +7,24 @@ type Props = {
   /** Omitir cuando un Pressable padre ya maneja el toque: evita el doble toggle en web. */
   onPress?: () => void;
   size?: number;
+  /** Redonda en el menú, casi cuadrada en la lista: se distinguen a propósito. */
+  shape?: 'meal' | 'shopping';
   theme: Theme;
 };
 
-export default function Checkbox({ checked, onPress, size = 22, theme }: Props) {
+export default function Checkbox({
+  checked,
+  onPress,
+  size = 22,
+  shape = 'meal',
+  theme,
+}: Props) {
   const box = [
     styles.box,
     {
       width: size,
       height: size,
-      borderRadius: radii.check,
+      borderRadius: shape === 'meal' ? radii.checkMeal : radii.checkShopping,
       borderColor: checked ? theme.accent : theme.mut60,
       backgroundColor: checked ? theme.accent : 'transparent',
     },
