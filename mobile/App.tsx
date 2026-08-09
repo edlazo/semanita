@@ -24,7 +24,7 @@ import IngredientsScreen, { PhotoState, Source } from './screens/IngredientsScre
 import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import PaywallScreen from './screens/PaywallScreen';
-import { Entitlement, showRewardedAd, startSubscription, trialLabel } from './lib/plan';
+import { Entitlement, startSubscription, trialLabel } from './lib/plan';
 import ProfileModal from './components/ProfileModal';
 import AdGateModal from './components/AdGateModal';
 import {
@@ -40,7 +40,7 @@ initTelemetry();
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
-const DAYS = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 function storageKeyFor(userId: string) {
   return `semanita:currentWeek:${userId}`;
@@ -145,7 +145,6 @@ export default function App() {
   const [displayName, setDisplayName] = useState('');
   /** Comida esperando confirmación para regenerar con anuncio. */
   const [adGateIndex, setAdGateIndex] = useState<number | null>(null);
-  const [watchingAd, setWatchingAd] = useState(false);
 
   const effectiveRestrictions =
     restriction === 'Ninguna' ? '' : restriction === 'Otros' ? otherText.trim() : restriction;
@@ -456,22 +455,13 @@ export default function App() {
     setAdGateIndex(index);
   }
 
-  async function confirmAdAndRegenerate() {
+  /** Solo se llama cuando el anuncio llegó al final: saltear no regenera. */
+  async function onAdRewarded() {
     const index = adGateIndex;
     if (index === null) return;
-    setWatchingAd(true);
-    try {
-      const vio = await showRewardedAd();
-      if (!vio) {
-        setMenuError('Necesitás ver el anuncio completo para regenerar esta comida.');
-        return;
-      }
-      track('anuncio_visto', { motivo: 'regenerar' });
-      setAdGateIndex(null);
-      await regenerateMeal(index);
-    } finally {
-      setWatchingAd(false);
-    }
+    track('anuncio_visto', { motivo: 'regenerar' });
+    setAdGateIndex(null);
+    await regenerateMeal(index);
   }
 
   async function regenerateMeal(index: number) {
@@ -702,7 +692,6 @@ export default function App() {
           enabledSteps={enabledSteps}
           onGoTo={setStep}
           planLabel={planLabel}
-          regenNeedsAd={!entitlement?.subscribed}
           meals={meals}
           days={DAYS}
           selected={selectedMeals}
@@ -738,14 +727,13 @@ export default function App() {
 
       <AdGateModal
         visible={adGateIndex !== null}
+        mealName={adGateIndex !== null ? (meals?.[adGateIndex]?.name ?? '') : ''}
         onCancel={() => setAdGateIndex(null)}
-        onWatch={confirmAdAndRegenerate}
+        onRewarded={onAdRewarded}
         onSubscribe={() => {
           setAdGateIndex(null);
           setProfileOpen(true);
         }}
-        loading={watchingAd}
-        mealName={adGateIndex !== null ? (meals?.[adGateIndex]?.name ?? '') : ''}
         theme={theme}
       />
 

@@ -58,7 +58,7 @@ export default function RecipeModal({
       <View style={styles.sheet}>
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.eyebrow}>{day ? `RECETA · ${day}` : 'RECETA'}</Text>
+            <Text style={styles.eyebrow}>{day ? `Receta · ${day}` : 'Receta'}</Text>
             <Text style={styles.title}>{mealName}</Text>
           </View>
           <Pressable
@@ -74,17 +74,17 @@ export default function RecipeModal({
         {recipe && (
           <View style={styles.metaStrip}>
             <View style={styles.metaCell}>
-              <Text style={styles.metaLabel}>PORCIONES</Text>
+              <Text style={styles.metaLabel}>Porciones</Text>
               <Text style={styles.metaValue}>{recipe.servings}</Text>
             </View>
             <View style={styles.metaDivider} />
             <View style={[styles.metaCell, styles.metaCellPadded]}>
-              <Text style={styles.metaLabel}>TIEMPO</Text>
+              <Text style={styles.metaLabel}>Tiempo</Text>
               <Text style={styles.metaValue}>{recipe.time}</Text>
             </View>
             <View style={styles.metaDivider} />
             <View style={[styles.metaCell, styles.metaCellPadded]}>
-              <Text style={styles.metaLabel}>DIFICULTAD</Text>
+              <Text style={styles.metaLabel}>Dificultad</Text>
               <Text style={styles.metaValue}>{recipe.difficulty}</Text>
             </View>
           </View>
@@ -97,7 +97,7 @@ export default function RecipeModal({
 
           {recipe && (
             <>
-              <Text style={styles.sectionLabel}>INGREDIENTES</Text>
+              <Text style={styles.sectionLabel}>Ingredientes</Text>
               <View style={styles.ingredientBlock}>
                 {recipe.ingredients.map((item, i) => (
                   <View key={`${item.name}-${i}`} style={styles.ingredientRow}>
@@ -108,7 +108,7 @@ export default function RecipeModal({
                 ))}
               </View>
 
-              <Text style={styles.sectionLabel}>PREPARACIÓN</Text>
+              <Text style={styles.sectionLabel}>Preparación</Text>
               {recipe.steps.map((step, i) => (
                 <View key={`step-${i}`} style={styles.stepRow}>
                   <Text style={styles.stepNumber}>{i + 1}</Text>
@@ -143,9 +143,8 @@ function getStyles(theme: Theme) {
       flexShrink: 1,
     },
     eyebrow: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 2.09,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
       color: theme.accent,
       marginBottom: 10,
     },
@@ -186,14 +185,14 @@ function getStyles(theme: Theme) {
       backgroundColor: theme.line26,
     },
     metaLabel: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 9,
-      letterSpacing: 1.62,
-      color: theme.accent,
+      fontFamily: fonts.body,
+      fontSize: 12.5,
+      color: theme.inkSoft,
       marginBottom: 4,
     },
+    // Los datos duros (porciones, tiempo) van en sans, no en serif.
     metaValue: {
-      fontFamily: fonts.displaySemi,
+      fontFamily: fonts.bodyMedium,
       fontSize: 17,
       color: theme.ink,
     },
@@ -206,9 +205,9 @@ function getStyles(theme: Theme) {
     },
     sectionLabel: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 2.09,
-      color: theme.accent,
+      fontSize: 15,
+      letterSpacing: -0.15,
+      color: theme.ink,
       marginBottom: 8,
     },
     ingredientBlock: {
@@ -235,7 +234,7 @@ function getStyles(theme: Theme) {
       borderBottomColor: theme.mut40,
     },
     ingredientQty: {
-      fontFamily: fonts.displaySemi,
+      fontFamily: fonts.bodyMedium,
       fontSize: 13.5,
       color: theme.inkSoft,
     },
@@ -245,8 +244,8 @@ function getStyles(theme: Theme) {
       paddingBottom: 14,
     },
     stepNumber: {
-      fontFamily: fonts.displaySemi,
-      fontSize: 22,
+      fontFamily: fonts.bodySemi,
+      fontSize: 20,
       lineHeight: 24,
       color: theme.accent,
       minWidth: 22,

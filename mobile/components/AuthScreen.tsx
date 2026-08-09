@@ -56,16 +56,16 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
   return (
     <ScreenEntrance style={styles.root} duration={400}>
       <View style={styles.header}>
-        <Text style={styles.brand}>SEMANITA</Text>
+        <Text style={styles.brand}>Semanita</Text>
         <Pressable onPress={toggleMode} hitSlop={10}>
           <Text style={styles.headerAction}>
-            {mode === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}
+            {mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
           </Text>
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.eyebrow}>DESDE 2026 · COCINA DE SEMANA</Text>
+        <Text style={styles.eyebrow}>Desde 2026 · Cocina de semana</Text>
 
         <Text style={styles.title}>
           Comé bien{'\n'}toda la{'\n'}
@@ -82,7 +82,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
 
         <View style={styles.fields}>
           <View>
-            <Text style={styles.fieldLabel}>EMAIL</Text>
+            <Text style={styles.fieldLabel}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="rocio@correo.com"
@@ -98,7 +98,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
             />
           </View>
           <View>
-            <Text style={styles.fieldLabel}>CONTRASEÑA</Text>
+            <Text style={styles.fieldLabel}>Contraseña</Text>
             <TextInput
               style={styles.input}
               placeholder="mínimo 6 caracteres"
@@ -123,7 +123,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
 
         <View style={styles.ctaWrap}>
           <PrimaryButton
-            title={signup ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}
+            title={signup ? 'Crear cuenta' : 'Iniciar sesión'}
             onPress={handleSubmit}
             loading={loading}
             disabled={!email || !password}
@@ -145,7 +145,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
           </Text>
         </Text>
 
-        <Text style={styles.footer}>EMPORIO DE COMIDA CASERA</Text>
+        <Text style={styles.footer}>Emporio de comida casera</Text>
       </ScrollView>
     </ScreenEntrance>
   );
@@ -167,15 +167,14 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
     },
     brand: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 11,
-      letterSpacing: 3.3,
+      fontFamily: fonts.bodyBold,
+      fontSize: 16,
+      letterSpacing: -0.32,
       color: theme.ink,
     },
     headerAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.accent,
     },
     // El bloque va dentro del scroll para que el pie siga alcanzable en pantallas cortas.
@@ -187,9 +186,8 @@ function getStyles(theme: Theme) {
       paddingBottom: 26,
     },
     eyebrow: {
-      fontFamily: fonts.body,
-      fontSize: 11,
-      letterSpacing: 2.64,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
       color: theme.accent,
       marginBottom: 14,
     },
@@ -223,9 +221,8 @@ function getStyles(theme: Theme) {
     },
     fieldLabel: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 9.5,
-      letterSpacing: 1.9,
-      color: theme.accent,
+      fontSize: 13,
+      color: theme.inkSoft,
       marginBottom: 4,
     },
     input: {
@@ -267,8 +264,7 @@ function getStyles(theme: Theme) {
       marginTop: 30,
       textAlign: 'center',
       fontFamily: fonts.body,
-      fontSize: 10,
-      letterSpacing: 1.6,
+      fontSize: 12,
       color: theme.mut60,
     },
   });

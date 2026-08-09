@@ -6,9 +6,9 @@ import { fonts, Mode, Theme } from '../theme';
 export type Step = 1 | 2 | 3;
 
 const STEP_LABELS: Record<Step, string> = {
-  1: 'INGREDIENTES',
-  2: 'MENÚ',
-  3: 'COMPRAS',
+  1: 'Ingredientes',
+  2: 'Menú',
+  3: 'Compras',
 };
 
 type HeaderProps = {
@@ -42,12 +42,12 @@ export function Header({
         style={styles.brandBlock}
         accessibilityLabel="Abrir tu perfil"
       >
-        <Text style={styles.brand}>SEMANITA</Text>
+        <Text style={styles.brand}>Semanita</Text>
         {planLabel && <Text style={styles.planLabel}>{planLabel}</Text>}
       </Pressable>
       <View style={styles.headerActions}>
         <Pressable onPress={toggleMode} hitSlop={10}>
-          <Text style={styles.modeAction}>{mode === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}</Text>
+          <Text style={styles.modeAction}>{mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}</Text>
         </Pressable>
         {actionLabel && onAction && (
           <Pressable onPress={onAction} hitSlop={10}>

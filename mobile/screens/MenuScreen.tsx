@@ -23,8 +23,6 @@ type Props = {
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
   planLabel?: string | null;
-  /** Sin suscripción, regenerar pide ver un anuncio: el botón lo anuncia. */
-  regenNeedsAd: boolean;
 
   meals: Meal[];
   days: string[];
@@ -55,7 +53,7 @@ export default function MenuScreen(props: Props) {
           theme={theme}
           mode={props.mode}
           toggleMode={props.toggleMode}
-          actionLabel="SEMANA NUEVA"
+          actionLabel="Semana nueva"
           onAction={props.onNewWeek}
           planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
@@ -117,13 +115,13 @@ export default function MenuScreen(props: Props) {
                       <View style={styles.readyBadge}>
                         <CheckMark size={12} color={theme.accentInk} thickness={1.5} />
                       </View>
-                      <Text style={styles.readyLabel}>LISTO PARA COCINAR</Text>
+                      <Text style={styles.readyLabel}>Listo para cocinar</Text>
                     </View>
                   );
                 }
                 return (
                   <View style={styles.missingRow}>
-                    <Text style={styles.missingLabel}>FALTA</Text>
+                    <Text style={styles.missingLabel}>Falta</Text>
                     <Text style={styles.missingText}>{pending.join(', ')}</Text>
                   </View>
                 );
@@ -132,7 +130,7 @@ export default function MenuScreen(props: Props) {
               {on && (
                 <View style={styles.actions}>
                   <Pressable onPress={() => props.onOpenRecipe(i)} hitSlop={8}>
-                    <Text style={styles.recipeAction}>VER RECETA</Text>
+                    <Text style={styles.recipeAction}>Ver receta</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => props.onRegenerate(i)}
@@ -141,14 +139,11 @@ export default function MenuScreen(props: Props) {
                     style={styles.regenWrap}
                   >
                     {regenerating && <ActivityIndicator size="small" color={theme.inkSoft} />}
+                    {/* No anuncia que puede costar un anuncio: eso convertiría
+                        cada tarjeta en un recordatorio de que no pagaste. El
+                        costo aparece al tocar, cuando ya decidiste. */}
                     <Text style={styles.regenAction}>
-                      {regenerating
-                        ? 'REGENERANDO…'
-                        : props.regenNeedsAd
-                          ? 'REGENERAR · VER ANUNCIO'
-                          : (props.regenCounts[i] ?? 0) > 0
-                            ? 'REGENERAR OTRA VEZ'
-                            : 'REGENERAR'}
+                      {regenerating ? 'Cambiando…' : 'Otra'}
                     </Text>
                   </Pressable>
                 </View>
@@ -160,7 +155,7 @@ export default function MenuScreen(props: Props) {
 
       <CtaBar theme={theme}>
         <PrimaryButton
-          title="VER LISTA DE COMPRAS"
+          title="Ver lista de compras"
           meta={`${props.itemCount} ${props.itemCount === 1 ? 'ítem' : 'ítems'}`}
           onPress={props.onGoShopping}
           loading={props.shoppingLoading}
@@ -227,8 +222,7 @@ function getStyles(theme: Theme) {
     },
     day: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 1.9,
+      fontSize: 12.5,
       color: theme.accent,
     },
     mealName: {
@@ -259,8 +253,7 @@ function getStyles(theme: Theme) {
     },
     missingLabel: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9,
-      letterSpacing: 1.44,
+      fontSize: 13,
       color: theme.accent,
     },
     missingText: {
@@ -288,8 +281,7 @@ function getStyles(theme: Theme) {
     },
     readyLabel: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 1.9,
+      fontSize: 13,
       color: theme.accent,
     },
     actions: {
@@ -302,8 +294,7 @@ function getStyles(theme: Theme) {
     },
     recipeAction: {
       fontFamily: fonts.bodySemi,
-      fontSize: 11,
-      letterSpacing: 1.1,
+      fontSize: 13,
       color: theme.ink,
       borderBottomWidth: 1,
       borderBottomColor: theme.accent,
@@ -312,8 +303,7 @@ function getStyles(theme: Theme) {
     regenWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     regenAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 11,
-      letterSpacing: 1.1,
+      fontSize: 13,
       color: theme.inkSoft,
     },
     error: {

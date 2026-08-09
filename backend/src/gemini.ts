@@ -56,13 +56,13 @@ export async function detectIngredients(imageBuffer: Buffer, mimeType: string): 
 }
 
 export const DAYS = [
-  "LUNES",
-  "MARTES",
-  "MIÉRCOLES",
-  "JUEVES",
-  "VIERNES",
-  "SÁBADO",
-  "DOMINGO",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
 ] as const;
 
 export type Meal = {

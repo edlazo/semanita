@@ -58,7 +58,7 @@ export default function ShoppingScreen(props: Props) {
           theme={theme}
           mode={props.mode}
           toggleMode={props.toggleMode}
-          actionLabel="SEMANA NUEVA"
+          actionLabel="Semana nueva"
           onAction={props.onNewWeek}
           planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
@@ -81,7 +81,7 @@ export default function ShoppingScreen(props: Props) {
         {ordered.map((cat) => (
           <View key={cat.category} style={styles.categoryBlock}>
             <Eyebrow theme={theme} rule="accent" meta={String(cat.items.length)}>
-              {cat.category.toUpperCase()}
+              {cat.category}
             </Eyebrow>
             {cat.items.map((item) => {
               const key = itemKey(cat.category, item);
@@ -112,9 +112,9 @@ export default function ShoppingScreen(props: Props) {
         {allDone ? (
           // Con todo comprado, volver al menú deja de ser una salida y pasa a ser
           // el próximo paso: ahí están las comidas listas y sus recetas.
-          <PrimaryButton title="VOLVER AL MENÚ" onPress={props.onBackToMenu} theme={theme} />
+          <PrimaryButton title="Volver al menú" onPress={props.onBackToMenu} theme={theme} />
         ) : (
-          <SecondaryButton title="VOLVER AL MENÚ" onPress={props.onBackToMenu} fullWidth theme={theme} />
+          <SecondaryButton title="Volver al menú" onPress={props.onBackToMenu} fullWidth theme={theme} />
         )}
       </CtaBar>
     </ScreenEntrance>

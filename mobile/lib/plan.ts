@@ -29,7 +29,7 @@ export async function startSubscription(): Promise<boolean> {
 export function trialLabel(entitlement: Entitlement | null): string | null {
   if (!entitlement) return null;
   if (entitlement.subscribed) return null;
-  if (entitlement.status === 'expired') return 'PRUEBA TERMINADA';
+  if (entitlement.status === 'expired') return 'Prueba terminada';
   const d = entitlement.trialDaysLeft;
-  return d === 1 ? 'ÚLTIMO DÍA DE PRUEBA' : `${d} DÍAS DE PRUEBA`;
+  return d === 1 ? 'Último día de prueba' : `${d} días de prueba`;
 }

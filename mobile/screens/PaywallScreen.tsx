@@ -27,21 +27,21 @@ export default function PaywallScreen(props: Props) {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <Text style={styles.brand}>SEMANITA</Text>
+        <Text style={styles.brand}>Semanita</Text>
         <View style={styles.headerActions}>
           <Pressable onPress={props.toggleMode} hitSlop={10}>
             <Text style={styles.modeAction}>
-              {props.mode === 'dark' ? 'MODO CLARO' : 'MODO OSCURO'}
+              {props.mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
             </Text>
           </Pressable>
           <Pressable onPress={props.onLogout} hitSlop={10}>
-            <Text style={styles.secondaryAction}>SALIR</Text>
+            <Text style={styles.secondaryAction}>Salir</Text>
           </Pressable>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.eyebrow}>SE TERMINÓ TU PRUEBA</Text>
+        <Text style={styles.eyebrow}>Se terminó tu prueba</Text>
 
         <Text style={styles.title}>
           Seguí comiendo{'\n'}bien toda la{'\n'}
@@ -70,14 +70,14 @@ export default function PaywallScreen(props: Props) {
 
         <View style={styles.ctaWrap}>
           <PrimaryButton
-            title="SUSCRIBIRME"
+            title="Suscribirme"
             onPress={props.onSubscribe}
             loading={props.subscribing}
             theme={theme}
           />
         </View>
 
-        <Text style={styles.footer}>EMPORIO DE COMIDA CASERA</Text>
+        <Text style={styles.footer}>Emporio de comida casera</Text>
       </ScrollView>
     </View>
   );
@@ -94,22 +94,20 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
     },
     brand: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 11,
-      letterSpacing: 3.3,
+      fontFamily: fonts.bodyBold,
+      fontSize: 16,
+      letterSpacing: -0.32,
       color: theme.ink,
     },
     headerActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
     modeAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.accent,
     },
     secondaryAction: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 10,
-      letterSpacing: 1.4,
+      fontSize: 13,
       color: theme.inkSoft,
     },
     body: {
@@ -120,9 +118,8 @@ function getStyles(theme: Theme) {
       paddingBottom: 26,
     },
     eyebrow: {
-      fontFamily: fonts.body,
-      fontSize: 11,
-      letterSpacing: 2.64,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
       color: theme.accent,
       marginBottom: 14,
     },
@@ -178,8 +175,7 @@ function getStyles(theme: Theme) {
       marginTop: 30,
       textAlign: 'center',
       fontFamily: fonts.body,
-      fontSize: 10,
-      letterSpacing: 1.6,
+      fontSize: 12,
       color: theme.mut60,
     },
   });

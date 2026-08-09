@@ -70,7 +70,7 @@ export default function ProfileModal(props: Props) {
       <View style={styles.sheet}>
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.eyebrow}>TU CUENTA</Text>
+            <Text style={styles.eyebrow}>Tu cuenta</Text>
             <Text style={styles.title}>{props.name.trim() || 'Tu perfil'}</Text>
           </View>
           <Pressable
@@ -84,7 +84,7 @@ export default function ProfileModal(props: Props) {
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
-          <Text style={styles.sectionLabel}>NOMBRE</Text>
+          <Text style={styles.sectionLabel}>Nombre</Text>
           <TextInput
             style={styles.input}
             placeholder="Cómo querés que te llamemos"
@@ -97,24 +97,24 @@ export default function ProfileModal(props: Props) {
           />
           <View style={styles.saveRow}>
             <SecondaryButton
-              title={saving ? 'GUARDANDO…' : saved ? 'GUARDADO' : 'GUARDAR'}
+              title={saving ? 'Guardando…' : saved ? 'Guardado' : 'Guardar'}
               onPress={save}
               disabled={saving || name.trim() === props.name.trim()}
               theme={theme}
             />
           </View>
 
-          <Text style={[styles.sectionLabel, styles.spaced]}>EMAIL</Text>
+          <Text style={[styles.sectionLabel, styles.spaced]}>Email</Text>
           <Text style={styles.readonly}>{props.email}</Text>
 
-          <Text style={[styles.sectionLabel, styles.spaced]}>TU PLAN</Text>
+          <Text style={[styles.sectionLabel, styles.spaced]}>Tu plan</Text>
           <View style={styles.planCard}>
             <Text style={styles.planTitle}>{planTitle(props.entitlement)}</Text>
             <Text style={styles.planBody}>{planBody(props.entitlement)}</Text>
             {!props.entitlement?.subscribed && (
               <View style={styles.planCta}>
                 <PrimaryButton
-                  title="SUSCRIBIRME"
+                  title="Suscribirme"
                   onPress={props.onSubscribe}
                   loading={props.subscribing}
                   theme={theme}
@@ -124,7 +124,7 @@ export default function ProfileModal(props: Props) {
           </View>
 
           <View style={styles.logoutRow}>
-            <SecondaryButton title="CERRAR SESIÓN" onPress={props.onLogout} fullWidth theme={theme} />
+            <SecondaryButton title="Cerrar sesión" onPress={props.onLogout} fullWidth theme={theme} />
           </View>
         </ScrollView>
       </View>
@@ -144,9 +144,8 @@ function getStyles(theme: Theme) {
     },
     headerText: { flexShrink: 1 },
     eyebrow: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 2.09,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
       color: theme.accent,
       marginBottom: 10,
     },
@@ -170,9 +169,9 @@ function getStyles(theme: Theme) {
     body: { paddingHorizontal: 26, paddingTop: 26, paddingBottom: 20 },
     sectionLabel: {
       fontFamily: fonts.bodySemi,
-      fontSize: 9.5,
-      letterSpacing: 2.09,
-      color: theme.accent,
+      fontSize: 15,
+      letterSpacing: -0.15,
+      color: theme.ink,
       borderBottomWidth: 1,
       borderBottomColor: theme.line26,
       paddingBottom: 6,
