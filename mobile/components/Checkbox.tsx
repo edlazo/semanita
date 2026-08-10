@@ -29,7 +29,11 @@ export default function Checkbox({
       backgroundColor: checked ? theme.accent : 'transparent',
     },
   ];
-  const mark = checked ? <CheckMark size={size} color={theme.accentInk} /> : null;
+  // El ✓ ocupa dos tercios de la casilla y va de trazo fino: a tamaño completo
+  // y trazo 2 llenaba el círculo y se leía como otra fuente.
+  const mark = checked ? (
+    <CheckMark size={size * 0.66} color={theme.accentInk} thickness={1.5} />
+  ) : null;
 
   if (!onPress) {
     return <View style={box}>{mark}</View>;
