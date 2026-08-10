@@ -24,7 +24,7 @@ import IngredientsScreen, { PhotoState, Source } from './screens/IngredientsScre
 import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import PaywallScreen from './screens/PaywallScreen';
-import { Entitlement, startSubscription, trialLabel } from './lib/plan';
+import { Entitlement, startSubscription } from './lib/plan';
 import AdGateModal from './components/AdGateModal';
 import ProfileScreen, { Notifs } from './screens/ProfileScreen';
 import PersonalDataLayer from './screens/PersonalDataLayer';
@@ -662,8 +662,6 @@ export default function App() {
     );
   }
 
-  const planLabel = trialLabel(entitlement);
-
   const displayEmail = session.user.email ?? '';
 
   return (
@@ -676,12 +674,9 @@ export default function App() {
           profileName={displayName}
           profileEmail={displayEmail}
           theme={theme}
-          mode={mode}
-          toggleMode={toggleMode}
           onOpenProfile={() => setProfileOpen(true)}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
-          planLabel={planLabel}
           source={source}
           photoState={photoState}
           detectedCount={detectedCount}
@@ -712,13 +707,9 @@ export default function App() {
           profileName={displayName}
           profileEmail={displayEmail}
           theme={theme}
-          mode={mode}
-          toggleMode={toggleMode}
-          onNewWeek={resetWeek}
           onOpenProfile={() => setProfileOpen(true)}
           enabledSteps={enabledSteps}
           onGoTo={setStep}
-          planLabel={planLabel}
           meals={meals}
           days={DAYS}
           selected={selectedMeals}
@@ -738,11 +729,7 @@ export default function App() {
       {tab === 'compras' && shoppingReady && (
         <ShoppingScreen
           theme={theme}
-          mode={mode}
-          toggleMode={toggleMode}
-          onNewWeek={resetWeek}
           onOpenProfile={() => setProfileOpen(true)}
-          planLabel={planLabel}
           profileName={displayName}
           profileEmail={displayEmail}
           categories={shownCategories}
@@ -801,10 +788,16 @@ export default function App() {
           setCountryFrom('profile');
           setCountryOpen(true);
         }}
+        onNewWeek={() => {
+          setProfileOpen(false);
+          resetWeek();
+        }}
         onLogout={() => {
           setProfileOpen(false);
           logout();
         }}
+        mode={mode}
+        toggleMode={toggleMode}
         theme={theme}
       />
 

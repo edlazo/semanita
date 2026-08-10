@@ -25,11 +25,3 @@ export async function showRewardedAd(): Promise<boolean> {
 export async function startSubscription(): Promise<boolean> {
   return false;
 }
-
-export function trialLabel(entitlement: Entitlement | null): string | null {
-  if (!entitlement) return null;
-  if (entitlement.subscribed) return null;
-  if (entitlement.status === 'expired') return 'Prueba terminada';
-  const d = entitlement.trialDaysLeft;
-  return d === 1 ? 'Último día de prueba' : `${d} días de prueba`;
-}

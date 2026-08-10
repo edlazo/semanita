@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { fonts, Mode, Theme } from '../theme';
+import { HatchPattern } from './Motion';
+import { fonts, Theme } from '../theme';
 
 /** Compras dejó de ser un paso: ahora es una pestaña. */
 export type Step = 1 | 2;
@@ -13,12 +14,6 @@ const STEP_LABELS: Record<Step, string> = {
 
 type HeaderProps = {
   theme: Theme;
-  mode: Mode;
-  toggleMode: () => void;
-  actionLabel?: string;
-  onAction?: () => void;
-  /** Ej. "12 días de prueba". Se omite en cuentas suscriptas. */
-  planLabel?: string | null;
   onOpenProfile?: () => void;
   profileName?: string;
   profileEmail?: string;
@@ -26,11 +21,6 @@ type HeaderProps = {
 
 export function Header({
   theme,
-  mode,
-  toggleMode,
-  actionLabel,
-  onAction,
-  planLabel,
   onOpenProfile,
   profileName = '',
   profileEmail = '',
@@ -38,29 +28,12 @@ export function Header({
   const styles = getStyles(theme);
   return (
     <View style={styles.header}>
-      <View style={styles.brandBlock}>
-        <Text style={styles.brand}>Semanita</Text>
-        {planLabel && <Text style={styles.planLabel}>{planLabel}</Text>}
-      </View>
-      <View style={styles.headerActions}>
-        <Pressable onPress={toggleMode} hitSlop={10}>
-          <Text style={styles.modeAction}>{mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}</Text>
-        </Pressable>
-        {actionLabel && onAction && (
-          <Pressable onPress={onAction} hitSlop={10}>
-            <Text style={styles.secondaryAction}>{actionLabel}</Text>
-          </Pressable>
-        )}
-        {/* Solo el avatar: es el patrón que la gente ya reconoce para "mi cuenta". */}
-        {onOpenProfile && (
-          <Avatar
-            theme={theme}
-            name={profileName}
-            email={profileEmail}
-            onPress={onOpenProfile}
-          />
-        )}
-      </View>
+      <Text style={styles.brand}>Semanita</Text>
+      {/* Solo la marca y el avatar. El cambio de modo y el reinicio de la
+          semana viven en el Perfil: acá competían con el contenido. */}
+      {onOpenProfile && (
+        <Avatar theme={theme} name={profileName} email={profileEmail} onPress={onOpenProfile} />
+      )}
     </View>
   );
 }
@@ -92,13 +65,19 @@ export function StepIndicator({ theme, current, enabled, onGoTo }: StepIndicator
               onPress={reachable ? () => onGoTo(step) : undefined}
               disabled={!reachable}
               hitSlop={8}
-              style={[
-                styles.step,
-                !active && (reachable ? styles.stepReachable : styles.stepInactive),
-              ]}
+              style={[styles.step, !active && !reachable && styles.stepInactive]}
             >
-              <Text style={[styles.stepNumber, active && styles.stepNumberActive]}>{step}</Text>
-              <Text style={[styles.stepLabel, active && styles.stepLabelActive]}>
+              {/* Un paso ya recorrido se dibuja como vuelta atrás, no como número. */}
+              <Text style={[styles.stepNumber, (active || reachable) && styles.stepNumberActive]}>
+                {reachable ? '←' : step}
+              </Text>
+              <Text
+                style={[
+                  styles.stepLabel,
+                  active && styles.stepLabelActive,
+                  reachable && styles.stepLabelReachable,
+                ]}
+              >
                 {STEP_LABELS[step]}
               </Text>
             </Pressable>
@@ -174,16 +153,17 @@ export function Avatar({
   ];
   const text = [styles.avatarText, { fontSize: size * 0.36 }];
 
-  if (!onPress) {
-    return (
-      <View style={circle}>
-        <Text style={text}>{label}</Text>
-      </View>
-    );
-  }
+  const inner = (
+    <>
+      <HatchPattern ph1={theme.ph1} ph2={theme.ph2} />
+      <Text style={text}>{label}</Text>
+    </>
+  );
+
+  if (!onPress) return <View style={circle}>{inner}</View>;
   return (
     <Pressable onPress={onPress} hitSlop={8} style={circle} accessibilityLabel="Abrir tu perfil">
-      <Text style={text}>{label}</Text>
+      {inner}
     </Pressable>
   );
 }
@@ -243,35 +223,11 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
       paddingBottom: 10,
     },
-    brandBlock: {
-      flexShrink: 1,
-      gap: 3,
-    },
     brand: {
       fontFamily: fonts.bodyBold,
       fontSize: 16,
       letterSpacing: -0.32,
       color: theme.ink,
-    },
-    planLabel: {
-      fontFamily: fonts.body,
-      fontSize: 12,
-      color: theme.accent,
-    },
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 16,
-    },
-    modeAction: {
-      fontFamily: fonts.bodyMedium,
-      fontSize: 13,
-      color: theme.accent,
-    },
-    secondaryAction: {
-      fontFamily: fonts.bodyMedium,
-      fontSize: 13,
-      color: theme.inkSoft,
     },
     steps: {
       flexDirection: 'row',
@@ -314,12 +270,15 @@ function getStyles(theme: Theme) {
       color: theme.accent,
     },
     stepLabel: {
-      fontFamily: fonts.bodyMedium,
+      fontFamily: fonts.bodySemi,
       fontSize: 13,
       color: theme.ink,
     },
     stepLabelActive: {
       fontFamily: fonts.bodySemi,
+    },
+    stepLabelReachable: {
+      color: theme.accent,
     },
     tabBar: {
       flexDirection: 'row',
@@ -343,7 +302,8 @@ function getStyles(theme: Theme) {
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.line20,
-      backgroundColor: theme.ph1,
+      // Sin padding vertical: cualquier relleno lo vuelve elíptico.
+      overflow: 'hidden',
     },
     avatarText: {
       fontFamily: fonts.bodySemi,

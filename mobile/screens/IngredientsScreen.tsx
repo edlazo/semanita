@@ -11,7 +11,7 @@ import { AccentChipButton, PrimaryButton, SecondaryButton } from '../components/
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
 import { CrossMark } from '../components/Glyphs';
 import { HatchPattern, PopIn, ScreenEntrance, Shake } from '../components/Motion';
-import { fonts, radii, Mode, Theme } from '../theme';
+import { fonts, radii, Theme } from '../theme';
 
 export type PhotoState = 'none' | 'loading' | 'ok' | 'empty';
 export type Source = 'camera' | 'gallery' | 'manual' | null;
@@ -27,12 +27,9 @@ export const RESTRICTION_OPTIONS = [
 
 type Props = {
   theme: Theme;
-  mode: Mode;
-  toggleMode: () => void;
   onOpenProfile: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
-  planLabel?: string | null;
   profileName: string;
   profileEmail: string;
 
@@ -79,9 +76,6 @@ export default function IngredientsScreen(props: Props) {
       <View style={styles.top}>
         <Header
           theme={theme}
-          mode={props.mode}
-          toggleMode={props.toggleMode}
-          planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
           profileName={props.profileName}
           profileEmail={props.profileEmail}

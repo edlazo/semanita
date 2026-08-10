@@ -4,7 +4,7 @@ import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header } from '../components/Chrome';
 import { ScreenEntrance } from '../components/Motion';
 import { itemKey, ShoppingCategory } from '../lib/shopping';
-import { fonts, radii, Mode, Theme } from '../theme';
+import { fonts, radii, Theme } from '../theme';
 
 export type { ShoppingCategory };
 
@@ -22,11 +22,7 @@ function orderCategories(categories: ShoppingCategory[]): ShoppingCategory[] {
 
 type Props = {
   theme: Theme;
-  mode: Mode;
-  toggleMode: () => void;
-  onNewWeek: () => void;
   onOpenProfile: () => void;
-  planLabel?: string | null;
   profileName: string;
   profileEmail: string;
 
@@ -56,11 +52,6 @@ export default function ShoppingScreen(props: Props) {
       <View style={styles.top}>
         <Header
           theme={theme}
-          mode={props.mode}
-          toggleMode={props.toggleMode}
-          actionLabel="Semana nueva"
-          onAction={props.onNewWeek}
-          planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
           profileName={props.profileName}
           profileEmail={props.profileEmail}

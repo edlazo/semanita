@@ -4,7 +4,7 @@ import { Avatar } from '../components/Chrome';
 import { ScreenEntrance } from '../components/Motion';
 import { Entitlement } from '../lib/plan';
 import { Country } from '../lib/plans';
-import { fonts, radii, Theme } from '../theme';
+import { fonts, Mode, radii, Theme } from '../theme';
 
 export type Notifs = { lista: boolean; receta: boolean; semana: boolean };
 
@@ -64,7 +64,11 @@ type Props = {
   onEditData: () => void;
   onOpenPlans: () => void;
   onOpenCountry: () => void;
+  onNewWeek: () => void;
   onLogout: () => void;
+  /** El cambio de modo salió del header del flujo y vive acá. */
+  mode: Mode;
+  toggleMode: () => void;
   theme: Theme;
 };
 
@@ -87,9 +91,11 @@ export default function ProfileScreen(props: Props) {
     >
       <ScreenEntrance style={s.root}>
         <View style={s.header}>
-          <Text style={s.brand}>Semanita</Text>
           <Pressable onPress={props.onClose} hitSlop={12}>
-            <Text style={s.back}>Volver</Text>
+            <Text style={s.back}>← Volver</Text>
+          </Pressable>
+          <Pressable onPress={props.toggleMode} hitSlop={12}>
+            <Text style={s.back}>{props.mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}</Text>
           </Pressable>
         </View>
 
@@ -194,6 +200,14 @@ export default function ProfileScreen(props: Props) {
           </Pressable>
 
           <View style={s.logout}>
+            <SecondaryButton
+              title="Empezar una semana nueva"
+              onPress={props.onNewWeek}
+              fullWidth
+              theme={theme}
+            />
+          </View>
+          <View style={s.logoutLast}>
             <SecondaryButton title="Cerrar sesión" onPress={props.onLogout} fullWidth theme={theme} />
           </View>
         </ScrollView>
@@ -333,5 +347,6 @@ function getStyles(theme: Theme) {
     countryName: { fontFamily: fonts.body, fontSize: 14.5, color: theme.ink, flexShrink: 1 },
     countryChange: { fontFamily: fonts.bodySemi, fontSize: 13, color: theme.accent },
     logout: { marginTop: 36 },
+    logoutLast: { marginTop: 10 },
   });
 }

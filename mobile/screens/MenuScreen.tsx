@@ -5,7 +5,7 @@ import { CtaBar, Header, StepIndicator, Step } from '../components/Chrome';
 import { CheckMark } from '../components/Glyphs';
 import { ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
-import { fonts, radii, Mode, Theme } from '../theme';
+import { fonts, radii, Theme } from '../theme';
 
 export type Meal = {
   name: string;
@@ -16,13 +16,9 @@ export type Meal = {
 
 type Props = {
   theme: Theme;
-  mode: Mode;
-  toggleMode: () => void;
-  onNewWeek: () => void;
   onOpenProfile: () => void;
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
-  planLabel?: string | null;
   profileName: string;
   profileEmail: string;
 
@@ -53,11 +49,6 @@ export default function MenuScreen(props: Props) {
       <View style={styles.top}>
         <Header
           theme={theme}
-          mode={props.mode}
-          toggleMode={props.toggleMode}
-          actionLabel="Semana nueva"
-          onAction={props.onNewWeek}
-          planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
           profileName={props.profileName}
           profileEmail={props.profileEmail}
@@ -123,32 +114,34 @@ export default function MenuScreen(props: Props) {
                     </View>
                   );
                 }
+                // Lo que falta va como píldoras, no como lista separada por comas:
+                // se leen de un vistazo parado en el almacén.
                 return (
-                  <View style={styles.missingRow}>
-                    <Text style={styles.missingLabel}>Falta</Text>
-                    <Text style={styles.missingText}>{pending.join(', ')}</Text>
+                  <View style={styles.missingWrap}>
+                    {pending.map((item) => (
+                      <View key={item} style={styles.missingPill}>
+                        <Text style={styles.missingPillText}>{item}</Text>
+                      </View>
+                    ))}
                   </View>
                 );
               })()}
 
               {on && (
                 <View style={styles.actions}>
-                  <Pressable onPress={() => props.onOpenRecipe(i)} hitSlop={8}>
-                    <Text style={styles.recipeAction}>Ver receta</Text>
+                  <Pressable onPress={() => props.onOpenRecipe(i)} style={styles.recipeBtn}>
+                    <Text style={styles.recipeBtnText}>Ver receta</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => props.onRegenerate(i)}
                     disabled={props.regeneratingIndex !== null}
-                    hitSlop={8}
-                    style={styles.regenWrap}
+                    style={styles.regenBtn}
                   >
                     {regenerating && <ActivityIndicator size="small" color={theme.inkSoft} />}
                     {/* No anuncia que puede costar un anuncio: eso convertiría
                         cada tarjeta en un recordatorio de que no pagaste. El
                         costo aparece al tocar, cuando ya decidiste. */}
-                    <Text style={styles.regenAction}>
-                      {regenerating ? 'Cambiando…' : 'Otra'}
-                    </Text>
+                    <Text style={styles.regenBtnText}>{regenerating ? 'Cambiando…' : 'Otra'}</Text>
                   </Pressable>
                 </View>
               )}
@@ -200,8 +193,8 @@ function getStyles(theme: Theme) {
       marginTop: 3,
     },
     counter: {
-      fontFamily: fonts.displayItalic,
-      fontSize: 13,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13.5,
       color: theme.accent,
     },
     card: {
@@ -247,24 +240,22 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       marginBottom: 9,
     },
-    missingRow: {
+    missingWrap: {
       flexDirection: 'row',
-      gap: 8,
-      alignItems: 'baseline',
-      paddingVertical: 7,
-      borderTopWidth: 1,
-      borderTopColor: theme.line20,
+      flexWrap: 'wrap',
+      gap: 6,
+      marginBottom: 11,
     },
-    missingLabel: {
-      fontFamily: fonts.bodySemi,
-      fontSize: 13,
-      color: theme.accent,
+    missingPill: {
+      paddingVertical: 5,
+      paddingHorizontal: 11,
+      borderRadius: radii.chip,
+      backgroundColor: theme.line14,
     },
-    missingText: {
-      fontFamily: fonts.body,
-      fontSize: 13,
+    missingPillText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12.5,
       color: theme.ink,
-      flexShrink: 1,
     },
     readyRow: {
       flexDirection: 'row',
@@ -288,27 +279,35 @@ function getStyles(theme: Theme) {
       fontSize: 13,
       color: theme.accent,
     },
-    actions: {
-      flexDirection: 'row',
-      gap: 18,
+    actions: { flexDirection: 'row', gap: 8 },
+    recipeBtn: {
+      flex: 1,
+      minHeight: 44,
       alignItems: 'center',
-      paddingTop: 7,
-      borderTopWidth: 1,
-      borderTopColor: theme.line20,
+      justifyContent: 'center',
+      borderRadius: radii.btnSecondary,
+      backgroundColor: theme.accent,
     },
-    recipeAction: {
+    recipeBtnText: {
       fontFamily: fonts.bodySemi,
       fontSize: 13,
-      color: theme.ink,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.accent,
-      paddingBottom: 2,
+      color: theme.accentInk,
     },
-    regenWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    regenAction: {
+    regenBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      minHeight: 44,
+      paddingHorizontal: 16,
+      borderRadius: radii.btnSecondary,
+      borderWidth: 1,
+      borderColor: theme.line20,
+    },
+    regenBtnText: {
       fontFamily: fonts.bodyMedium,
       fontSize: 13,
-      color: theme.inkSoft,
+      color: theme.ink,
     },
     error: {
       fontFamily: fonts.body,
