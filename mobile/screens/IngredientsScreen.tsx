@@ -167,7 +167,8 @@ export default function IngredientsScreen(props: Props) {
         <Eyebrow
           theme={theme}
           rule="soft"
-          meta={`${props.ingredients.length} ${props.ingredients.length === 1 ? 'ítem' : 'ítems'}`}
+          meta={String(props.ingredients.length)}
+          metaTone="accent"
         >
           Tenés en casa
         </Eyebrow>
@@ -204,7 +205,12 @@ export default function IngredientsScreen(props: Props) {
           </Pressable>
         </View>
 
-        <Eyebrow theme={theme} rule="soft">
+        <Eyebrow
+          theme={theme}
+          rule="soft"
+          meta="guardadas en tu perfil ›"
+          onMeta={props.onOpenProfile}
+        >
           Restricciones
         </Eyebrow>
         <View style={styles.chips}>

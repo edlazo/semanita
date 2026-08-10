@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { Fragment, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HatchPattern } from './Motion';
@@ -53,37 +53,44 @@ export function StepIndicator({ theme, current, enabled, onGoTo }: StepIndicator
   const styles = getStyles(theme);
   const steps: Step[] = [1, 2];
 
+  // El paso en curso lleva su número; los otros llevan una flecha que apunta a
+  // dónde te deja tocarlos. Volver es acento, seguir es tinta.
+  const renderStep = (step: Step) => {
+    const label = STEP_LABELS[step];
+    if (step === current) {
+      return (
+        <View style={styles.stepCurrent}>
+          <Text style={styles.stepNumber}>{step}</Text>
+          <Text style={styles.stepLabel}>{label}</Text>
+        </View>
+      );
+    }
+
+    const reachable = enabled.includes(step);
+    const back = step < current;
+    return (
+      <Pressable
+        onPress={reachable ? () => onGoTo(step) : undefined}
+        disabled={!reachable}
+        hitSlop={8}
+        style={[styles.step, !reachable && styles.stepInactive]}
+      >
+        {back && <Text style={styles.stepArrowBack}>←</Text>}
+        <Text style={back ? styles.stepLabelBack : styles.stepLabelAhead}>{label}</Text>
+        {!back && <Text style={styles.stepArrowAhead}>→</Text>}
+      </Pressable>
+    );
+  };
+
   return (
     <View style={styles.steps}>
-      {steps.map((step, i) => {
-        const active = step === current;
-        const reachable = !active && enabled.includes(step);
-        return (
-          <View key={step} style={styles.stepGroup}>
-            {i > 0 && <View style={styles.stepLine} />}
-            <Pressable
-              onPress={reachable ? () => onGoTo(step) : undefined}
-              disabled={!reachable}
-              hitSlop={8}
-              style={[styles.step, !active && !reachable && styles.stepInactive]}
-            >
-              {/* Un paso ya recorrido se dibuja como vuelta atrás, no como número. */}
-              <Text style={[styles.stepNumber, (active || reachable) && styles.stepNumberActive]}>
-                {reachable ? '←' : step}
-              </Text>
-              <Text
-                style={[
-                  styles.stepLabel,
-                  active && styles.stepLabelActive,
-                  reachable && styles.stepLabelReachable,
-                ]}
-              >
-                {STEP_LABELS[step]}
-              </Text>
-            </Pressable>
-          </View>
-        );
-      })}
+      {steps.map((step, i) => (
+        <Fragment key={step}>
+          {/* La línea se estira: los dos pasos quedan pegados a los bordes. */}
+          {i > 0 && <View style={styles.stepLine} />}
+          {renderStep(step)}
+        </Fragment>
+      ))}
     </View>
   );
 }
@@ -193,14 +200,20 @@ export function Eyebrow({
   theme,
   children,
   meta,
+  metaTone = 'soft',
+  onMeta,
   rule,
 }: {
   theme: Theme;
   children: string;
   meta?: string;
+  /** El conteo va en acento; una nota al margen, apagada. */
+  metaTone?: 'soft' | 'accent';
+  onMeta?: () => void;
   rule?: 'soft' | 'accent';
 }) {
   const styles = getStyles(theme);
+  const metaStyle = [styles.eyebrowMeta, metaTone === 'accent' && styles.eyebrowMetaAccent];
   return (
     <View
       style={[
@@ -210,7 +223,14 @@ export function Eyebrow({
       ]}
     >
       <Text style={styles.eyebrowText}>{children}</Text>
-      {meta && <Text style={styles.eyebrowMeta}>{meta}</Text>}
+      {meta &&
+        (onMeta ? (
+          <Pressable onPress={onMeta} hitSlop={8}>
+            <Text style={metaStyle}>{meta}</Text>
+          </Pressable>
+        ) : (
+          <Text style={metaStyle}>{meta}</Text>
+        ))}
     </View>
   );
 }
@@ -238,35 +258,28 @@ function getStyles(theme: Theme) {
       borderBottomWidth: 1,
       borderColor: theme.line26,
     },
-    stepGroup: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      flexShrink: 1,
-    },
     stepLine: {
-      width: 16,
+      flex: 1,
       height: 1,
       backgroundColor: theme.line26,
     },
-    step: {
+    stepCurrent: {
       flexDirection: 'row',
       alignItems: 'baseline',
       gap: 6,
     },
+    step: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    // Un paso sin datos todavía no lleva a ningún lado.
     stepInactive: {
       opacity: 0.4,
-    },
-    // Un paso navegable se distingue del que todavía no tiene datos.
-    stepReachable: {
-      opacity: 0.75,
     },
     stepNumber: {
       fontFamily: fonts.bodySemi,
       fontSize: 13,
-      color: theme.ink,
-    },
-    stepNumberActive: {
       color: theme.accent,
     },
     stepLabel: {
@@ -274,11 +287,25 @@ function getStyles(theme: Theme) {
       fontSize: 13,
       color: theme.ink,
     },
-    stepLabelActive: {
+    stepLabelBack: {
       fontFamily: fonts.bodySemi,
-    },
-    stepLabelReachable: {
+      fontSize: 13,
       color: theme.accent,
+    },
+    stepArrowBack: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 14,
+      color: theme.accent,
+    },
+    stepLabelAhead: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: theme.ink,
+    },
+    stepArrowAhead: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 14,
+      color: theme.ink,
     },
     tabBar: {
       flexDirection: 'row',
@@ -343,8 +370,13 @@ function getStyles(theme: Theme) {
     },
     eyebrowMeta: {
       fontFamily: fonts.body,
-      fontSize: 13,
+      fontSize: 12.5,
       color: theme.inkSoft,
+    },
+    eyebrowMetaAccent: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: theme.accent,
     },
   });
 }
