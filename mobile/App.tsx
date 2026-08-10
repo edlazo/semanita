@@ -25,8 +25,13 @@ import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import PaywallScreen from './screens/PaywallScreen';
 import { Entitlement, startSubscription, trialLabel } from './lib/plan';
-import ProfileModal from './components/ProfileModal';
 import AdGateModal from './components/AdGateModal';
+import ProfileScreen, { Notifs } from './screens/ProfileScreen';
+import PersonalDataLayer from './screens/PersonalDataLayer';
+import PlansLayer from './screens/PlansLayer';
+import CountryLayer from './screens/CountryLayer';
+import { countryByCode, PlanId } from './lib/plans';
+import { RESTRICTION_OPTIONS } from './screens/IngredientsScreen';
 import {
   checkedNamesFrom,
   needsCategorization,
@@ -141,9 +146,19 @@ export default function App() {
   const [hydrated, setHydrated] = useState(false);
 
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
+  /** Lo manda el backend: acá es solo para dibujar el progreso de la prueba. */
+  const [trialDays, setTrialDays] = useState(30);
   const [subscribing, setSubscribing] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [dataOpen, setDataOpen] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  /** La capa de país vuelve al lugar del que se entró, no siempre al mismo. */
+  const [countryFrom, setCountryFrom] = useState<'plans' | 'profile'>('profile');
+  const [countryCode, setCountryCode] = useState('AR');
+  const [pickedPlan, setPickedPlan] = useState<PlanId>('mensual');
+  const [notifs, setNotifs] = useState<Notifs>({ lista: true, receta: true, semana: false });
   const [displayName, setDisplayName] = useState('');
   /** Comida esperando confirmación para regenerar con anuncio. */
   const [adGateIndex, setAdGateIndex] = useState<number | null>(null);
@@ -253,6 +268,7 @@ export default function App() {
       if (!response.ok) return;
       const data = await response.json();
       setEntitlement(data.entitlement);
+      if (typeof data.trialDays === 'number') setTrialDays(data.trialDays);
     } catch (err) {
       // Sin conexión no se bloquea nada: el backend es el que decide de verdad.
       captureError(err, { paso: 'refresh-entitlement' });
@@ -766,18 +782,71 @@ export default function App() {
         theme={theme}
       />
 
-      <ProfileModal
+      <ProfileScreen
         visible={profileOpen}
         onClose={() => setProfileOpen(false)}
-        email={session.user.email ?? ''}
         name={displayName}
-        onSaveName={saveDisplayName}
+        email={displayEmail}
         entitlement={entitlement}
-        onSubscribe={subscribe}
-        subscribing={subscribing}
+        trialDays={trialDays}
+        country={countryByCode(countryCode)}
+        restrictionOptions={RESTRICTION_OPTIONS}
+        restriction={restriction}
+        onRestriction={setRestriction}
+        notifs={notifs}
+        onToggleNotif={(k) => setNotifs((prev) => ({ ...prev, [k]: !prev[k] }))}
+        onEditData={() => setDataOpen(true)}
+        onOpenPlans={() => setPlansOpen(true)}
+        onOpenCountry={() => {
+          setCountryFrom('profile');
+          setCountryOpen(true);
+        }}
         onLogout={() => {
           setProfileOpen(false);
           logout();
+        }}
+        theme={theme}
+      />
+
+      <PersonalDataLayer
+        visible={dataOpen}
+        onClose={() => setDataOpen(false)}
+        name={displayName}
+        email={displayEmail}
+        onSave={saveDisplayName}
+        theme={theme}
+      />
+
+      <PlansLayer
+        visible={plansOpen}
+        onClose={() => setPlansOpen(false)}
+        country={countryByCode(countryCode)}
+        onChangeCountry={() => {
+          setCountryFrom('plans');
+          setCountryOpen(true);
+        }}
+        picked={pickedPlan}
+        onPick={setPickedPlan}
+        onConfirm={() => {
+          if (pickedPlan === 'free') {
+            setPlansOpen(false);
+            return;
+          }
+          subscribe();
+        }}
+        confirming={subscribing}
+        theme={theme}
+      />
+
+      <CountryLayer
+        visible={countryOpen}
+        onClose={() => setCountryOpen(false)}
+        selected={countryCode}
+        onSelect={(code) => {
+          setCountryCode(code);
+          setCountryOpen(false);
+          // Vuelve a donde estaba: Planes o Perfil, según de dónde se entró.
+          if (countryFrom === 'plans') setPlansOpen(true);
         }}
         theme={theme}
       />

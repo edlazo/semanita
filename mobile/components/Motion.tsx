@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, ViewStyle } from 'react-native';
+import { Animated, Easing, StyleSheet, View, ViewStyle } from 'react-native';
 
 /**
  * Los `@keyframes` del prototipo, traducidos a la API `Animated`. Todo usa
@@ -28,6 +28,40 @@ export function ScreenEntrance({ children, duration = 350, style }: EntranceProp
         {
           opacity: t,
           transform: [{ translateY: t.interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) }],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/**
+ * Entrada de una capa a pantalla completa: 24px + fade en 320ms.
+ *
+ * La distancia codifica jerarquía y hay que sostenerla: 6px es "cambió el
+ * contenido", 24px es "se abrió algo que vas a cerrar". Si las dos usan la
+ * misma, se pierde la pista de si hay que apretar ✕ o volver.
+ */
+export function Rise({ children, style }: { children: ReactNode; style?: ViewStyle }) {
+  const t = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(t, {
+      toValue: 1,
+      duration: 320,
+      easing: Easing.bezier(0.2, 0.8, 0.2, 1),
+      useNativeDriver: true,
+    }).start();
+  }, [t]);
+
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: t,
+          transform: [{ translateY: t.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }],
         },
       ]}
     >
