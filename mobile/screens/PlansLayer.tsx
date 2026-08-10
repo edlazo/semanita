@@ -30,6 +30,7 @@ export default function PlansLayer(props: Props) {
     <Layer
       visible={props.visible}
       onClose={props.onClose}
+      eyebrow="Membresía"
       title="Elegí tu plan"
       theme={theme}
       footer={
@@ -56,7 +57,8 @@ export default function PlansLayer(props: Props) {
           >
             <View style={styles.cardTop}>
               <Text style={styles.planName}>{plan.name}</Text>
-              <Text style={styles.planPrice}>{plan.price}</Text>
+              {/* El precio se enciende en acento solo en el plan elegido. */}
+              <Text style={[styles.planPrice, on && { color: theme.accent }]}>{plan.price}</Text>
             </View>
             <Text style={styles.planDesc}>{plan.description}</Text>
             {plan.badge && (
@@ -68,16 +70,6 @@ export default function PlansLayer(props: Props) {
         );
       })}
 
-      <View style={styles.countryRow}>
-        <Text style={styles.countryText}>
-          Cobramos en — {props.country.name} · {props.country.currency}
-        </Text>
-        <Pressable onPress={props.onChangeCountry} hitSlop={10}>
-          <Text style={styles.countryChange}>Cambiar</Text>
-        </Pressable>
-      </View>
-      <Text style={styles.note}>{pricingNote(props.country)}</Text>
-
       <Text style={styles.sectionTitle}>Con Plus tenés</Text>
       {BENEFITS.map((b, i) => (
         <View key={b} style={styles.benefitRow}>
@@ -85,6 +77,17 @@ export default function PlansLayer(props: Props) {
           <Text style={styles.benefitText}>{b}</Text>
         </View>
       ))}
+
+      <Pressable onPress={props.onChangeCountry} style={styles.countryRow}>
+        <View style={styles.countryText}>
+          <Text style={styles.countryLabel}>Cobramos en</Text>
+          <Text style={styles.countryName}>
+            {props.country.name} · {props.country.currency}
+          </Text>
+        </View>
+        <Text style={styles.countryChange}>Cambiar</Text>
+      </Pressable>
+      <Text style={styles.note}>{pricingNote(props.country)}</Text>
 
       <Text style={styles.footnote}>
         Se renueva solo. Lo cancelás cuando quieras desde tu perfil.
@@ -98,8 +101,9 @@ function getStyles(theme: Theme) {
     card: {
       borderWidth: 1,
       borderRadius: radii.card,
-      padding: 16,
-      marginBottom: 9,
+      paddingVertical: 15,
+      paddingHorizontal: 16,
+      marginBottom: 10,
     },
     cardTop: {
       flexDirection: 'row',
@@ -107,13 +111,17 @@ function getStyles(theme: Theme) {
       justifyContent: 'space-between',
       gap: 12,
     },
+    // El nombre del plan es sans, no serif: la serif está reservada para los
+    // títulos de pantalla y los nombres de comida.
     planName: {
-      fontFamily: fonts.displaySemi,
-      fontSize: 20,
+      fontFamily: fonts.bodySemi,
+      fontSize: 18,
+      lineHeight: 22,
+      letterSpacing: -0.18,
       color: theme.ink,
       flexShrink: 1,
     },
-    planPrice: { fontFamily: fonts.bodySemi, fontSize: 17, color: theme.ink },
+    planPrice: { fontFamily: fonts.bodySemi, fontSize: 17, color: theme.inkSoft },
     planDesc: {
       fontFamily: fonts.body,
       fontSize: 13,
@@ -135,38 +143,58 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 12,
-      marginTop: 16,
-      paddingTop: 14,
-      borderTopWidth: 1,
-      borderTopColor: theme.line20,
+      minHeight: 44,
+      marginTop: 18,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: theme.line20,
+      borderRadius: radii.btn,
     },
-    countryText: { fontFamily: fonts.body, fontSize: 13.5, color: theme.ink, flexShrink: 1 },
+    countryText: { flexShrink: 1 },
+    countryLabel: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: theme.inkSoft },
+    countryName: {
+      fontFamily: fonts.bodySemi,
+      fontSize: 14.5,
+      color: theme.ink,
+      marginTop: 2,
+    },
     countryChange: { fontFamily: fonts.bodySemi, fontSize: 13, color: theme.accent },
     note: {
       fontFamily: fonts.body,
       fontSize: 12.5,
       lineHeight: 19,
       color: theme.inkSoft,
-      marginTop: 6,
+      marginTop: 8,
     },
     sectionTitle: {
       fontFamily: fonts.bodySemi,
       fontSize: 15,
       letterSpacing: -0.15,
       color: theme.ink,
-      marginTop: 26,
-      marginBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.line20,
+      paddingBottom: 8,
+      marginTop: 20,
+      marginBottom: 4,
     },
-    benefitRow: { flexDirection: 'row', gap: 12, marginBottom: 10 },
+    benefitRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: 12,
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.line14,
+    },
     benefitNum: {
       fontFamily: fonts.displaySemi,
-      fontSize: 18,
+      fontSize: 13,
       color: theme.accent,
-      minWidth: 18,
+      minWidth: 14,
     },
     benefitText: {
       fontFamily: fonts.body,
-      fontSize: 13.5,
+      fontSize: 14,
       lineHeight: 21,
       color: theme.ink,
       flexShrink: 1,
@@ -176,7 +204,7 @@ function getStyles(theme: Theme) {
       fontSize: 12.5,
       lineHeight: 19,
       color: theme.inkSoft,
-      marginTop: 20,
+      marginTop: 16,
     },
   });
 }

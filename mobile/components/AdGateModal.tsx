@@ -86,7 +86,7 @@ export default function AdGateModal(props: Props) {
 
               <Text style={styles.title}>Mirá un anuncio y te la cambio</Text>
               <Text style={styles.body}>
-                Son {AD_SECONDS} segundos y te propongo otra opción en lugar de{' '}
+                Son {AD_SECONDS} segundos. Después te propongo otra cosa en lugar de{' '}
                 <Text style={styles.bodyStrong}>{props.mealName}</Text>.
               </Text>
 
@@ -118,7 +118,9 @@ export default function AdGateModal(props: Props) {
                 />
               </View>
 
-              <Text style={styles.body}>Al terminar te propongo otra comida.</Text>
+              <Text style={[styles.body, styles.bodyCentered]}>
+                Al terminar te propongo otra comida.
+              </Text>
 
               {canSkip && (
                 <Pressable onPress={cancel} hitSlop={8} style={styles.skip}>
@@ -163,6 +165,7 @@ function getStyles(theme: Theme) {
     },
     body: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 21, color: theme.inkSoft },
     bodyStrong: { fontFamily: fonts.bodySemi, color: theme.ink },
+    bodyCentered: { textAlign: 'center' },
     actions: { marginTop: 20, gap: 10 },
     adSlot: {
       height: 150,

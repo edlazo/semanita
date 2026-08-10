@@ -780,6 +780,8 @@ export default function App() {
         restrictionOptions={RESTRICTION_OPTIONS}
         restriction={restriction}
         onRestriction={setRestriction}
+        otherText={otherText}
+        onOtherText={setOtherText}
         notifs={notifs}
         onToggleNotif={(k) => setNotifs((prev) => ({ ...prev, [k]: !prev[k] }))}
         onEditData={() => setDataOpen(true)}

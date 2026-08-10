@@ -65,7 +65,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.eyebrow}>Desde 2026 · Cocina de semana</Text>
+        <Text style={styles.eyebrow}>Desde 2026 · cocina de semana</Text>
 
         <Text style={styles.title}>
           Comé bien{'\n'}toda la{'\n'}

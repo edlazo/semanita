@@ -141,7 +141,9 @@ export default function MenuScreen(props: Props) {
                     {/* No anuncia que puede costar un anuncio: eso convertiría
                         cada tarjeta en un recordatorio de que no pagaste. El
                         costo aparece al tocar, cuando ya decidiste. */}
-                    <Text style={styles.regenBtnText}>{regenerating ? 'Cambiando…' : 'Otra'}</Text>
+                    <Text style={styles.regenBtnText}>
+                      {regenerating ? 'Cambiando…' : props.regenCounts[i] ? 'Otra más' : 'Otra'}
+                    </Text>
                   </Pressable>
                 </View>
               )}

@@ -145,7 +145,7 @@ export default function IngredientsScreen(props: Props) {
 
         {props.manualOpen && (
           <View style={styles.manualBlock}>
-            <Text style={styles.manualLabel}>Una por línea, o separadas por coma</Text>
+            <Text style={styles.manualLabel}>Una por línea, o separadas por coma.</Text>
             <TextInput
               style={styles.textarea}
               placeholder="tomate, fideos, queso…"

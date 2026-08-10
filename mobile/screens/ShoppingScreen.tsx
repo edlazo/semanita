@@ -58,10 +58,14 @@ export default function ShoppingScreen(props: Props) {
         />
 
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Lo que falta</Text>
-          <Text style={styles.counter}>
-            {done} de {total}
-          </Text>
+          <View style={styles.titleBlock}>
+            <Text style={styles.title}>Lo que falta</Text>
+            <Text style={styles.subtitle}>
+              {total > 0 ? 'Tocá cada uno cuando lo tengas' : 'Sin comidas elegidas todavía'}
+            </Text>
+          </View>
+          {/* Sin lista, un "0 de 0" promete un progreso que no existe. */}
+          <Text style={styles.counter}>{total > 0 ? `${done} de ${total}` : '—'}</Text>
         </View>
 
         <View style={styles.progressTrack}>
@@ -70,6 +74,15 @@ export default function ShoppingScreen(props: Props) {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollBody}>
+        {ordered.length === 0 && (
+          <View style={styles.emptyBlock}>
+            <Text style={styles.emptyTitle}>Todavía no hay lista</Text>
+            <Text style={styles.emptyBody}>
+              Armá el menú de la semana y acá te juntamos lo que falta comprar.
+            </Text>
+          </View>
+        )}
+
         {ordered.map((cat) => (
           <View key={cat.category} style={styles.categoryBlock}>
             <Eyebrow theme={theme} rule="accent" meta={String(cat.items.length)}>
@@ -123,21 +136,31 @@ function getStyles(theme: Theme) {
       flexDirection: 'row',
       alignItems: 'flex-end',
       justifyContent: 'space-between',
-      marginTop: 14,
+      // Compras no tiene indicador de pasos: este filete es el que separa el
+      // header del contenido, como en las otras pantallas.
+      borderTopWidth: 1,
+      borderTopColor: theme.line26,
+      paddingTop: 14,
       marginBottom: 12,
       gap: 12,
     },
+    titleBlock: { flexShrink: 1 },
     title: {
       fontFamily: fonts.displaySemi,
       fontSize: 30,
       lineHeight: 32,
       letterSpacing: -0.45,
       color: theme.ink,
-      flexShrink: 1,
+    },
+    subtitle: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: theme.inkSoft,
+      marginTop: 3,
     },
     counter: {
-      fontFamily: fonts.displayItalic,
-      fontSize: 13,
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13.5,
       color: theme.accent,
     },
     progressTrack: {
@@ -168,25 +191,46 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       textDecorationLine: 'line-through',
     },
-    doneBlock: {
+    emptyBlock: {
       padding: 16,
       borderWidth: 1,
-      borderColor: theme.accent,
-      borderRadius: radii.photo,
-      marginBottom: 20,
+      borderStyle: 'dashed',
+      borderColor: theme.border,
+      borderRadius: radii.empty,
     },
-    doneTitle: {
+    emptyTitle: {
       fontFamily: fonts.displaySemi,
       fontSize: 19,
       lineHeight: 24,
       color: theme.ink,
       marginBottom: 5,
     },
-    doneBody: {
+    emptyBody: {
       fontFamily: fonts.body,
       fontSize: 13.5,
       lineHeight: 20,
       color: theme.inkSoft,
+    },
+    // Relleno de acento, no bordeado: terminar la lista es la buena noticia
+    // de la pantalla y se cobra el único bloque pleno que hay acá.
+    doneBlock: {
+      padding: 18,
+      borderRadius: radii.membership,
+      backgroundColor: theme.accent,
+      marginBottom: 20,
+    },
+    doneTitle: {
+      fontFamily: fonts.displaySemi,
+      fontSize: 22,
+      lineHeight: 25,
+      color: theme.accentInk,
+      marginBottom: 6,
+    },
+    doneBody: {
+      fontFamily: fonts.body,
+      fontSize: 13.5,
+      lineHeight: 20,
+      color: theme.accentInk,
     },
   });
 }

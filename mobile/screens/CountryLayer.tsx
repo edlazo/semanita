@@ -21,6 +21,7 @@ export default function CountryLayer(props: Props) {
     <Layer
       visible={props.visible}
       onClose={props.onClose}
+      eyebrow="Moneda"
       title="¿Dónde vivís?"
       subtitle="Los planes están en dólares. Elegí tu país y te decimos en qué moneda se cobra."
       theme={theme}
@@ -59,14 +60,20 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 12,
+      minHeight: 44,
       borderWidth: 1,
-      borderRadius: radii.card,
-      paddingVertical: 13,
-      paddingHorizontal: 16,
+      borderRadius: radii.btn,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
       marginBottom: 8,
     },
     rowText: { flexShrink: 1 },
-    name: { fontFamily: fonts.body, fontSize: 15, color: theme.ink },
+    name: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 15,
+      letterSpacing: -0.15,
+      color: theme.ink,
+    },
     nameOn: { fontFamily: fonts.bodySemi, color: theme.accent },
     currency: {
       fontFamily: fonts.body,

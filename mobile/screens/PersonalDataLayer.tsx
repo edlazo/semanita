@@ -44,6 +44,7 @@ export default function PersonalDataLayer(props: Props) {
     <Layer
       visible={props.visible}
       onClose={props.onClose}
+      eyebrow="Tu cuenta"
       title="Datos personales"
       theme={theme}
       footer={
