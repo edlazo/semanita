@@ -2,7 +2,6 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { PrimaryButton } from '../components/Buttons';
 import Checkbox from '../components/Checkbox';
 import { CtaBar, Header, StepIndicator, Step } from '../components/Chrome';
-import { CheckMark } from '../components/Glyphs';
 import { ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
 import { fonts, radii, Theme } from '../theme';
@@ -104,16 +103,21 @@ export default function MenuScreen(props: Props) {
 
               {(() => {
                 const pending = pendingFor(meal.ingredientsToBuy, props.checkedNames);
-                if (pending.length === 0) {
+                // "Listo para cocinar" solo tiene sentido en una comida que vas
+                // a cocinar, y solo si alguna vez hubo algo que comprar: sin
+                // faltantes, el cartel felicitaría por una compra que no hiciste.
+                if (on && meal.ingredientsToBuy.length > 0 && pending.length === 0) {
                   return (
                     <View style={styles.readyRow}>
-                      <View style={styles.readyBadge}>
-                        <CheckMark size={12} color={theme.accentInk} thickness={1.5} />
-                      </View>
+                      {/* La misma casilla del encabezado, no un ✓ dibujado
+                          aparte: dos medidas distintas se leían como dos
+                          tipografías. */}
+                      <Checkbox checked size={20} theme={theme} />
                       <Text style={styles.readyLabel}>Listo para cocinar</Text>
                     </View>
                   );
                 }
+                if (pending.length === 0) return null;
                 // Lo que falta va como píldoras, no como lista separada por comas:
                 // se leen de un vistazo parado en el almacén.
                 return (
@@ -261,20 +265,9 @@ function getStyles(theme: Theme) {
     },
     readyRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 9,
       alignItems: 'center',
-      paddingVertical: 7,
-      borderTopWidth: 1,
-      borderTopColor: theme.line20,
-    },
-    readyBadge: {
-      width: 18,
-      height: 18,
-      flexShrink: 0,
-      borderRadius: radii.chip,
-      backgroundColor: theme.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
+      marginBottom: 11,
     },
     readyLabel: {
       fontFamily: fonts.bodySemi,
