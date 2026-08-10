@@ -23,6 +23,8 @@ type Props = {
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
   planLabel?: string | null;
+  profileName: string;
+  profileEmail: string;
 
   meals: Meal[];
   days: string[];
@@ -57,6 +59,8 @@ export default function MenuScreen(props: Props) {
           onAction={props.onNewWeek}
           planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
+          profileName={props.profileName}
+          profileEmail={props.profileEmail}
         />
         <StepIndicator theme={theme} current={2} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 

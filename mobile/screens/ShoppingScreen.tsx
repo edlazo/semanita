@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Checkbox from '../components/Checkbox';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
-import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { CtaBar, Eyebrow, Header } from '../components/Chrome';
 import { ScreenEntrance } from '../components/Motion';
 import { itemKey, ShoppingCategory } from '../lib/shopping';
 import { fonts, radii, Mode, Theme } from '../theme';
@@ -26,9 +26,9 @@ type Props = {
   toggleMode: () => void;
   onNewWeek: () => void;
   onOpenProfile: () => void;
-  enabledSteps: Step[];
-  onGoTo: (step: Step) => void;
   planLabel?: string | null;
+  profileName: string;
+  profileEmail: string;
 
   categories: ShoppingCategory[];
   checked: Set<string>;
@@ -62,8 +62,9 @@ export default function ShoppingScreen(props: Props) {
           onAction={props.onNewWeek}
           planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
+          profileName={props.profileName}
+          profileEmail={props.profileEmail}
         />
-        <StepIndicator theme={theme} current={3} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
 
         <View style={styles.titleRow}>
           <Text style={styles.title}>Lo que falta</Text>

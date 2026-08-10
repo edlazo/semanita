@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -19,7 +19,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import AuthScreen from './components/AuthScreen';
 import RecipeModal, { Recipe } from './components/RecipeModal';
-import { Step } from './components/Chrome';
+import { Step, Tab, TabBar } from './components/Chrome';
 import IngredientsScreen, { PhotoState, Source } from './screens/IngredientsScreen';
 import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
@@ -33,7 +33,8 @@ import {
   ShoppingCategory,
   visibleCategories,
 } from './lib/shopping';
-import { useAppTheme } from './theme';
+import { SecondaryButton } from './components/Buttons';
+import { fonts, Theme, useAppTheme } from './theme';
 import { captureError, clearUser, identifyUser, initTelemetry, track } from './lib/telemetry';
 
 initTelemetry();
@@ -106,6 +107,7 @@ export default function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  const [tab, setTab] = useState<Tab>('semana');
   const [step, setStep] = useState<Step>(1);
 
   const [source, setSource] = useState<Source>(null);
@@ -163,9 +165,11 @@ export default function App() {
   // a Ingredientes no debe obligar a regenerar un menú que ya existe.
   const enabledSteps: Step[] = [1];
   if (meals) enabledSteps.push(2);
-  if (shownCategories.length > 0) enabledSteps.push(3);
+  /** Compras es pestaña, no paso: solo se habilita cuando hay algo que comprar. */
+  const shoppingReady = shownCategories.length > 0;
 
   function resetWeek() {
+    setTab('semana');
     setStep(1);
     setSource(null);
     setPhotoState('none');
@@ -517,7 +521,7 @@ export default function App() {
 
     // Sólo se le pide a Gemini que categorice si aparecieron ítems nuevos.
     if (!needsCategorization(shoppingList, pendingItems)) {
-      setStep(3);
+      setTab('compras');
       return;
     }
 
@@ -538,7 +542,7 @@ export default function App() {
       // Los tachados sobreviven: están indexados por categoría e ítem, así que
       // recategorizar no debería perder lo que ya compraste.
       setShoppingList(data.categories);
-      setStep(3);
+      setTab('compras');
       track('lista_compras_generada', {
         categorias: data.categories.length,
         items: pendingItems.length,
@@ -644,12 +648,17 @@ export default function App() {
 
   const planLabel = trialLabel(entitlement);
 
+  const displayEmail = session.user.email ?? '';
+
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
 
-      {step === 1 && (
+      <View style={{ flex: 1 }}>
+      {tab === 'semana' && step === 1 && (
         <IngredientsScreen
+          profileName={displayName}
+          profileEmail={displayEmail}
           theme={theme}
           mode={mode}
           toggleMode={toggleMode}
@@ -682,8 +691,10 @@ export default function App() {
         />
       )}
 
-      {step === 2 && meals && (
+      {tab === 'semana' && step === 2 && meals && (
         <MenuScreen
+          profileName={displayName}
+          profileEmail={displayEmail}
           theme={theme}
           mode={mode}
           toggleMode={toggleMode}
@@ -708,22 +719,40 @@ export default function App() {
         />
       )}
 
-      {step === 3 && shownCategories.length > 0 && (
+      {tab === 'compras' && shoppingReady && (
         <ShoppingScreen
           theme={theme}
           mode={mode}
           toggleMode={toggleMode}
           onNewWeek={resetWeek}
           onOpenProfile={() => setProfileOpen(true)}
-          enabledSteps={enabledSteps}
-          onGoTo={setStep}
           planLabel={planLabel}
+          profileName={displayName}
+          profileEmail={displayEmail}
           categories={shownCategories}
           checked={checkedItems}
           onToggleItem={toggleShoppingItem}
-          onBackToMenu={() => setStep(2)}
+          onBackToMenu={() => {
+            setTab('semana');
+            setStep(2);
+          }}
         />
       )}
+
+      {tab === 'compras' && !shoppingReady && (
+        <EmptyShopping theme={theme} onGoBack={() => setTab('semana')} />
+      )}
+      </View>
+
+      <TabBar
+        theme={theme}
+        active={tab}
+        onChange={(next) => {
+          setTab(next);
+          // Volver a Semana cae en el menú si ya existe, no al principio.
+          if (next === 'semana' && meals) setStep(2);
+        }}
+      />
 
       <AdGateModal
         visible={adGateIndex !== null}
@@ -763,6 +792,27 @@ export default function App() {
         error={recipeError}
         theme={theme}
       />
-    </>
+    </View>
   );
 }
+
+/** La pestaña Compras existe siempre; la lista todavía no. */
+function EmptyShopping({ theme, onGoBack }: { theme: Theme; onGoBack: () => void }) {
+  return (
+    <View style={emptyStyles.root}>
+      <Text style={[emptyStyles.title, { color: theme.ink, fontFamily: fonts.displaySemi }]}>
+        Todavía no hay nada que comprar
+      </Text>
+      <Text style={[emptyStyles.body, { color: theme.inkSoft, fontFamily: fonts.body }]}>
+        Armá tu semana y acá te dejamos la lista de lo que falta, agrupada por negocio.
+      </Text>
+      <SecondaryButton title="Ir a armar la semana" onPress={onGoBack} theme={theme} />
+    </View>
+  );
+}
+
+const emptyStyles = StyleSheet.create({
+  root: { flex: 1, justifyContent: 'center', paddingHorizontal: 26, gap: 10 },
+  title: { fontSize: 19, lineHeight: 24 },
+  body: { fontSize: 13.5, lineHeight: 20, marginBottom: 8 },
+});

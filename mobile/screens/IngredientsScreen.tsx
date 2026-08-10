@@ -33,6 +33,8 @@ type Props = {
   enabledSteps: Step[];
   onGoTo: (step: Step) => void;
   planLabel?: string | null;
+  profileName: string;
+  profileEmail: string;
 
   source: Source;
   photoState: PhotoState;
@@ -81,6 +83,8 @@ export default function IngredientsScreen(props: Props) {
           toggleMode={props.toggleMode}
           planLabel={props.planLabel}
           onOpenProfile={props.onOpenProfile}
+          profileName={props.profileName}
+          profileEmail={props.profileEmail}
         />
         <StepIndicator theme={theme} current={1} enabled={props.enabledSteps} onGoTo={props.onGoTo} />
       </View>
