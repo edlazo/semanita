@@ -376,9 +376,16 @@ palabras del nombre.
 Los 30 días salen de `TRIAL_DAYS` en `backend/src/entitlements.ts`; el prototipo lo tiene
 como constante para que se vea, pero el valor lo manda el backend.
 
-**c) Estadísticas** — tres columnas entre hairlines, separadas por divisores de 1px: semanas
-planificadas, comidas cocinadas y plata no gastada, número en Newsreader 22px acento y label en 12px. Es refuerzo de valor para la conversión; si los datos no existen todavía,
-**omitir el bloque entero antes que mostrar ceros**.
+**c) Estadísticas** — dos tarjetas de igual ancho: semanas planificadas y comidas cocinadas,
+número en 21px 700 y label en 12px `mut`. Es refuerzo de valor para la conversión; si los
+datos no existen todavía, **omitir el bloque entero antes que mostrar ceros**.
+
+Había una tercera tarjeta de "plata no gastada" y **se quitó a propósito**: la app conoce los
+ingredientes que tenías y los que faltaron, pero no los precios ni qué habrías cocinado sin
+Semanita, así que cualquier cifra sería una estimación que el usuario no puede verificar —
+mala idea justo en la pantalla donde se le pide pagar. Si más adelante se quiere una tercera
+métrica, que sea contable de verdad (por ejemplo "ingredientes rescatados", los que estaban
+en la heladera y se usaron), no una conversión a dinero.
 
 **d) Preferencias** — dos secciones con eyebrow de acento:
 - *Restricciones*: las mismas seis píldoras de la pantalla 2, editables en el acto y con
@@ -588,10 +595,60 @@ Las fotos de comida son placeholders: no hay imágenes reales todavía.
   todo comprado, prueba y Plus activo). Para ver el estado Plus: Perfil → Ver los planes →
   elegir uno → suscribirme; "Cancelar renovación" vuelve a la prueba. Se abre directo en el navegador. La lógica del flujo está en el bloque
   `<script data-dc-script>` del final; el markup y los estilos, arriba.
-- `Semanita Tablero.dc.html` — el tablero de exploración: la recreación del diseño anterior,
-  la versión rediseñada, tres variantes de la pantalla de Menú y las tres paletas que se
-  evaluaron. Útil para entender **por qué** el diseño quedó así; no es lo que hay que
-  implementar.
+- `Semanita Tablero.dc.html` — el tablero de exploración, ordenado del turno más reciente al
+  más antiguo: la dirección final, las dos alternativas tipográficas que se descartaron, las
+  paletas que se evaluaron, tres variantes de la pantalla de Menú y la recreación del diseño
+  anterior. Útil para entender **por qué** el diseño quedó así.
+
+  **Solo el turno de arriba refleja la dirección vigente.** Todo lo de abajo son
+  exploraciones históricas que se dejan a propósito sin actualizar: vas a ver ahí otras
+  tipografías, versalitas y montos en pesos. Ante cualquier diferencia, **manda el prototipo
+  y este README** — el tablero no es referencia de implementación.
+
+## Los checkmarks NO son texto
+
+Los tildes **ya están como SVG en el prototipo**: buscá `<svg viewBox="0 0 12 12">` y vas a
+encontrar exactamente el trazo a implementar.
+
+Antes estaban escritos como el carácter `✓` (U+2713) con `font-family: 'Plus Jakarta Sans'`,
+y esa es la trampa a evitar: Plus Jakarta Sans no tiene ese glifo, así que el sistema lo
+sustituye en silencio por cualquier fuente instalada que sí lo tenga — en el navegador una,
+en iOS otra, en Android otra. Por eso el tilde se veía distinto en cada lugar. Lo mismo pasa
+con `✕`, `←`, `→` y `›`: **ninguno queda ya como texto en el prototipo.**
+
+**Implementalo como vector, nunca como texto.** En React Native, `react-native-svg`:
+
+```tsx
+import Svg, { Path } from 'react-native-svg';
+
+export function Check({ size = 12, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 12 12" fill="none">
+      <Path d="M2.5 6.2 L4.8 8.5 L9.5 3.5" stroke={color} strokeWidth={2}
+            strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+```
+
+Reglas del tilde, iguales en los tres lugares donde aparece (casilla de comida, casilla de
+la lista de compras, fila del país):
+
+- **Trazo de 2px** con extremos y unión redondeados. El vértice cae aproximadamente en el
+  40% del ancho: brazo corto a la izquierda, largo a la derecha.
+- **Tamaño**: 12px de alto dentro de una casilla de 20–22px. El tilde ocupa poco más de la
+  mitad de la casilla; llenarla lo hace ver tosco.
+- **Color**: `onAccent` cuando la casilla está rellena de acento; `accent` cuando va suelto
+  sobre el fondo (la fila del país).
+- El mismo componente en todos lados. Si aparece un `✓`, una fuente de íconos o un emoji en
+  el código, está mal.
+- **La casilla no desaparece cuando no está tildada**: se oculta el tilde, no la casilla. En
+  el prototipo eso es `opacity` sobre el `<svg>`, nunca sobre el contenedor — si va sobre el
+  contenedor, al destildar se borran también el borde y el relleno.
+
+Lo mismo vale para el resto de los glifos del prototipo: `✕`, `←`, `→` y `›` son atajos de
+maqueta. En la app van como íconos vectoriales del mismo set, con el mismo grosor de trazo
+de 2px, para que todo el sistema de íconos se vea de una sola familia.
 
 ## Cómo se relaciona con el código actual
 
