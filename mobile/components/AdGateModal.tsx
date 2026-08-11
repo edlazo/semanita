@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton, SecondaryButton } from './Buttons';
-import { CrossMark } from './Glyphs';
+import { Cross } from './Icons';
 import { HatchPattern } from './Motion';
 import { fonts, radii, Theme } from '../theme';
 
@@ -80,7 +80,7 @@ export default function AdGateModal(props: Props) {
               <View style={styles.headRow}>
                 <Text style={styles.eyebrow}>Cambiar comida</Text>
                 <Pressable onPress={cancel} hitSlop={12} accessibilityLabel="Cerrar">
-                  <CrossMark size={13} color={theme.inkSoft} thickness={1.5} />
+                  <Cross size={24} color={theme.inkSoft} strokeWidth={1.5} />
                 </Pressable>
               </View>
 

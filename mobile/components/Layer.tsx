@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CrossMark } from './Glyphs';
+import { Cross } from './Icons';
 import { Rise } from './Motion';
 import { fonts, radii, Theme } from '../theme';
 
@@ -50,7 +50,7 @@ export default function Layer({
           {/* Cerrar la capa y entrar al perfil son acciones distintas: si el ✕
               reusa el handler de entrada, la capa se reabre sola. */}
           <Pressable onPress={onClose} hitSlop={8} style={styles.close} accessibilityLabel="Cerrar">
-            <CrossMark size={13} color={theme.ink} thickness={1.5} />
+            <Cross size={24} color={theme.ink} strokeWidth={1.5} />
           </Pressable>
         </View>
 

@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { CrossMark } from './Glyphs';
+import { Cross } from './Icons';
 import { fonts, radii, Theme } from '../theme';
 
 export type RecipeIngredient = {
@@ -67,7 +67,7 @@ export default function RecipeModal({
             style={styles.closeBtn}
             accessibilityLabel="Cerrar receta"
           >
-            <CrossMark size={13} color={theme.ink} thickness={1.5} />
+            <Cross size={24} color={theme.ink} strokeWidth={1.5} />
           </Pressable>
         </View>
 

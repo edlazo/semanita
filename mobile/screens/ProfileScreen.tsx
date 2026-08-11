@@ -1,6 +1,7 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SecondaryButton } from '../components/Buttons';
 import { Avatar, Eyebrow } from '../components/Chrome';
+import { ArrowLeft, Chevron } from '../components/Icons';
 import { ScreenEntrance } from '../components/Motion';
 import { Entitlement } from '../lib/plan';
 import { Country } from '../lib/plans';
@@ -111,7 +112,7 @@ export default function ProfileScreen(props: Props) {
       <ScreenEntrance style={s.root}>
         <View style={s.header}>
           <Pressable onPress={props.onClose} hitSlop={8} style={s.backBtn}>
-            <Text style={s.backGlyph}>←</Text>
+            <ArrowLeft size={22} color={theme.ink} strokeWidth={2} />
           </Pressable>
           <Text style={s.headerTitle}>Tu perfil</Text>
           <Pressable onPress={props.toggleMode} hitSlop={12}>
@@ -274,7 +275,10 @@ export default function ProfileScreen(props: Props) {
               <Text style={s.countryName}>País de residencia</Text>
               <Text style={s.countryHint}>Define en qué moneda te cobramos.</Text>
             </View>
-            <Text style={s.countryChange}>{props.country.currency} ›</Text>
+            <View style={s.countryChange}>
+              <Text style={s.countryChangeText}>{props.country.currency}</Text>
+              <Chevron size={14} color={theme.accent} strokeWidth={2.6} />
+            </View>
           </Pressable>
 
           {/* No está en el prototipo, pero es la única forma de tirar la semana
@@ -323,7 +327,6 @@ function getStyles(theme: Theme) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    backGlyph: { fontFamily: fonts.body, fontSize: 17, color: theme.ink },
     headerTitle: {
       flex: 1,
       fontFamily: fonts.bodyBold,
@@ -478,7 +481,8 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       marginTop: 2,
     },
-    countryChange: { fontFamily: fonts.bodySemi, fontSize: 13.5, color: theme.accent },
+    countryChange: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+    countryChangeText: { fontFamily: fonts.bodySemi, fontSize: 13.5, color: theme.accent },
     // Cerrar sesión y tirar la semana no compiten con nada: caja bordeada,
     // texto apagado y centrado.
     quietBtn: {

@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Layer from '../components/Layer';
-import { CheckMark } from '../components/Glyphs';
+import { Check } from '../components/Icons';
 import { COUNTRIES } from '../lib/plans';
 import { fonts, radii, Theme } from '../theme';
 
@@ -45,7 +45,7 @@ export default function CountryLayer(props: Props) {
                 {c.currency} · {c.symbol}
               </Text>
             </View>
-            {on && <CheckMark size={14} color={theme.accent} thickness={2} />}
+            {on && <Check size={22} color={theme.accent} strokeWidth={2} />}
           </Pressable>
         );
       })}

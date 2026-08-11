@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../components/Buttons';
-import { CheckMark } from '../components/Glyphs';
+import Checkbox from '../components/Checkbox';
 import { fonts, Mode, Theme } from '../theme';
 
 type Props = {
@@ -58,9 +58,7 @@ export default function PaywallScreen(props: Props) {
         <View style={styles.list}>
           {INCLUYE.map((item) => (
             <View key={item} style={styles.listRow}>
-              <View style={styles.tick}>
-                <CheckMark size={12} color={theme.accentInk} thickness={1.5} />
-              </View>
+              <Checkbox checked size={18} theme={theme} />
               <Text style={styles.listText}>{item}</Text>
             </View>
           ))}
@@ -147,15 +145,6 @@ function getStyles(theme: Theme) {
     },
     list: { gap: 10 },
     listRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    tick: {
-      width: 18,
-      height: 18,
-      flexShrink: 0,
-      borderRadius: 999,
-      backgroundColor: theme.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     listText: {
       fontFamily: fonts.body,
       fontSize: 13.5,

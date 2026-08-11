@@ -1,6 +1,7 @@
 import { Fragment, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft, ArrowRight, Chevron } from './Icons';
 import { HatchPattern } from './Motion';
 import { fonts, Theme } from '../theme';
 
@@ -75,9 +76,9 @@ export function StepIndicator({ theme, current, enabled, onGoTo }: StepIndicator
         hitSlop={8}
         style={[styles.step, !reachable && styles.stepInactive]}
       >
-        {back && <Text style={styles.stepArrowBack}>←</Text>}
+        {back && <ArrowLeft size={16} color={theme.accent} strokeWidth={2.2} />}
         <Text style={back ? styles.stepLabelBack : styles.stepLabelAhead}>{label}</Text>
-        {!back && <Text style={styles.stepArrowAhead}>→</Text>}
+        {!back && <ArrowRight size={16} color={theme.ink} strokeWidth={2.2} />}
       </Pressable>
     );
   };
@@ -225,8 +226,10 @@ export function Eyebrow({
       <Text style={styles.eyebrowText}>{children}</Text>
       {meta &&
         (onMeta ? (
-          <Pressable onPress={onMeta} hitSlop={8}>
+          // El "›" que abre otra pantalla va como trazo, no como carácter.
+          <Pressable onPress={onMeta} hitSlop={8} style={styles.eyebrowMetaRow}>
             <Text style={metaStyle}>{meta}</Text>
+            <Chevron size={12} color={theme.inkSoft} strokeWidth={2.6} />
           </Pressable>
         ) : (
           <Text style={metaStyle}>{meta}</Text>
@@ -373,6 +376,7 @@ function getStyles(theme: Theme) {
       fontSize: 12.5,
       color: theme.inkSoft,
     },
+    eyebrowMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
     eyebrowMetaAccent: {
       fontFamily: fonts.bodyMedium,
       fontSize: 13,

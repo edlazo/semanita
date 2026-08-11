@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { AccentChipButton, PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
-import { CrossMark } from '../components/Glyphs';
+import { Cross } from '../components/Icons';
 import { HatchPattern, PopIn, ScreenEntrance, Shake } from '../components/Motion';
 import { fonts, radii, Theme } from '../theme';
 
@@ -183,7 +183,7 @@ export default function IngredientsScreen(props: Props) {
               <PopIn key={`${item}-${i}`}>
                 <Pressable onPress={() => props.onRemoveIngredient(i)} style={styles.chip}>
                   <Text style={styles.chipText}>{item}</Text>
-                  <CrossMark size={9} color={theme.accent} thickness={1.5} />
+                  <Cross size={18} color={theme.accent} strokeWidth={2} />
                 </Pressable>
               </PopIn>
             ))}
@@ -208,7 +208,7 @@ export default function IngredientsScreen(props: Props) {
         <Eyebrow
           theme={theme}
           rule="soft"
-          meta="guardadas en tu perfil ›"
+          meta="guardadas en tu perfil"
           onMeta={props.onOpenProfile}
         >
           Restricciones

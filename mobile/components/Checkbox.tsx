@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CheckMark } from './Glyphs';
+import { Check } from './Icons';
 import { radii, Theme } from '../theme';
 
 type Props = {
@@ -29,10 +29,11 @@ export default function Checkbox({
       backgroundColor: checked ? theme.accent : 'transparent',
     },
   ];
-  // El ✓ ocupa dos tercios de la casilla y va de trazo fino: a tamaño completo
-  // y trazo 2 llenaba el círculo y se leía como otra fuente.
+  // El icono tiene que entrar dentro del borde de 1.5px, no medir lo mismo que
+  // la casilla. 0.82 deja aire a los cuatro lados y el tilde queda cerca de la
+  // mitad del ancho; trazo 2 sobre 24 se dibuja en ~1.5px a estos tamaños.
   const mark = checked ? (
-    <CheckMark size={size * 0.66} color={theme.accentInk} thickness={1.5} />
+    <Check size={size * 0.82} color={theme.accentInk} strokeWidth={2} />
   ) : null;
 
   if (!onPress) {
