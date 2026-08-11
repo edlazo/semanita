@@ -58,7 +58,7 @@ export default function PaywallScreen(props: Props) {
         <View style={styles.list}>
           {INCLUYE.map((item) => (
             <View key={item} style={styles.listRow}>
-              <Checkbox checked size={18} theme={theme} />
+              <Checkbox checked size={20} theme={theme} />
               <Text style={styles.listText}>{item}</Text>
             </View>
           ))}

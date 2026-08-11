@@ -112,7 +112,7 @@ export default function ProfileScreen(props: Props) {
       <ScreenEntrance style={s.root}>
         <View style={s.header}>
           <Pressable onPress={props.onClose} hitSlop={8} style={s.backBtn}>
-            <ArrowLeft size={22} color={theme.ink} strokeWidth={2} />
+            <ArrowLeft color={theme.ink} />
           </Pressable>
           <Text style={s.headerTitle}>Tu perfil</Text>
           <Pressable onPress={props.toggleMode} hitSlop={12}>
@@ -277,7 +277,7 @@ export default function ProfileScreen(props: Props) {
             </View>
             <View style={s.countryChange}>
               <Text style={s.countryChangeText}>{props.country.currency}</Text>
-              <Chevron size={14} color={theme.accent} strokeWidth={2.6} />
+              <Chevron color={theme.accent} />
             </View>
           </Pressable>
 

@@ -67,7 +67,7 @@ export default function RecipeModal({
             style={styles.closeBtn}
             accessibilityLabel="Cerrar receta"
           >
-            <Cross size={24} color={theme.ink} strokeWidth={1.5} />
+            <Cross color={theme.ink} />
           </Pressable>
         </View>
 

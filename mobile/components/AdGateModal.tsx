@@ -80,7 +80,7 @@ export default function AdGateModal(props: Props) {
               <View style={styles.headRow}>
                 <Text style={styles.eyebrow}>Cambiar comida</Text>
                 <Pressable onPress={cancel} hitSlop={12} accessibilityLabel="Cerrar">
-                  <Cross size={24} color={theme.inkSoft} strokeWidth={1.5} />
+                  <Cross color={theme.inkSoft} />
                 </Pressable>
               </View>
 

@@ -76,9 +76,9 @@ export function StepIndicator({ theme, current, enabled, onGoTo }: StepIndicator
         hitSlop={8}
         style={[styles.step, !reachable && styles.stepInactive]}
       >
-        {back && <ArrowLeft size={16} color={theme.accent} strokeWidth={2.2} />}
+        {back && <ArrowLeft color={theme.accent} />}
         <Text style={back ? styles.stepLabelBack : styles.stepLabelAhead}>{label}</Text>
-        {!back && <ArrowRight size={16} color={theme.ink} strokeWidth={2.2} />}
+        {!back && <ArrowRight color={theme.ink} />}
       </Pressable>
     );
   };
@@ -229,7 +229,7 @@ export function Eyebrow({
           // El "›" que abre otra pantalla va como trazo, no como carácter.
           <Pressable onPress={onMeta} hitSlop={8} style={styles.eyebrowMetaRow}>
             <Text style={metaStyle}>{meta}</Text>
-            <Chevron size={12} color={theme.inkSoft} strokeWidth={2.6} />
+            <Chevron color={theme.inkSoft} />
           </Pressable>
         ) : (
           <Text style={metaStyle}>{meta}</Text>

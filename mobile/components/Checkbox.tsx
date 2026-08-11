@@ -29,12 +29,10 @@ export default function Checkbox({
       backgroundColor: checked ? theme.accent : 'transparent',
     },
   ];
-  // El icono tiene que entrar dentro del borde de 1.5px, no medir lo mismo que
-  // la casilla. 0.82 deja aire a los cuatro lados y el tilde queda cerca de la
-  // mitad del ancho; trazo 2 sobre 24 se dibuja en ~1.5px a estos tamaños.
-  const mark = checked ? (
-    <Check size={size * 0.82} color={theme.accentInk} strokeWidth={2} />
-  ) : null;
+  // 12px fijo, no proporcional: es la medida del handoff para casillas de
+  // 20–22px. Se oculta el tilde, nunca la casilla — el borde y el relleno
+  // tienen que seguir ahí cuando está sin tildar.
+  const mark = checked ? <Check color={theme.accentInk} /> : null;
 
   if (!onPress) {
     return <View style={box}>{mark}</View>;

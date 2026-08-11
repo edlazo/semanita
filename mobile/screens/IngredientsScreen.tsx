@@ -183,7 +183,7 @@ export default function IngredientsScreen(props: Props) {
               <PopIn key={`${item}-${i}`}>
                 <Pressable onPress={() => props.onRemoveIngredient(i)} style={styles.chip}>
                   <Text style={styles.chipText}>{item}</Text>
-                  <Cross size={18} color={theme.accent} strokeWidth={2} />
+                  <Cross size={14} color={theme.accent} />
                 </Pressable>
               </PopIn>
             ))}

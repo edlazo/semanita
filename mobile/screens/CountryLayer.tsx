@@ -45,7 +45,8 @@ export default function CountryLayer(props: Props) {
                 {c.currency} · {c.symbol}
               </Text>
             </View>
-            {on && <Check size={22} color={theme.accent} strokeWidth={2} />}
+            {/* Suelto sobre el fondo, así que va en acento y no en accentInk. */}
+            {on && <Check color={theme.accent} />}
           </Pressable>
         );
       })}

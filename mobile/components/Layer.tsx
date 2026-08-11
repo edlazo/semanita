@@ -50,7 +50,7 @@ export default function Layer({
           {/* Cerrar la capa y entrar al perfil son acciones distintas: si el ✕
               reusa el handler de entrada, la capa se reabre sola. */}
           <Pressable onPress={onClose} hitSlop={8} style={styles.close} accessibilityLabel="Cerrar">
-            <Cross size={24} color={theme.ink} strokeWidth={1.5} />
+            <Cross color={theme.ink} />
           </Pressable>
         </View>
 
