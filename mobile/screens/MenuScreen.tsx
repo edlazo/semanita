@@ -102,11 +102,17 @@ export default function MenuScreen(props: Props) {
               <Text style={styles.mealDesc}>{meal.description}</Text>
 
               {(() => {
+                // Una comida descartada no pide nada: sus faltantes ya salieron
+                // de la lista de compras, así que seguir mostrándolos prometía
+                // una compra que la lista no iba a pedir. Y como el tachado se
+                // calcula contra la lista, un ingrediente compartido con otro
+                // día hacía que la píldora de la descartada cambiara sola.
+                if (!on) return null;
+
                 const pending = pendingFor(meal.ingredientsToBuy, props.checkedNames);
-                // "Listo para cocinar" solo tiene sentido en una comida que vas
-                // a cocinar, y solo si alguna vez hubo algo que comprar: sin
-                // faltantes, el cartel felicitaría por una compra que no hiciste.
-                if (on && meal.ingredientsToBuy.length > 0 && pending.length === 0) {
+                // "Listo para cocinar" solo si alguna vez hubo algo que comprar:
+                // sin faltantes felicitaría por una compra que no hiciste.
+                if (meal.ingredientsToBuy.length > 0 && pending.length === 0) {
                   return (
                     <View style={styles.readyRow}>
                       {/* La misma casilla del encabezado, no un ✓ dibujado
