@@ -26,6 +26,12 @@
       "@sentry/react-native",
       "expo-font",
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6586f33f-45cf-4d56-9d7d-313c32c8e747"
+      }
+    },
+    "owner": "edlazo"
   }
 }
