@@ -10,6 +10,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.edlazo.semanita",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -23,7 +24,8 @@
     },
     "plugins": [
       "@sentry/react-native",
-      "expo-font"
+      "expo-font",
+      "expo-status-bar"
     ]
   }
 }

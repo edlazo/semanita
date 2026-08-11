@@ -26,9 +26,13 @@ no el código. Reiniciar Metro no reinicia el backend.
 fija de la máquina de desarrollo. Si el router la cambia, aparece el mismo
 `Failed to fetch` con el backend perfectamente vivo.
 
-**Probar en web, no en Expo Go.** La app de Expo Go de la store no matchea el
-SDK del proyecto y tira "Incompatible SDK version". El SDK está **pinneado en
-56 a propósito**: 57 rompió Expo Go. No subirlo sin confirmar.
+**Expo Go solo habla el SDK más nuevo.** No soporta versiones viejas: si el
+proyecto queda atrás, tira "Incompatible SDK version" y no hay forma de forzarlo.
+Por eso el proyecto sigue al SDK vigente en vez de quedarse pinneado.
+
+Web (`--web`) es la superficie de iteración rápida, pero **no alcanza para dar
+algo por probado**: react-native-web difiere en flex, fuentes y animaciones.
+Lo que toca módulos nativos se verifica en el teléfono.
 
 No hay runner de tests configurado. Lo que hay para validar es
 `npx tsc --noEmit` en `mobile/`, y mirar la app en el navegador.
