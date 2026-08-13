@@ -65,7 +65,12 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.eyebrow}>Desde 2026 · cocina de semana</Text>
+        {/* El eyebrow lleva el modo en vez de la bajada de marca: entre login y
+            registro solo cambiaban tres textos, y una animación de 350ms se
+            termina. Esto queda fijo arriba de todo y se lee de un vistazo. */}
+        <ScreenEntrance key={`eyebrow-${signup}`}>
+          <Text style={styles.eyebrow}>{signup ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
+        </ScreenEntrance>
 
         <Text style={styles.title}>
           Comé bien{'\n'}toda la{'\n'}
@@ -74,11 +79,16 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
 
         <View style={styles.rule} />
 
-        <Text style={styles.blurb}>
-          {signup
-            ? 'Creá tu cuenta y en dos minutos tenés la semana resuelta con lo que ya hay en casa.'
-            : 'Sacale una foto a la heladera y te armamos la semana con lo que ya tenés.'}
-        </Text>
+        {/* La `key` remonta el bloque al cambiar de modo, así `scr` se vuelve a
+            reproducir. Es la animación que el handoff define para "esto es
+            nuevo, llegó recién", que es exactamente lo que pasó. */}
+        <ScreenEntrance key={`blurb-${signup}`}>
+          <Text style={styles.blurb}>
+            {signup
+              ? 'Creá tu cuenta y en dos minutos tenés la semana resuelta con lo que ya hay en casa.'
+              : 'Sacale una foto a la heladera y te armamos la semana con lo que ya tenés.'}
+          </Text>
+        </ScreenEntrance>
 
         <View style={styles.fields}>
           <View>
@@ -121,29 +131,33 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
         )}
         {info && <Text style={styles.info}>{info}</Text>}
 
-        <View style={styles.ctaWrap}>
-          <PrimaryButton
-            title={signup ? 'Crear cuenta' : 'Iniciar sesión'}
-            onPress={handleSubmit}
-            loading={loading}
-            disabled={!email || !password}
-            theme={theme}
-          />
-        </View>
+        {/* Los campos quedan afuera a propósito: remontarlos perdería el foco y
+            el email que ya escribiste. Se anima solo lo que cambia. */}
+        <ScreenEntrance key={`cta-${signup}`}>
+          <View style={styles.ctaWrap}>
+            <PrimaryButton
+              title={signup ? 'Crear cuenta' : 'Iniciar sesión'}
+              onPress={handleSubmit}
+              loading={loading}
+              disabled={!email || !password}
+              theme={theme}
+            />
+          </View>
 
-        <Text style={styles.switchRow}>
-          {signup ? '¿Ya tenés cuenta? ' : '¿No tenés cuenta? '}
-          <Text
-            style={styles.switchCta}
-            onPress={() => {
-              setSignup(!signup);
-              setError(null);
-              setInfo(null);
-            }}
-          >
-            {signup ? 'Iniciá sesión' : 'Creá una'}
+          <Text style={styles.switchRow}>
+            {signup ? '¿Ya tenés cuenta? ' : '¿No tenés cuenta? '}
+            <Text
+              style={styles.switchCta}
+              onPress={() => {
+                setSignup(!signup);
+                setError(null);
+                setInfo(null);
+              }}
+            >
+              {signup ? 'Iniciá sesión' : 'Creá una'}
+            </Text>
           </Text>
-        </Text>
+        </ScreenEntrance>
 
         <Text style={styles.footer}>Emporio de comida casera</Text>
       </ScrollView>

@@ -91,7 +91,20 @@ Los cuatro salieron de romperse la cabeza, no de la documentación:
    `flexShrink: 0`. Aplica igual a un SVG adentro de un contenedor con borde: sin
    `flexShrink` se achica en un solo eje y el trazo sale deformado.
 
-`useNativeDriver` no anda en web; las animaciones de `Motion.tsx` van sin él.
+## Movimiento
+
+El handoff define **cuatro animaciones y nada más** — `scr` (6px + fade),
+`rise` (24px + fade), `pop` (escala) y `shake` — y dice explícitamente que una
+quinta las vuelve ruido. Antes de inventar una, ver si alguna existente ya
+significa lo que hace falta: `scr` es "esto es nuevo, llegó recién", y volver a
+dispararlo con una `key` cubre casi todos los casos de contenido que cambia.
+
+La distancia codifica jerarquía: 6px es "cambió el contenido", 24px es "se abrió
+una capa que vas a cerrar". Nada más largo de 400ms.
+
+`Motion.tsx` usa `useNativeDriver: true`. En web no existe el módulo nativo y RN
+avisa por consola que cae a animación por JS — no es un error y se ve igual,
+pero **la fluidez real solo se juzga en el teléfono**.
 
 ## Backend
 
