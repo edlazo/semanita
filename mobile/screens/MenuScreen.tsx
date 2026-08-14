@@ -133,14 +133,28 @@ export default function MenuScreen(props: Props) {
                 Con un solo momento queda igual que antes: un día, una comida. */}
             {collapsible ? (
               <Pressable onPress={() => toggleDay(group.day)} style={styles.dayHeader}>
-                <Text style={styles.dayHeaderText}>{group.day}</Text>
-                {/* Plegado hay que poder saber qué hay adentro sin abrirlo. */}
-                <Text style={styles.dayHeaderMeta}>
-                  {chosen} de {group.items.length}
-                </Text>
-                <View style={openDay ? styles.chevronOpen : undefined}>
-                  <Chevron size={14} color={theme.inkSoft} />
+                <View style={styles.dayHeaderTop}>
+                  <Text style={styles.dayHeaderText}>{group.day}</Text>
+                  <Text style={styles.dayHeaderMeta}>
+                    {chosen} de {group.items.length} comidas
+                  </Text>
+                  <View style={openDay ? styles.chevronOpen : undefined}>
+                    <Chevron size={14} color={theme.inkSoft} />
+                  </View>
                 </View>
+                {/* Plegado, un conteo no dice qué hay adentro. Los nombres sí,
+                    y son lo que hace visible que el día tiene comidas. Abierto
+                    sobra: las tarjetas ya están a la vista. */}
+                {!openDay && (
+                  <Text style={styles.dayHeaderPreview} numberOfLines={1}>
+                    {chosen === 0
+                      ? 'Sin comidas elegidas'
+                      : group.items
+                          .filter(({ index }) => selected.has(index))
+                          .map(({ meal }) => meal.name)
+                          .join(' · ')}
+                  </Text>
+                )}
               </Pressable>
             ) : (
               <Eyebrow theme={theme} rule="soft">
@@ -326,14 +340,17 @@ function getStyles(theme: Theme) {
     // Mismo peso y filete que el Eyebrow, para que plegable y no plegable se
     // vean como la misma pantalla.
     dayHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
       minHeight: 44,
-      paddingBottom: 6,
+      justifyContent: 'center',
+      paddingBottom: 7,
       marginBottom: 10,
       borderBottomWidth: 1,
       borderBottomColor: theme.line26,
+    },
+    dayHeaderTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
     dayHeaderText: {
       flex: 1,
@@ -346,6 +363,13 @@ function getStyles(theme: Theme) {
       fontFamily: fonts.body,
       fontSize: 12.5,
       color: theme.inkSoft,
+    },
+    // Los nombres de lo que se cocina ese día, en una línea que se corta.
+    dayHeaderPreview: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: theme.inkSoft,
+      marginTop: 4,
     },
     // El chevron apunta abajo cuando el día está abierto.
     chevronOpen: { transform: [{ rotate: '90deg' }] },
