@@ -1,7 +1,9 @@
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../components/Buttons';
 import Checkbox from '../components/Checkbox';
+import { useState } from 'react';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { Chevron } from '../components/Icons';
 import { ALL_MOMENTS } from '../lib/moments';
 import { ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
@@ -72,6 +74,23 @@ export default function MenuScreen(props: Props) {
     }))
     .sort((a, b) => orderOf(a.day, props.days) - orderOf(b.day, props.days));
 
+  // Con un momento son 7 tarjetas y entran; con cuatro son 28 y la pantalla se
+  // vuelve un scroll interminable. Ahí la tarjeta se pliega al nombre, que es
+  // con lo que se decide destildar — la bajada y los botones son lo que ocupa.
+  const compact = new Set(meals.map((m) => m.moment)).size > 1;
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  function toggleExpanded(index: number) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      // Se permiten varias abiertas: cerrar la anterior sola sorprende, y el
+      // default plegado ya resuelve el scroll.
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  }
+
   return (
     <ScreenEntrance style={styles.root}>
       <View style={styles.top}>
@@ -114,6 +133,9 @@ export default function MenuScreen(props: Props) {
             {group.items.map(({ meal, index: i }) => {
               const on = selected.has(i);
               const regenerating = props.regeneratingIndex === i;
+              // Con un solo momento la tarjeta va siempre abierta: es la
+              // pantalla de antes y plegarla solo agregaría un toque.
+              const open = !compact || expanded.has(i);
               return (
                 <View
                   key={`${meal.name}-${i}`}
@@ -135,10 +157,24 @@ export default function MenuScreen(props: Props) {
                     />
                   </View>
 
-                  <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
-                  <Text style={styles.mealDesc}>{meal.description}</Text>
+                  {compact ? (
+                    <Pressable onPress={() => toggleExpanded(i)} style={styles.nameRow}>
+                      <Text
+                        style={[styles.mealName, styles.nameFlex, !on && styles.mealNameOff]}
+                      >
+                        {meal.name}
+                      </Text>
+                      <View style={open ? styles.chevronOpen : undefined}>
+                        <Chevron size={14} color={theme.inkSoft} />
+                      </View>
+                    </Pressable>
+                  ) : (
+                    <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
+                  )}
 
-                  {(() => {
+                  {open && <Text style={styles.mealDesc}>{meal.description}</Text>}
+
+                  {open && (() => {
                 // Una comida descartada no pide nada: sus faltantes ya salieron
                 // de la lista de compras, así que seguir mostrándolos prometía
                 // una compra que la lista no iba a pedir. Y como el tachado se
@@ -174,7 +210,7 @@ export default function MenuScreen(props: Props) {
                 );
               })()}
 
-                  {on && (
+                  {on && open && (
                     <View style={styles.actions}>
                       <Pressable onPress={() => props.onOpenRecipe(i)} style={styles.recipeBtn}>
                         <Text style={styles.recipeBtnText}>Ver receta</Text>
@@ -285,6 +321,15 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       textDecorationLine: 'line-through',
     },
+    nameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      minHeight: 44,
+    },
+    nameFlex: { flex: 1, marginBottom: 0 },
+    // El chevron apunta abajo cuando la tarjeta está abierta.
+    chevronOpen: { transform: [{ rotate: '90deg' }] },
     mealDesc: {
       fontFamily: fonts.body,
       fontSize: 13.5,
