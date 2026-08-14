@@ -74,19 +74,21 @@ export default function MenuScreen(props: Props) {
     }))
     .sort((a, b) => orderOf(a.day, props.days) - orderOf(b.day, props.days));
 
-  // Con un momento son 7 tarjetas y entran; con cuatro son 28 y la pantalla se
-  // vuelve un scroll interminable. Ahí la tarjeta se pliega al nombre, que es
-  // con lo que se decide destildar — la bajada y los botones son lo que ocupa.
-  const compact = new Set(meals.map((m) => m.moment)).size > 1;
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  // Con un momento son 7 tarjetas y entran de corrido; con cuatro son 28 y la
+  // pantalla se vuelve un scroll interminable. Ahí se pliega el día entero: la
+  // tarjeta queda intacta y la semana pasa a ser siete filas.
+  const collapsible = new Set(meals.map((m) => m.moment)).size > 1;
+  const [openDays, setOpenDays] = useState<Set<string>>(
+    // El primer día arranca abierto: con todo plegado la pantalla se ve vacía
+    // justo después de generar, y no se entiende que las filas se abren.
+    () => new Set(byDay.length ? [byDay[0].day] : [])
+  );
 
-  function toggleExpanded(index: number) {
-    setExpanded((prev) => {
+  function toggleDay(day: string) {
+    setOpenDays((prev) => {
       const next = new Set(prev);
-      // Se permiten varias abiertas: cerrar la anterior sola sorprende, y el
-      // default plegado ya resuelve el scroll.
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
       return next;
     });
   }
@@ -122,20 +124,33 @@ export default function MenuScreen(props: Props) {
           </Shake>
         )}
 
-        {byDay.map((group) => (
+        {byDay.map((group) => {
+          const openDay = !collapsible || openDays.has(group.day);
+          const chosen = group.items.filter(({ index }) => selected.has(index)).length;
+          return (
           <View key={group.day} style={styles.dayGroup}>
             {/* El día encabeza la sección; adentro va una tarjeta por momento.
                 Con un solo momento queda igual que antes: un día, una comida. */}
-            <Eyebrow theme={theme} rule="soft">
-              {group.day}
-            </Eyebrow>
+            {collapsible ? (
+              <Pressable onPress={() => toggleDay(group.day)} style={styles.dayHeader}>
+                <Text style={styles.dayHeaderText}>{group.day}</Text>
+                {/* Plegado hay que poder saber qué hay adentro sin abrirlo. */}
+                <Text style={styles.dayHeaderMeta}>
+                  {chosen} de {group.items.length}
+                </Text>
+                <View style={openDay ? styles.chevronOpen : undefined}>
+                  <Chevron size={14} color={theme.inkSoft} />
+                </View>
+              </Pressable>
+            ) : (
+              <Eyebrow theme={theme} rule="soft">
+                {group.day}
+              </Eyebrow>
+            )}
 
-            {group.items.map(({ meal, index: i }) => {
+            {openDay && group.items.map(({ meal, index: i }) => {
               const on = selected.has(i);
               const regenerating = props.regeneratingIndex === i;
-              // Con un solo momento la tarjeta va siempre abierta: es la
-              // pantalla de antes y plegarla solo agregaría un toque.
-              const open = !compact || expanded.has(i);
               return (
                 <View
                   key={`${meal.name}-${i}`}
@@ -157,24 +172,10 @@ export default function MenuScreen(props: Props) {
                     />
                   </View>
 
-                  {compact ? (
-                    <Pressable onPress={() => toggleExpanded(i)} style={styles.nameRow}>
-                      <Text
-                        style={[styles.mealName, styles.nameFlex, !on && styles.mealNameOff]}
-                      >
-                        {meal.name}
-                      </Text>
-                      <View style={open ? styles.chevronOpen : undefined}>
-                        <Chevron size={14} color={theme.inkSoft} />
-                      </View>
-                    </Pressable>
-                  ) : (
-                    <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
-                  )}
+                  <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
+                  <Text style={styles.mealDesc}>{meal.description}</Text>
 
-                  {open && <Text style={styles.mealDesc}>{meal.description}</Text>}
-
-                  {open && (() => {
+                  {(() => {
                 // Una comida descartada no pide nada: sus faltantes ya salieron
                 // de la lista de compras, así que seguir mostrándolos prometía
                 // una compra que la lista no iba a pedir. Y como el tachado se
@@ -210,7 +211,7 @@ export default function MenuScreen(props: Props) {
                 );
               })()}
 
-                  {on && open && (
+                  {on && (
                     <View style={styles.actions}>
                       <Pressable onPress={() => props.onOpenRecipe(i)} style={styles.recipeBtn}>
                         <Text style={styles.recipeBtnText}>Ver receta</Text>
@@ -234,7 +235,8 @@ export default function MenuScreen(props: Props) {
               );
             })}
           </View>
-        ))}
+          );
+        })}
       </ScrollView>
 
       <CtaBar theme={theme}>
@@ -321,14 +323,31 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       textDecorationLine: 'line-through',
     },
-    nameRow: {
+    // Mismo peso y filete que el Eyebrow, para que plegable y no plegable se
+    // vean como la misma pantalla.
+    dayHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
       minHeight: 44,
+      paddingBottom: 6,
+      marginBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.line26,
     },
-    nameFlex: { flex: 1, marginBottom: 0 },
-    // El chevron apunta abajo cuando la tarjeta está abierta.
+    dayHeaderText: {
+      flex: 1,
+      fontFamily: fonts.bodySemi,
+      fontSize: 15,
+      letterSpacing: -0.15,
+      color: theme.ink,
+    },
+    dayHeaderMeta: {
+      fontFamily: fonts.body,
+      fontSize: 12.5,
+      color: theme.inkSoft,
+    },
+    // El chevron apunta abajo cuando el día está abierto.
     chevronOpen: { transform: [{ rotate: '90deg' }] },
     mealDesc: {
       fontFamily: fonts.body,
