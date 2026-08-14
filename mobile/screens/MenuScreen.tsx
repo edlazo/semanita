@@ -1,7 +1,8 @@
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../components/Buttons';
 import Checkbox from '../components/Checkbox';
-import { CtaBar, Header, StepIndicator, Step } from '../components/Chrome';
+import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
+import { ALL_MOMENTS } from '../lib/moments';
 import { ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
 import { fonts, radii, Theme } from '../theme';
@@ -11,6 +12,9 @@ export type Meal = {
   description: string;
   ingredientsUsed: string[];
   ingredientsToBuy: string[];
+  /** Los manda el backend. Con varios momentos el índice ya no dice el día. */
+  day: string;
+  moment: string;
 };
 
 type Props = {
@@ -43,6 +47,31 @@ export default function MenuScreen(props: Props) {
   const { theme, meals, selected } = props;
   const styles = getStyles(theme);
 
+  // El backend devuelve las comidas por momento (todos los desayunos, después
+  // todos los almuerzos), así que hay que reagrupar de verdad, no por
+  // consecutivos. El índice original se conserva porque todo lo demás —tildar,
+  // regenerar, la lista de compras— sigue hablando por índice.
+  const groups = new Map<string, { meal: Meal; index: number }[]>();
+  meals.forEach((meal, index) => {
+    const bucket = groups.get(meal.day);
+    if (bucket) bucket.push({ meal, index });
+    else groups.set(meal.day, [{ meal, index }]);
+  });
+
+  const orderOf = (value: string, list: readonly string[]) => {
+    const i = list.indexOf(value);
+    return i === -1 ? list.length : i;
+  };
+
+  const byDay = [...groups.entries()]
+    .map(([day, items]) => ({
+      day,
+      items: [...items].sort(
+        (a, b) => orderOf(a.meal.moment, ALL_MOMENTS) - orderOf(b.meal.moment, ALL_MOMENTS)
+      ),
+    }))
+    .sort((a, b) => orderOf(a.day, props.days) - orderOf(b.day, props.days));
+
   return (
     <ScreenEntrance style={styles.root}>
       <View style={styles.top}>
@@ -74,34 +103,42 @@ export default function MenuScreen(props: Props) {
           </Shake>
         )}
 
-        {meals.map((meal, i) => {
-          const on = selected.has(i);
-          const regenerating = props.regeneratingIndex === i;
-          return (
-            <View
-              key={`${meal.name}-${i}`}
-              style={[
-                styles.card,
-                on
-                  ? { backgroundColor: theme.surface, borderColor: theme.line20 }
-                  : styles.cardOff,
-                !on && { borderColor: theme.border },
-              ]}
-            >
-              <View style={styles.cardTop}>
-                <Text style={styles.day}>{props.days[i] ?? ''}</Text>
-                <Checkbox
-                  checked={on}
-                  onPress={() => props.onToggleMeal(i)}
-                  size={22}
-                  theme={theme}
-                />
-              </View>
+        {byDay.map((group) => (
+          <View key={group.day} style={styles.dayGroup}>
+            {/* El día encabeza la sección; adentro va una tarjeta por momento.
+                Con un solo momento queda igual que antes: un día, una comida. */}
+            <Eyebrow theme={theme} rule="soft">
+              {group.day}
+            </Eyebrow>
 
-              <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
-              <Text style={styles.mealDesc}>{meal.description}</Text>
+            {group.items.map(({ meal, index: i }) => {
+              const on = selected.has(i);
+              const regenerating = props.regeneratingIndex === i;
+              return (
+                <View
+                  key={`${meal.name}-${i}`}
+                  style={[
+                    styles.card,
+                    on
+                      ? { backgroundColor: theme.surface, borderColor: theme.line20 }
+                      : styles.cardOff,
+                    !on && { borderColor: theme.border },
+                  ]}
+                >
+                  <View style={styles.cardTop}>
+                    <Text style={styles.day}>{meal.moment}</Text>
+                    <Checkbox
+                      checked={on}
+                      onPress={() => props.onToggleMeal(i)}
+                      size={22}
+                      theme={theme}
+                    />
+                  </View>
 
-              {(() => {
+                  <Text style={[styles.mealName, !on && styles.mealNameOff]}>{meal.name}</Text>
+                  <Text style={styles.mealDesc}>{meal.description}</Text>
+
+                  {(() => {
                 // Una comida descartada no pide nada: sus faltantes ya salieron
                 // de la lista de compras, así que seguir mostrándolos prometía
                 // una compra que la lista no iba a pedir. Y como el tachado se
@@ -137,29 +174,31 @@ export default function MenuScreen(props: Props) {
                 );
               })()}
 
-              {on && (
-                <View style={styles.actions}>
-                  <Pressable onPress={() => props.onOpenRecipe(i)} style={styles.recipeBtn}>
-                    <Text style={styles.recipeBtnText}>Ver receta</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => props.onRegenerate(i)}
-                    disabled={props.regeneratingIndex !== null}
-                    style={styles.regenBtn}
-                  >
-                    {regenerating && <ActivityIndicator size="small" color={theme.inkSoft} />}
-                    {/* No anuncia que puede costar un anuncio: eso convertiría
-                        cada tarjeta en un recordatorio de que no pagaste. El
-                        costo aparece al tocar, cuando ya decidiste. */}
-                    <Text style={styles.regenBtnText}>
-                      {regenerating ? 'Cambiando…' : props.regenCounts[i] ? 'Otra más' : 'Otra'}
-                    </Text>
-                  </Pressable>
+                  {on && (
+                    <View style={styles.actions}>
+                      <Pressable onPress={() => props.onOpenRecipe(i)} style={styles.recipeBtn}>
+                        <Text style={styles.recipeBtnText}>Ver receta</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => props.onRegenerate(i)}
+                        disabled={props.regeneratingIndex !== null}
+                        style={styles.regenBtn}
+                      >
+                        {regenerating && <ActivityIndicator size="small" color={theme.inkSoft} />}
+                        {/* No anuncia que puede costar un anuncio: eso convertiría
+                            cada tarjeta en un recordatorio de que no pagaste. El
+                            costo aparece al tocar, cuando ya decidiste. */}
+                        <Text style={styles.regenBtnText}>
+                          {regenerating ? 'Cambiando…' : props.regenCounts[i] ? 'Otra más' : 'Otra'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
-          );
-        })}
+              );
+            })}
+          </View>
+        ))}
       </ScrollView>
 
       <CtaBar theme={theme}>
@@ -209,6 +248,7 @@ function getStyles(theme: Theme) {
       fontSize: 13.5,
       color: theme.accent,
     },
+    dayGroup: { marginBottom: 14 },
     card: {
       borderRadius: radii.card,
       borderWidth: 1,

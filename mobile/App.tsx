@@ -25,6 +25,7 @@ import MenuScreen, { Meal } from './screens/MenuScreen';
 import ShoppingScreen from './screens/ShoppingScreen';
 import PaywallScreen from './screens/PaywallScreen';
 import { Entitlement, startSubscription } from './lib/plan';
+import { DEFAULT_MOMENTS, FREE_MOMENTS, sortByDayOrder } from './lib/moments';
 import AdGateModal from './components/AdGateModal';
 import ProfileScreen, { Notifs } from './screens/ProfileScreen';
 import PersonalDataLayer from './screens/PersonalDataLayer';
@@ -76,6 +77,7 @@ type PersistedState = {
   checkedItems: string[];
   restriction: string;
   otherText: string;
+  moments?: string[];
 };
 
 export default function App() {
@@ -146,6 +148,8 @@ export default function App() {
   const [hydrated, setHydrated] = useState(false);
 
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
+  /** Qué comidas del día se piden. Arranca en cena: es lo que entra gratis. */
+  const [moments, setMoments] = useState<string[]>(DEFAULT_MOMENTS);
   /** Lo manda el backend: acá es solo para dibujar el progreso de la prueba. */
   const [trialDays, setTrialDays] = useState(30);
   const [subscribing, setSubscribing] = useState(false);
@@ -224,6 +228,7 @@ export default function App() {
           setCheckedItems(new Set(saved.checkedItems ?? []));
           setRestriction(saved.restriction ?? 'Ninguna');
           setOtherText(saved.otherText ?? '');
+          setMoments(saved.moments?.length ? saved.moments : DEFAULT_MOMENTS);
         } else {
           // Sin datos guardados para esta cuenta: limpiar lo que haya dejado otra
           // sesión en memoria en este mismo dispositivo.
@@ -245,6 +250,7 @@ export default function App() {
       checkedItems: [...checkedItems],
       restriction,
       otherText,
+      moments,
     };
     AsyncStorage.setItem(storageKey, JSON.stringify(toSave));
   }, [
@@ -259,6 +265,7 @@ export default function App() {
     checkedItems,
     restriction,
     otherText,
+    moments,
   ]);
 
   const refreshEntitlement = useCallback(async () => {
@@ -279,10 +286,30 @@ export default function App() {
     refreshEntitlement();
   }, [refreshEntitlement]);
 
+  /**
+   * Si el plan se achica —se vence la prueba con los cuatro momentos elegidos—
+   * hay que recortar la selección. Si no, el pedido sale con momentos que el
+   * backend rechaza entero con un 403 que no explica cómo salir.
+   */
+  useEffect(() => {
+    const allowed = entitlement?.allowedMoments;
+    if (!allowed) return;
+    setMoments((prev) => {
+      const kept = prev.filter((m) => allowed.includes(m));
+      if (kept.length === prev.length) return prev;
+      return kept.length ? kept : [...FREE_MOMENTS];
+    });
+  }, [entitlement?.allowedMoments]);
+
   /** El 402 del backend significa prueba vencida: se muestra el paywall. */
   function handlePlanBlocked(status: number): boolean {
     if (status !== 402) return false;
-    setEntitlement({ status: 'expired', trialDaysLeft: 0, subscribed: false });
+    setEntitlement({
+      status: 'expired',
+      trialDaysLeft: 0,
+      subscribed: false,
+      allowedMoments: [...FREE_MOMENTS],
+    });
     return true;
   }
 
@@ -434,7 +461,11 @@ export default function App() {
       const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ ingredients, restrictions: effectiveRestrictions || undefined }),
+        body: JSON.stringify({
+          ingredients,
+          restrictions: effectiveRestrictions || undefined,
+          moments: sortByDayOrder(moments),
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -490,6 +521,10 @@ export default function App() {
     setMenuError(null);
     try {
       const avoidNames = meals.map((m) => m.name);
+      // El reemplazo tiene que caer en el mismo casillero: sin mandar momento y
+      // día, el backend cae a su default y regenerar un desayuno del martes
+      // devolvía una cena del lunes.
+      const slot = meals[index];
       const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
@@ -498,6 +533,8 @@ export default function App() {
           count: 1,
           avoidNames,
           restrictions: effectiveRestrictions || undefined,
+          moments: [slot.moment],
+          day: slot.day,
         }),
       });
       const data = await response.json();
@@ -518,6 +555,17 @@ export default function App() {
     } finally {
       setRegeneratingIndex(null);
     }
+  }
+
+  function toggleMoment(moment: string) {
+    setMoments((prev) => {
+      // Destildar el último dejaría un menú vacío, así que ese toque no hace
+      // nada: es más claro que generar cero comidas y no explicar por qué.
+      if (prev.includes(moment)) {
+        return prev.length === 1 ? prev : prev.filter((m) => m !== moment);
+      }
+      return [...prev, moment];
+    });
   }
 
   function toggleMeal(index: number) {
@@ -696,6 +744,10 @@ export default function App() {
           onRestriction={setRestriction}
           otherText={otherText}
           onOtherText={setOtherText}
+          moments={moments}
+          onToggleMoment={toggleMoment}
+          allowedMoments={entitlement?.allowedMoments}
+          onOpenPlans={() => setPlansOpen(true)}
           generating={generating}
           genError={genError}
           onGenerate={generateMenu}
@@ -850,7 +902,13 @@ export default function App() {
         visible={recipeIndex !== null}
         onClose={closeRecipe}
         mealName={recipeIndex !== null ? (meals?.[recipeIndex]?.name ?? '') : ''}
-        day={recipeIndex !== null ? DAYS[recipeIndex] : undefined}
+        // El día sale de la comida, no del índice: con varios momentos el
+        // índice dejó de coincidir con el día de la semana.
+        day={
+          recipeIndex !== null && meals?.[recipeIndex]
+            ? `${meals[recipeIndex].day} · ${meals[recipeIndex].moment}`
+            : undefined
+        }
         recipe={recipe}
         loading={recipeLoading}
         error={recipeError}

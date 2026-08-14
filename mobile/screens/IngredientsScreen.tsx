@@ -10,6 +10,7 @@ import {
 import { AccentChipButton, PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
 import { Cross } from '../components/Icons';
+import { ALL_MOMENTS, isAllowed } from '../lib/moments';
 import { HatchPattern, PopIn, ScreenEntrance, Shake } from '../components/Motion';
 import { fonts, radii, Theme } from '../theme';
 
@@ -55,6 +56,12 @@ type Props = {
   onRestriction: (value: string) => void;
   otherText: string;
   onOtherText: (v: string) => void;
+
+  /** Momentos elegidos y los que el plan habilita. */
+  moments: string[];
+  onToggleMoment: (moment: string) => void;
+  allowedMoments: string[] | undefined;
+  onOpenPlans: () => void;
 
   generating: boolean;
   genError: string | null;
@@ -246,6 +253,37 @@ export default function IngredientsScreen(props: Props) {
           </View>
         )}
 
+        <Eyebrow theme={theme} rule="soft">
+          Comidas del día
+        </Eyebrow>
+        <Text style={styles.momentNote}>
+          Cada una se pide aparte, así que elegí las que vas a cocinar.
+        </Text>
+        <View style={styles.chips}>
+          {ALL_MOMENTS.map((moment) => {
+            const allowed = isAllowed(moment, props.allowedMoments);
+            const active = allowed && props.moments.includes(moment);
+            return (
+              <Pressable
+                key={moment}
+                // Bloqueado no es "no hace nada": lleva a donde se desbloquea.
+                onPress={() => (allowed ? props.onToggleMoment(moment) : props.onOpenPlans())}
+                style={[
+                  styles.pill,
+                  { borderColor: theme.line20 },
+                  active && { backgroundColor: theme.accent },
+                  !allowed && styles.pillLocked,
+                ]}
+              >
+                <Text style={[styles.pillText, active && { color: theme.accentInk }]}>
+                  {moment}
+                </Text>
+                {!allowed && <Text style={styles.pillLockedTag}>Plus</Text>}
+              </Pressable>
+            );
+          })}
+        </View>
+
         {props.genError && (
           <Shake trigger={props.genError}>
             <View style={styles.errorBlock}>
@@ -414,12 +452,29 @@ function getStyles(theme: Theme) {
       color: theme.accent,
     },
     pill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
       paddingVertical: 7,
       paddingHorizontal: 13,
       borderWidth: 1,
       borderRadius: radii.chip,
     },
     pillText: { fontFamily: fonts.body, fontSize: 12.5, color: theme.ink },
+    // Atenuada pero legible: tiene que leerse qué te estás perdiendo.
+    pillLocked: { opacity: 0.55 },
+    pillLockedTag: {
+      fontFamily: fonts.bodySemi,
+      fontSize: 10.5,
+      color: theme.accent,
+    },
+    momentNote: {
+      fontFamily: fonts.body,
+      fontSize: 12.5,
+      lineHeight: 18,
+      color: theme.inkSoft,
+      marginBottom: 10,
+    },
     otherRow: {
       flexDirection: 'row',
       alignItems: 'center',

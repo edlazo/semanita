@@ -2,6 +2,12 @@ export type Entitlement = {
   status: 'trial' | 'subscribed' | 'expired';
   trialDaysLeft: number;
   subscribed: boolean;
+  /**
+   * Qué momentos del día habilita el plan. Lo manda el backend y ahí se
+   * recorta de verdad: la app lo usa solo para no ofrecer lo que igual
+   * volvería rechazado.
+   */
+  allowedMoments: string[];
 };
 
 /**
