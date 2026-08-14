@@ -70,6 +70,39 @@ export function Rise({ children, style }: { children: ReactNode; style?: ViewSty
   );
 }
 
+/**
+ * Giro del chevron de un desplegable: apunta a la derecha cerrado y abajo
+ * abierto, en 200ms.
+ *
+ * No es una quinta animación del sistema. Como el `spin` de los spinners, es un
+ * control mostrando su propio estado, no un elemento entrando en pantalla —
+ * las cuatro del handoff siguen siendo `scr`, `rise`, `pop` y `shake`.
+ */
+export function Caret({ open, children }: { open: boolean; children: ReactNode }) {
+  const t = useRef(new Animated.Value(open ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(t, {
+      toValue: open ? 1 : 0,
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [open, t]);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          { rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
 /** Aparición de un chip: escala 0.82 → 1.06 → 1 en 220ms. */
 export function PopIn({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   const s = useRef(new Animated.Value(0)).current;

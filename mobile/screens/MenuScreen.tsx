@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { CtaBar, Eyebrow, Header, StepIndicator, Step } from '../components/Chrome';
 import { Chevron } from '../components/Icons';
 import { ALL_MOMENTS } from '../lib/moments';
-import { ScreenEntrance, Shake } from '../components/Motion';
+import { Caret, ScreenEntrance, Shake } from '../components/Motion';
 import { pendingFor } from '../lib/shopping';
 import { fonts, radii, Theme } from '../theme';
 
@@ -138,8 +138,12 @@ export default function MenuScreen(props: Props) {
                   <Text style={styles.dayHeaderMeta}>
                     {chosen} de {group.items.length} comidas
                   </Text>
-                  <View style={openDay ? styles.chevronOpen : undefined}>
-                    <Chevron size={14} color={theme.inkSoft} />
+                  {/* En acento y dentro de un círculo: apagado y suelto se leía
+                      como adorno, no como el control que abre el día. */}
+                  <View style={styles.caret}>
+                    <Caret open={openDay}>
+                      <Chevron size={15} color={theme.accent} />
+                    </Caret>
                   </View>
                 </View>
                 {/* Plegado, un conteo no dice qué hay adentro. Los nombres sí,
@@ -162,7 +166,9 @@ export default function MenuScreen(props: Props) {
               </Eyebrow>
             )}
 
-            {openDay && group.items.map(({ meal, index: i }) => {
+            {openDay && (
+            <ScreenEntrance>
+            {group.items.map(({ meal, index: i }) => {
               const on = selected.has(i);
               const regenerating = props.regeneratingIndex === i;
               return (
@@ -248,6 +254,8 @@ export default function MenuScreen(props: Props) {
                 </View>
               );
             })}
+            </ScreenEntrance>
+            )}
           </View>
           );
         })}
@@ -371,8 +379,15 @@ function getStyles(theme: Theme) {
       color: theme.inkSoft,
       marginTop: 4,
     },
-    // El chevron apunta abajo cuando el día está abierto.
-    chevronOpen: { transform: [{ rotate: '90deg' }] },
+    caret: {
+      width: 26,
+      height: 26,
+      flexShrink: 0,
+      borderRadius: radii.chip,
+      backgroundColor: theme.line14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     mealDesc: {
       fontFamily: fonts.body,
       fontSize: 13.5,
