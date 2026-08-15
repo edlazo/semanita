@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GenerationConfig, GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -24,8 +24,27 @@ const MODELS = {
   shopping: process.env.GEMINI_MODEL_SHOPPING ?? "gemini-3.1-flash-lite",
 } as const;
 
+/**
+ * Armar el menú es dar formato, no razonar: los modelos con "thinking" gastan
+ * ~1500 tokens de pensamiento en esta tarea y eso es casi todo el tiempo de
+ * espera. Medido sobre `gemini-3.6-flash`: 1523 tokens de thinking con 7
+ * comidas y 1506 con 3 — o sea que no escala con el pedido, es fijo.
+ *
+ * `thinkingLevel: "low"` es lo mínimo que acepta el modelo; `thinkingBudget: 0`
+ * lo rechaza con 400. Los modelos `-lite` no piensan y no necesitan esto.
+ *
+ * El SDK 0.21 no tipa `thinkingConfig` pero reenvía `generationConfig` entero
+ * sin filtrar campos, así que el cast alcanza y no hace falta actualizarlo.
+ */
+const LOW_THINKING = { thinkingConfig: { thinkingLevel: "low" } } as unknown as GenerationConfig;
+
 function modelFor(task: keyof typeof MODELS) {
   return client.getGenerativeModel({ model: MODELS[task] });
+}
+
+/** Igual que `modelFor`, pero pidiéndole al modelo que piense lo mínimo. */
+function fastModelFor(task: keyof typeof MODELS) {
+  return client.getGenerativeModel({ model: MODELS[task], generationConfig: LOW_THINKING });
 }
 
 const DETECT_PROMPT = `Mirá esta foto de una heladera o alacena y listá todos los ingredientes y alimentos que puedas identificar.
@@ -114,7 +133,7 @@ ${restrictions ? `Restricciones alimentarias a respetar estrictamente: ${restric
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
 [{"name": "nombre de la comida", "description": "descripción corta de 1 línea", "ingredientsUsed": ["ingrediente1"], "ingredientsToBuy": ["ingrediente2"]}]`;
 
-  const result = await modelFor("menu").generateContent(prompt);
+  const result = await fastModelFor("menu").generateContent(prompt);
   const parsed = extractJson(result.response.text());
 
   if (!Array.isArray(parsed) || !parsed.every(isRawMeal)) {
