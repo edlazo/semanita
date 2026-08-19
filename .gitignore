@@ -1,3 +1,6 @@
 .idea/
 .DS_Store
 *.log
+
+# Grafo de graphify: se regenera desde el codigo con `graphify --update`.
+graphify-out/
