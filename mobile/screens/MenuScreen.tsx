@@ -12,7 +12,6 @@ import { fonts, radii, Theme } from '../theme';
 export type Meal = {
   name: string;
   description: string;
-  ingredientsUsed: string[];
   ingredientsToBuy: string[];
   /** Los manda el backend. Con varios momentos el índice ya no dice el día. */
   day: string;

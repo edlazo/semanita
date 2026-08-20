@@ -14,12 +14,24 @@ const client = new GoogleGenerativeAI(apiKey);
  * diario en lugar de competir por uno solo.
  *
  * No usar alias `-latest`: resuelven a un modelo concreto y comparten su cupo.
- * El reparto pesa calidad contra volumen esperado — la visión es el paso más
- * delicado del producto, y las recetas son las que más se piden por sesión.
+ *
+ * **El reparto pesa velocidad antes que cupo.** Los `flash` grandes generan a
+ * 26-60 tok/s y los `-lite` a 112-217: medido con las mismas 7 cenas, 22s
+ * contra 5s. La diferencia es rendimiento del modelo, no cuánto piensa — se
+ * midió con thinking en cero en ambos y las 7 comidas bien formadas.
+ *
+ * Por eso el menú comparte `gemini-3.1-flash-lite` con compras en vez de tener
+ * modelo propio: esperar 22 segundos en la pantalla principal costaba más que
+ * el cupo separado. Compras es el compañero barato — la lista queda cacheada y
+ * solo se pide cuando aparece un ítem sin categorizar, así que casi nunca
+ * compiten. La contra a saber: si se agota ese cupo, caen las dos juntas.
+ *
+ * Visión se queda en un `flash` grande a propósito: es el paso más delicado
+ * del producto y ahí la calidad vale la espera.
  */
 const MODELS = {
   vision: process.env.GEMINI_MODEL_VISION ?? "gemini-3.5-flash",
-  menu: process.env.GEMINI_MODEL_MENU ?? "gemini-3.6-flash",
+  menu: process.env.GEMINI_MODEL_MENU ?? "gemini-3.1-flash-lite",
   recipe: process.env.GEMINI_MODEL_RECIPE ?? "gemini-3.5-flash-lite",
   shopping: process.env.GEMINI_MODEL_SHOPPING ?? "gemini-3.1-flash-lite",
 } as const;
@@ -84,10 +96,15 @@ export const DAYS = [
   "Domingo",
 ] as const;
 
+/**
+ * No hay `ingredientsUsed`. Se pedía y nadie lo leía nunca — ni la app ni el
+ * handoff lo mencionan — y cada campo de más es salida que el modelo tiene que
+ * generar, que es lo que manda el tiempo de espera. Si alguna vez hace falta
+ * mostrar qué usa cada comida, se vuelve a pedir entonces.
+ */
 export type Meal = {
   name: string;
   description: string;
-  ingredientsUsed: string[];
   ingredientsToBuy: string[];
   day: string;
   moment: string;
@@ -101,8 +118,6 @@ function isRawMeal(value: unknown): value is RawMeal {
   return (
     typeof m.name === "string" &&
     typeof m.description === "string" &&
-    Array.isArray(m.ingredientsUsed) &&
-    m.ingredientsUsed.every((i) => typeof i === "string") &&
     Array.isArray(m.ingredientsToBuy) &&
     m.ingredientsToBuy.every((i) => typeof i === "string")
   );
@@ -131,7 +146,7 @@ Priorizá usar lo disponible y sugerí qué comprar para completar cada receta.
 ${avoidNames.length > 0 ? `No repitas estas comidas ya usadas: ${avoidNames.join(", ")}.` : ""}
 ${restrictions ? `Restricciones alimentarias a respetar estrictamente: ${restrictions}.` : ""}
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
-[{"name": "nombre de la comida", "description": "descripción corta de 1 línea", "ingredientsUsed": ["ingrediente1"], "ingredientsToBuy": ["ingrediente2"]}]`;
+[{"name": "nombre de la comida", "description": "descripción corta de 1 línea", "ingredientsToBuy": ["ingrediente2"]}]`;
 
   const result = await fastModelFor("menu").generateContent(prompt);
   const parsed = extractJson(result.response.text());
