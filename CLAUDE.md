@@ -3,7 +3,7 @@
 App para sacarle una foto a la heladera, detectar los ingredientes con IA y armar
 el menú de la semana más la lista de compras.
 
-- `mobile/` — Expo / React Native (SDK 56, RN 0.85)
+- `mobile/` — Expo / React Native (SDK 57, RN 0.86)
 - `backend/` — Express + TypeScript, proxy de la API de Gemini
 - `design_handoff_semanita/` — el rediseño: HTML navegable + README
 
@@ -22,9 +22,15 @@ cd mobile && npx expo start --web
 Si la app tira **`Failed to fetch`**, el primer sospechoso es el backend caído,
 no el código. Reiniciar Metro no reinicia el backend.
 
-`mobile/.env` apunta a `EXPO_PUBLIC_API_URL=http://192.168.0.5:3000`, la IP LAN
-fija de la máquina de desarrollo. Si el router la cambia, aparece el mismo
-`Failed to fetch` con el backend perfectamente vivo.
+`mobile/.env` apunta a `EXPO_PUBLIC_API_URL`, hoy la IP LAN de la máquina de
+desarrollo. **El router la cambia sin avisar** — ya pasó de `.5` a `.4` — y el
+síntoma es el mismo `Failed to fetch` con el backend perfectamente vivo. Antes
+de pelearse con el código, comparar la IP real contra el `.env`.
+
+Las `EXPO_PUBLIC_*` se incrustan al armar el bundle: cambiarlas **exige
+reiniciar Metro**, no se releen solas.
+
+Para sacarlo de la máquina, ver `backend/DEPLOY.md`.
 
 **Expo Go solo habla el SDK más nuevo.** No soporta versiones viejas: si el
 proyecto queda atrás, tira "Incompatible SDK version" y no hay forma de forzarlo.
@@ -76,9 +82,13 @@ El prototipo tiene cosas que no se copian:
 
 Los cuatro salieron de romperse la cabeza, no de la documentación:
 
-1. **La cuota de Gemini es por modelo, no por proyecto.** Por eso
-   `backend/src/gemini.ts` reparte las cuatro operaciones en cuatro modelos
-   (`vision`, `menu`, `recipe`, `shopping`). Juntarlas agota la cuota diaria.
+1. **La cuota de Gemini es por modelo, no por proyecto**, y los `-lite` generan
+   4 a 8 veces más rápido que los `flash` grandes (112-217 tok/s contra 26-60).
+   `backend/src/gemini.ts` reparte las operaciones pesando las dos cosas: menú y
+   compras comparten `gemini-3.1-flash-lite` a propósito, porque los 22 segundos
+   que tardaba el menú en un `flash` pesaban más que tener cupo separado.
+   **Los tokens de salida son lo que manda el reloj** — pedirle al modelo un
+   campo que después nadie lee se paga en segundos.
 2. **Los pesos de una fuente cargada por archivo son familias distintas.**
    `fontWeight` no las selecciona; se referencian por nombre desde `theme.ts`
    (`PlusJakartaSans_600SemiBold`, etc.).
