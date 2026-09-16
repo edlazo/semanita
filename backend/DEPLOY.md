@@ -1,7 +1,8 @@
 # Desplegar el backend
 
-Estado: **preparado, sin desplegar.** El `Dockerfile` está listo y probado en
-build local; falta elegir plataforma y correr los pasos.
+Estado: **preparado, sin desplegar.** Plataforma elegida: **Render, plan
+gratis.** El `Dockerfile` compila el TypeScript sin errores, pero la imagen
+todavía no se construyó en local: el primer build real va a ser el de Render.
 
 ## Lo que el servicio necesita
 
@@ -24,36 +25,42 @@ Health check: `GET /health` → `{"ok":true}`.
 de función corta el pedido a la mitad. Hace falta un contenedor de larga
 duración, no una función efímera.
 
-**El arranque en frío se paga entero.** Los planes gratuitos duermen el servicio
-tras unos minutos sin uso y el primer pedido después despierta el contenedor.
-Bajamos el menú de 22s a 7s; un cold start de casi un minuto se lleva puesto ese
-trabajo. Si el deploy es para mostrar la app, tenerlo despierto importa.
+**El arranque en frío se paga entero.** Render gratis duerme el servicio a los
+**15 minutos sin tráfico** y despertarlo tarda **cerca de un minuto**, que se
+suma al primer pedido. Bajamos el menú de 22s a 7s; ese minuto se lleva puesto
+el trabajo justo en la primera impresión. A quien pruebe la app hay que avisarle
+que el primer intento del día puede tardar.
 
-## Render
+## Por qué Render
 
-1. New → Web Service → conectar el repo
+Se comparó contra Railway, que no duerme el servicio. Railway da USD 5 de
+crédito por 30 días y después cobra por uso real — un backend prendido todo el
+mes excede el crédito de USD 1 del plan gratis. Render gratis no vence: 750
+horas de instancia por mes, y el tiempo dormido no las consume.
+
+Si el arranque en frío termina pesando más que el costo, mudarse es barato: el
+`Dockerfile` no tiene nada de Render y corre igual en Railway o Fly.
+
+## Pasos en Render
+
+1. New → Web Service → conectar el repo de GitHub
 2. Root Directory: `backend`
-3. Runtime: Docker (toma el `Dockerfile` solo)
-4. Cargar las variables de la tabla
-5. Health Check Path: `/health`
+3. Language: Docker (toma el `Dockerfile` solo)
+4. Instance Type: Free
+5. Cargar las variables de la tabla en Environment
+6. Health Check Path: `/health`
 
-## Fly
+Cada push a `main` redespliega solo. Con Trunk-Based Development eso es lo
+esperado, y es otra razón para que `main` quede siempre deployable.
 
-```bash
-cd backend && fly launch --no-deploy
-fly secrets set GEMINI_API_KEY=... SUPABASE_URL=... SUPABASE_ANON_KEY=...
-fly deploy
-```
-
-`fly launch` escribe un `fly.toml`; revisar que el `internal_port` coincida con
-lo que expone el contenedor y que el health check apunte a `/health`.
+Para verificar: `https://<tu-servicio>.onrender.com/health` → `{"ok":true}`.
 
 ## Después de desplegar: apuntar la app
 
 En `mobile/.env`:
 
 ```
-EXPO_PUBLIC_API_URL=https://<tu-servicio>/
+EXPO_PUBLIC_API_URL=https://<tu-servicio>.onrender.com
 ```
 
 Y **reiniciar Metro**: las `EXPO_PUBLIC_*` se incrustan al armar el bundle, no
