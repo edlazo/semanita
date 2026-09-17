@@ -5,6 +5,7 @@ import multer from "multer";
 import { detectIngredients, generateMenu, generateRecipe, generateShoppingList } from "./gemini";
 import { AuthedRequest, requireAuth, withEntitlement } from "./auth";
 import { ALL_MOMENTS, getEntitlement, TRIAL_DAYS } from "./entitlements";
+import { consumeQuota } from "./usage";
 
 const app = express();
 const port = process.env.PORT ?? 3000;
@@ -59,11 +60,12 @@ app.get("/api/me", requireAuth, async (req: AuthedRequest, res: Response) => {
   }
 });
 
-app.post("/api/detect-ingredients", requireAuth, withEntitlement, upload.single("photo"), async (req: Request, res: Response) => {
+app.post("/api/detect-ingredients", requireAuth, withEntitlement, upload.single("photo"), async (req: AuthedRequest, res: Response) => {
   if (!req.file) {
     res.status(400).json({ error: "Falta el archivo 'photo'." });
     return;
   }
+  if (!(await consumeQuota(req, res, "photo"))) return;
 
   try {
     const ingredients = await detectIngredients(req.file.buffer, req.file.mimetype);
@@ -117,6 +119,12 @@ app.post("/api/generate-menu", requireAuth, withEntitlement, async (req: AuthedR
     return;
   }
 
+  // Cambiar una comida usa esta misma ruta con una sola comida y su día. Se
+  // cuenta aparte porque se hace muchas más veces que armar la semana, y no
+  // debería dejar a nadie sin poder armar el menú.
+  const isSwap = count === 1 && typeof day === "string";
+  if (!(await consumeQuota(req, res, isSwap ? "swap" : "menu"))) return;
+
   try {
     const menu = await generateMenu(ingredients, {
       count,
@@ -132,7 +140,7 @@ app.post("/api/generate-menu", requireAuth, withEntitlement, async (req: AuthedR
   }
 });
 
-app.post("/api/generate-shopping-list", requireAuth, withEntitlement, async (req: Request, res: Response) => {
+app.post("/api/generate-shopping-list", requireAuth, withEntitlement, async (req: AuthedRequest, res: Response) => {
   const { items } = req.body ?? {};
 
   if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === "string")) {
@@ -141,6 +149,7 @@ app.post("/api/generate-shopping-list", requireAuth, withEntitlement, async (req
   }
 
   const deduped = [...new Set(items.map((i) => i.trim().toLowerCase()))];
+  if (!(await consumeQuota(req, res, "shopping"))) return;
 
   try {
     const categories = await generateShoppingList(deduped);
@@ -151,7 +160,7 @@ app.post("/api/generate-shopping-list", requireAuth, withEntitlement, async (req
   }
 });
 
-app.post("/api/generate-recipe", requireAuth, withEntitlement, async (req: Request, res: Response) => {
+app.post("/api/generate-recipe", requireAuth, withEntitlement, async (req: AuthedRequest, res: Response) => {
   const { mealName, description, restrictions } = req.body ?? {};
 
   if (typeof mealName !== "string" || mealName.trim().length === 0 || mealName.length > 200) {
@@ -166,6 +175,7 @@ app.post("/api/generate-recipe", requireAuth, withEntitlement, async (req: Reque
     res.status(400).json({ error: "'restrictions' debe ser un string de hasta 300 caracteres." });
     return;
   }
+  if (!(await consumeQuota(req, res, "recipe"))) return;
 
   try {
     const recipe = await generateRecipe(mealName, { description, restrictions });

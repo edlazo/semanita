@@ -19,6 +19,11 @@ Supabase es pública por diseño — acá se usa solo para validar tokens de ses
 
 Health check: `GET /health` → `{"ok":true}`.
 
+En Supabase, además, tienen que estar corridos los SQL de `backend/supabase/`
+(SQL Editor, uno por vez): `entitlements.sql` y después `ai_usage.sql`. Sin
+`ai_usage.sql` el backend no se cae — deja pasar todo y lo avisa en los logs
+como `quota check failed` —, pero el tope diario no limita nada.
+
 ## Dos restricciones que condicionan la plataforma
 
 **El menú tarda entre 7 y 22 segundos.** Cualquier serverless con timeout corto
