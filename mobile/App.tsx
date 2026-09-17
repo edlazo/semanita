@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'reac
 import * as ImagePicker from 'expo-image-picker';
 import { File as ExpoFile } from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import {
   Newsreader_400Regular_Italic,
@@ -110,6 +111,13 @@ function userMessage(err: unknown): string {
     ? err.message
     : 'No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo.';
 }
+
+/**
+ * El splash nativo se queda hasta que estén las fuentes y la sesión. Si se
+ * escondiera solo, taparía medio segundo con el spinner de abajo y se verían
+ * dos pantallas de espera seguidas.
+ */
+SplashScreen.preventAutoHideAsync();
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -739,6 +747,12 @@ export default function App() {
     resetWeek();
     await supabase.auth.signOut();
   }
+
+  useEffect(() => {
+    // El spinner sigue existiendo por si esconder el splash falla o tarda: es
+    // preferible un spinner de más que una pantalla en blanco.
+    if (fontsLoaded && !authLoading) SplashScreen.hideAsync();
+  }, [fontsLoaded, authLoading]);
 
   if (!fontsLoaded || authLoading) {
     return (
