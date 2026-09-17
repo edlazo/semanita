@@ -44,19 +44,22 @@ export default function AdGateModal(props: Props) {
     return stopTimer;
   }, [props.visible]);
 
+  // La recompensa se otorga al terminar, no al cerrarse la hoja. Va en un efecto
+  // y no dentro del `setLeft`: React ejecuta ese callback mientras renderiza, y
+  // llamar desde ahí a un setState de App rompe ("Cannot update a component
+  // while rendering a different component").
+  useEffect(() => {
+    if (phase === 'playing' && left === 0) {
+      stopTimer();
+      props.onRewarded();
+    }
+  }, [phase, left]);
+
   function play() {
     setPhase('playing');
     setLeft(AD_SECONDS);
     timer.current = setInterval(() => {
-      setLeft((s) => {
-        if (s <= 1) {
-          stopTimer();
-          // La recompensa se otorga al terminar, no al cerrarse la hoja.
-          props.onRewarded();
-          return 0;
-        }
-        return s - 1;
-      });
+      setLeft((s) => Math.max(s - 1, 0));
     }, 1000);
   }
 
