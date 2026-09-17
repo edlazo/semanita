@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { File as ExpoFile } from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import {
@@ -415,11 +416,10 @@ export default function App() {
       if (Platform.OS === 'web' && picked.webFile) {
         formData.append('photo', picked.webFile, picked.fileName);
       } else {
-        formData.append('photo', {
-          uri: picked.uri,
-          name: picked.fileName,
-          type: picked.mimeType,
-        } as unknown as Blob);
+        // Desde SDK 57 el `fetch` global es el de Expo, que no acepta el objeto
+        // `{ uri, name, type }` de React Native: tira "Unsupported FormDataPart
+        // implementation". Un `File` de expo-file-system sí, porque lee los bytes.
+        formData.append('photo', new ExpoFile(picked.uri));
       }
 
       const response = await fetch(`${API_BASE_URL}/api/detect-ingredients`, {

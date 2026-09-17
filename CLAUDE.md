@@ -80,7 +80,7 @@ El prototipo tiene cosas que no se copian:
 
 ## Gotchas de React Native
 
-Los cuatro salieron de romperse la cabeza, no de la documentación:
+Los cinco salieron de romperse la cabeza, no de la documentación:
 
 1. **La cuota de Gemini es por modelo, no por proyecto**, y los `-lite` generan
    4 a 8 veces más rápido que los `flash` grandes (112-217 tok/s contra 26-60).
@@ -100,6 +100,11 @@ Los cuatro salieron de romperse la cabeza, no de la documentación:
    encogible, así que un elemento de tamaño fijo colapsa dentro de una fila. Va
    `flexShrink: 0`. Aplica igual a un SVG adentro de un contenedor con borde: sin
    `flexShrink` se achica en un solo eje y el trazo sale deformado.
+5. **Desde SDK 57 el `fetch` global es el de Expo**, y no acepta el
+   `{ uri, name, type }` que React Native usaba para adjuntar archivos a un
+   `FormData`: tira "Unsupported FormDataPart implementation". Se adjunta un
+   `File` de `expo-file-system`. En web no se nota — ahí sube por otro camino —,
+   así que **cualquier subida de archivos se prueba en el teléfono**.
 
 ## Movimiento
 
