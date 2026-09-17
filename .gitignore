@@ -4,3 +4,8 @@
 
 # Grafo de graphify: se regenera desde el codigo con `graphify --update`.
 graphify-out/
+
+# Configuracion local de las herramientas del asistente, no del proyecto.
+.agents/
+.claude/
+skills-lock.json
