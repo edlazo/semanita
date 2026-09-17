@@ -62,6 +62,41 @@ function isServerError(err: unknown): err is Error {
 }
 
 /**
+ * `fetch` solo rechaza cuando el pedido no llegó a destino — una respuesta 500
+ * resuelve normalmente —, así que acá se marca lo que es puramente red: sin
+ * señal, wifi sin salida, DNS que no resuelve, el servidor dormido que no
+ * atiende a tiempo.
+ *
+ * Se marca en vez de mirar el mensaje porque el texto lo escribe la plataforma
+ * ("java.net.UnknownHostException", "Network request failed") y cambia entre
+ * Android, iOS y web.
+ */
+async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch (err) {
+    throw Object.assign(new Error('No hubo conexión con el servidor.'), {
+      isNetwork: true,
+      cause: err,
+    });
+  }
+}
+
+function isNetworkError(err: unknown): boolean {
+  return err instanceof Error && (err as { isNetwork?: boolean }).isNetwork === true;
+}
+
+/**
+ * Quedarse sin señal no es un bug: no hay nada que arreglar y, con gente usando
+ * la app en la calle, tapa en Sentry los errores que sí importan. Todo lo demás
+ * se reporta, incluido lo que falla del lado del backend.
+ */
+function reportError(err: unknown, context: Record<string, unknown>) {
+  if (isNetworkError(err)) return;
+  captureError(err, context);
+}
+
+/**
  * Qué decirle al usuario cuando falla un pedido al backend.
  *
  * Solo se muestra tal cual lo que redactó el backend. Todo lo demás es la red o
@@ -301,14 +336,14 @@ export default function App() {
   const refreshEntitlement = useCallback(async () => {
     if (!session) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/me`, { headers: await authHeaders() });
+      const response = await apiFetch(`${API_BASE_URL}/api/me`, { headers: await authHeaders() });
       if (!response.ok) return;
       const data = await response.json();
       setEntitlement(data.entitlement);
       if (typeof data.trialDays === 'number') setTrialDays(data.trialDays);
     } catch (err) {
       // Sin conexión no se bloquea nada: el backend es el que decide de verdad.
-      captureError(err, { paso: 'refresh-entitlement' });
+      reportError(err, { paso:'refresh-entitlement' });
     }
   }, [session]);
 
@@ -451,7 +486,7 @@ export default function App() {
         formData.append('photo', new ExpoFile(picked.uri));
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/detect-ingredients`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/detect-ingredients`, {
         method: 'POST',
         body: formData,
         headers: await authHeaders(),
@@ -473,7 +508,7 @@ export default function App() {
       }
       track('ingredientes_detectados', { cantidad: found.length, origen: source ?? 'foto' });
     } catch (err) {
-      captureError(err, { paso: 'detect-ingredients' });
+      reportError(err, { paso:'detect-ingredients' });
       setPhotoError(userMessage(err));
       setPhotoState('failed');
     }
@@ -487,7 +522,7 @@ export default function App() {
     setGenerating(true);
     setGenError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
@@ -515,7 +550,7 @@ export default function App() {
         con_restricciones: effectiveRestrictions.length > 0,
       });
     } catch (err) {
-      captureError(err, { paso: 'generate-menu' });
+      reportError(err, { paso:'generate-menu' });
       setGenError(userMessage(err));
     } finally {
       setGenerating(false);
@@ -554,7 +589,7 @@ export default function App() {
       // día, el backend cae a su default y regenerar un desayuno del martes
       // devolvía una cena del lunes.
       const slot = meals[index];
-      const response = await fetch(`${API_BASE_URL}/api/generate-menu`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/generate-menu`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
@@ -579,7 +614,7 @@ export default function App() {
       // categorizar y eso solo dispara el pedido cuando el usuario vaya a compras.
       track('comida_regenerada', { veces: (regenCounts[index] ?? 0) + 1 });
     } catch (err) {
-      captureError(err, { paso: 'regenerate-meal' });
+      reportError(err, { paso:'regenerate-meal' });
       setMenuError(userMessage(err));
     } finally {
       setRegeneratingIndex(null);
@@ -621,7 +656,7 @@ export default function App() {
     setShoppingLoading(true);
     setMenuError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/generate-shopping-list`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/generate-shopping-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ items: pendingItems }),
@@ -642,7 +677,7 @@ export default function App() {
         comidas_elegidas: chosenMeals.length,
       });
     } catch (err) {
-      captureError(err, { paso: 'generate-shopping-list' });
+      reportError(err, { paso:'generate-shopping-list' });
       setMenuError(userMessage(err));
     } finally {
       setShoppingLoading(false);
@@ -670,7 +705,7 @@ export default function App() {
     setRecipeError(null);
     setRecipeLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/generate-recipe`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/generate-recipe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
@@ -687,7 +722,7 @@ export default function App() {
       setRecipe(data.recipe);
       track('receta_vista', { pasos: data.recipe.steps.length });
     } catch (err) {
-      captureError(err, { paso: 'generate-recipe' });
+      reportError(err, { paso:'generate-recipe' });
       setRecipeError(userMessage(err));
     } finally {
       setRecipeLoading(false);
