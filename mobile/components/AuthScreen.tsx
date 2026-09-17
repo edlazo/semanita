@@ -1,11 +1,38 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { isAuthError, isAuthRetryableFetchError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { PrimaryButton } from './Buttons';
 import { ScreenEntrance, Shake } from './Motion';
 import { fonts, Mode, Theme } from '../theme';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Supabase responde en inglés ("Invalid login credentials"), y un corte de red
+ * llega con la excepción cruda de la plataforma. Se traducen los casos que un
+ * usuario puede provocar; lo que no está en la lista cae a un mensaje genérico
+ * en vez de mostrar el texto original.
+ */
+const AUTH_MESSAGES: Record<string, string> = {
+  invalid_credentials: 'El email o la contraseña no coinciden.',
+  user_already_exists: 'Ya hay una cuenta con ese email. Probá iniciar sesión.',
+  email_not_confirmed: 'Todavía no confirmaste tu email. Revisá tu correo.',
+  email_address_invalid: 'Ese email no parece válido. Revisalo.',
+  weak_password: 'Esa contraseña es muy fácil de adivinar. Probá con otra.',
+  over_email_send_rate_limit: 'Mandamos demasiados emails seguidos. Esperá unos minutos.',
+  over_request_rate_limit: 'Demasiados intentos seguidos. Esperá unos minutos.',
+};
+
+const CONNECTION_MESSAGE = 'No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo.';
+
+function authMessage(err: unknown): string {
+  // La red caída también es un AuthError, así que va primero.
+  if (isAuthRetryableFetchError(err) || !isAuthError(err)) return CONNECTION_MESSAGE;
+  // `weak_password` no es AuthApiError sino su propia clase: por eso se mira
+  // `code` en cualquier AuthError y no solo en los de la API.
+  return (err.code && AUTH_MESSAGES[err.code]) || 'No pudimos completar el pedido. Probá de nuevo.';
+}
 
 type Props = {
   theme: Theme;
@@ -47,7 +74,7 @@ export default function AuthScreen({ theme, mode, toggleMode }: Props) {
         if (signInError) throw signInError;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError(authMessage(err));
     } finally {
       setLoading(false);
     }

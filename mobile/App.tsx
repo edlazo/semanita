@@ -61,6 +61,21 @@ function isServerError(err: unknown): err is Error {
   return err instanceof Error && (err as { fromServer?: boolean }).fromServer === true;
 }
 
+/**
+ * Qué decirle al usuario cuando falla un pedido al backend.
+ *
+ * Solo se muestra tal cual lo que redactó el backend. Todo lo demás es la red o
+ * una respuesta que no era JSON — la página de Render mientras redespliega —, y
+ * su mensaje crudo no le dice nada a nadie. No alcanza con descartar
+ * `TypeError`: el `fetch` de Expo tira un Error común con la excepción de Java
+ * adentro ("java.net.UnknownHostException").
+ */
+function userMessage(err: unknown): string {
+  return isServerError(err)
+    ? err.message
+    : 'No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo.';
+}
+
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 function storageKeyFor(userId: string) {
@@ -459,16 +474,7 @@ export default function App() {
       track('ingredientes_detectados', { cantidad: found.length, origen: source ?? 'foto' });
     } catch (err) {
       captureError(err, { paso: 'detect-ingredients' });
-      // Solo se muestra tal cual lo que redactó el backend. Todo lo demás es la
-      // red o una respuesta que no era JSON — la página de Render mientras
-      // redespliega —, y su mensaje crudo no le dice nada a nadie. No alcanza
-      // con descartar `TypeError`: el `fetch` de Expo tira un Error común con
-      // la excepción de Java adentro ("java.net.UnknownHostException").
-      setPhotoError(
-        isServerError(err)
-          ? err.message
-          : 'No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo.'
-      );
+      setPhotoError(userMessage(err));
       setPhotoState('failed');
     }
   }
@@ -493,7 +499,7 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) {
         if (handlePlanBlocked(response.status)) return;
-        throw new Error(data.error ?? 'Error desconocido');
+        throw serverError(data.error ?? 'No se pudo generar el menú. Probá de nuevo.');
       }
 
       const newMenu = data.menu as Meal[];
@@ -510,7 +516,7 @@ export default function App() {
       });
     } catch (err) {
       captureError(err, { paso: 'generate-menu' });
-      setGenError(err instanceof Error ? err.message : 'No se pudo generar el menú.');
+      setGenError(userMessage(err));
     } finally {
       setGenerating(false);
     }
@@ -563,7 +569,7 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) {
         if (handlePlanBlocked(response.status)) return;
-        throw new Error(data.error ?? 'Error desconocido');
+        throw serverError(data.error ?? 'No se pudo cambiar la comida. Probá de nuevo.');
       }
 
       const [newMeal] = data.menu as Meal[];
@@ -574,7 +580,7 @@ export default function App() {
       track('comida_regenerada', { veces: (regenCounts[index] ?? 0) + 1 });
     } catch (err) {
       captureError(err, { paso: 'regenerate-meal' });
-      setMenuError(err instanceof Error ? err.message : 'No se pudo regenerar la comida.');
+      setMenuError(userMessage(err));
     } finally {
       setRegeneratingIndex(null);
     }
@@ -623,7 +629,7 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) {
         if (handlePlanBlocked(response.status)) return;
-        throw new Error(data.error ?? 'Error desconocido');
+        throw serverError(data.error ?? 'No se pudo armar la lista de compras. Probá de nuevo.');
       }
 
       // Los tachados sobreviven: están indexados por categoría e ítem, así que
@@ -637,7 +643,7 @@ export default function App() {
       });
     } catch (err) {
       captureError(err, { paso: 'generate-shopping-list' });
-      setMenuError(err instanceof Error ? err.message : 'No se pudo generar la lista de compras.');
+      setMenuError(userMessage(err));
     } finally {
       setShoppingLoading(false);
     }
@@ -676,13 +682,13 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) {
         if (handlePlanBlocked(response.status)) return;
-        throw new Error(data.error ?? 'Error desconocido');
+        throw serverError(data.error ?? 'No se pudo generar la receta. Probá de nuevo.');
       }
       setRecipe(data.recipe);
       track('receta_vista', { pasos: data.recipe.steps.length });
     } catch (err) {
       captureError(err, { paso: 'generate-recipe' });
-      setRecipeError(err instanceof Error ? err.message : 'No se pudo generar la receta.');
+      setRecipeError(userMessage(err));
     } finally {
       setRecipeLoading(false);
     }
