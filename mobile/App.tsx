@@ -48,6 +48,19 @@ initTelemetry();
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
+/**
+ * Un error cuyo mensaje escribió el backend para el usuario, y se puede mostrar
+ * tal cual. Es una marca y no una subclase de Error: según cómo Babel compile las
+ * clases, `instanceof` sobre una subclase de un built-in puede dar false.
+ */
+function serverError(message: string) {
+  return Object.assign(new Error(message), { fromServer: true });
+}
+
+function isServerError(err: unknown): err is Error {
+  return err instanceof Error && (err as { fromServer?: boolean }).fromServer === true;
+}
+
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 function storageKeyFor(userId: string) {
@@ -120,6 +133,7 @@ export default function App() {
 
   const [source, setSource] = useState<Source>(null);
   const [photoState, setPhotoState] = useState<PhotoState>('none');
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [image, setImage] = useState<PickedImage | null>(null);
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [detectedCount, setDetectedCount] = useState(0);
@@ -431,7 +445,7 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) {
         if (handlePlanBlocked(response.status)) return;
-        throw new Error(data.error ?? 'Error desconocido');
+        throw serverError(data.error ?? 'No se pudo procesar la imagen. Probá de nuevo.');
       }
 
       const found: string[] = data.ingredients ?? [];
@@ -445,8 +459,17 @@ export default function App() {
       track('ingredientes_detectados', { cantidad: found.length, origen: source ?? 'foto' });
     } catch (err) {
       captureError(err, { paso: 'detect-ingredients' });
-      setPhotoState('empty');
-      setGenError(err instanceof Error ? err.message : 'No se pudo conectar con el servidor.');
+      // Solo se muestra tal cual lo que redactó el backend. Todo lo demás es la
+      // red o una respuesta que no era JSON — la página de Render mientras
+      // redespliega —, y su mensaje crudo no le dice nada a nadie. No alcanza
+      // con descartar `TypeError`: el `fetch` de Expo tira un Error común con
+      // la excepción de Java adentro ("java.net.UnknownHostException").
+      setPhotoError(
+        isServerError(err)
+          ? err.message
+          : 'No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo.'
+      );
+      setPhotoState('failed');
     }
   }
 
@@ -727,6 +750,7 @@ export default function App() {
           onGoTo={setStep}
           source={source}
           photoState={photoState}
+          photoError={photoError}
           detectedCount={detectedCount}
           onCamera={takePhoto}
           onGallery={pickFromLibrary}

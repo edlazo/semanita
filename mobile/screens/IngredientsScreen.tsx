@@ -14,7 +14,12 @@ import { ALL_MOMENTS, isAllowed } from '../lib/moments';
 import { HatchPattern, PopIn, ScreenEntrance, Shake } from '../components/Motion';
 import { fonts, radii, Theme } from '../theme';
 
-export type PhotoState = 'none' | 'loading' | 'ok' | 'empty';
+/**
+ * `empty` es que la IA miró la foto y no encontró nada; `failed` es que no la
+ * pudo mirar. Se separan porque el consejo es otro: a una foto oscura se le
+ * saca otra, a un servidor saturado se le espera.
+ */
+export type PhotoState = 'none' | 'loading' | 'ok' | 'empty' | 'failed';
 export type Source = 'camera' | 'gallery' | 'manual' | null;
 
 export const RESTRICTION_OPTIONS = [
@@ -36,6 +41,8 @@ type Props = {
 
   source: Source;
   photoState: PhotoState;
+  /** Por qué falló, cuando `photoState` es `failed`. */
+  photoError: string | null;
   detectedCount: number;
   onCamera: () => void;
   onGallery: () => void;
@@ -143,6 +150,17 @@ export default function IngredientsScreen(props: Props) {
               La foto salió muy oscura. Probá de nuevo con la puerta abierta, o escribí la lista a
               mano.
             </Text>
+            <View style={styles.emptyActions}>
+              <AccentChipButton title="Probar de nuevo" onPress={props.onCamera} theme={theme} />
+              <SecondaryButton title="Escribir a mano" onPress={props.onManual} theme={theme} />
+            </View>
+          </View>
+        )}
+
+        {props.photoState === 'failed' && (
+          <View style={styles.emptyBlock}>
+            <Text style={styles.emptyTitle}>No pudimos leer la foto</Text>
+            <Text style={styles.emptyBody}>{props.photoError}</Text>
             <View style={styles.emptyActions}>
               <AccentChipButton title="Probar de nuevo" onPress={props.onCamera} theme={theme} />
               <SecondaryButton title="Escribir a mano" onPress={props.onManual} theme={theme} />
