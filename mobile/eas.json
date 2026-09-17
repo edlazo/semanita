@@ -17,7 +17,7 @@
         "buildType": "apk"
       },
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://b1b43a9294834c8ff6ccee64ae8c68f4@o4512102638551040.ingest.us.sentry.io/4512102645301248",
         "EXPO_PUBLIC_API_URL": "https://semanita.onrender.com",
         "EXPO_PUBLIC_SUPABASE_URL": "https://coiixakihhiewuspjurh.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaWl4YWtpaGhpZXd1c3BqdXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDcwMzIsImV4cCI6MjEwMDgyMzAzMn0.bLATGQDTlLbiWfZSSiAJKj-mA5D9a7dJvs_UySut1kg"

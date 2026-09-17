@@ -23,7 +23,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@sentry/react-native",
+      [
+        "@sentry/react-native",
+        {
+          "url": "https://sentry.io/",
+          "organization": "edlazo",
+          "project": "semanita"
+        }
+      ],
       "expo-font",
       "expo-status-bar"
     ],
