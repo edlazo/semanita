@@ -50,13 +50,66 @@ const MODELS = {
  */
 const LOW_THINKING = { thinkingConfig: { thinkingLevel: "low" } } as unknown as GenerationConfig;
 
-function modelFor(task: keyof typeof MODELS) {
-  return client.getGenerativeModel({ model: MODELS[task] });
+/**
+ * Plan B de cada operación, para cuando Google devuelve 503 ("high demand") o se
+ * agota el cupo del modelo principal. Siempre un modelo distinto del principal:
+ * la saturación y la cuota son por modelo, así que reintentar en otro esquiva las
+ * dos. Todos son `-lite` porque leen imágenes igual y, en un momento de
+ * saturación, una detección un poco peor vale más que ninguna.
+ *
+ * Van sin `LOW_THINKING`: no se midió si cada uno acepta `thinkingLevel`, y un
+ * 400 en el plan B sería peor que el problema que viene a resolver.
+ */
+const FALLBACKS: Record<keyof typeof MODELS, string> = {
+  vision: process.env.GEMINI_FALLBACK_VISION ?? "gemini-3.5-flash-lite",
+  menu: process.env.GEMINI_FALLBACK_MENU ?? "gemini-3.5-flash-lite",
+  recipe: process.env.GEMINI_FALLBACK_RECIPE ?? "gemini-3.1-flash-lite",
+  shopping: process.env.GEMINI_FALLBACK_SHOPPING ?? "gemini-3.5-flash-lite",
+};
+
+/** Lo que tarda en bajar un pico de demanda suele ser segundos, no minutos. */
+const RETRY_DELAY_MS = 1500;
+
+type GenerateInput = Parameters<ReturnType<typeof client.getGenerativeModel>["generateContent"]>[0];
+
+function statusOf(err: unknown): number | undefined {
+  return (err as { status?: number } | null)?.status;
 }
 
-/** Igual que `modelFor`, pero pidiéndole al modelo que piense lo mínimo. */
-function fastModelFor(task: keyof typeof MODELS) {
-  return client.getGenerativeModel({ model: MODELS[task], generationConfig: LOW_THINKING });
+/**
+ * Principal → si está saturado, un reintento en el mismo → plan B.
+ *
+ * El 429 no se reintenta en el mismo modelo: la cuota diaria no vuelve en un
+ * segundo y medio. Va directo al plan B, que tiene cupo propio.
+ *
+ * Si el plan B también falla se propaga *ese* error, con su `status`, para que
+ * `index.ts` le pueda decir al usuario qué pasó.
+ */
+async function generate(task: keyof typeof MODELS, input: GenerateInput, options: { lowThinking?: boolean } = {}) {
+  const primary = client.getGenerativeModel({
+    model: MODELS[task],
+    ...(options.lowThinking ? { generationConfig: LOW_THINKING } : {}),
+  });
+
+  try {
+    return await primary.generateContent(input);
+  } catch (err) {
+    const status = statusOf(err);
+    if (status !== 503 && status !== 429) throw err;
+
+    if (status === 503) {
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      try {
+        return await primary.generateContent(input);
+      } catch (retryErr) {
+        const retryStatus = statusOf(retryErr);
+        if (retryStatus !== 503 && retryStatus !== 429) throw retryErr;
+      }
+    }
+
+    console.warn(`${MODELS[task]} respondió ${status}; usando ${FALLBACKS[task]} para ${task}.`);
+    return client.getGenerativeModel({ model: FALLBACKS[task] }).generateContent(input);
+  }
 }
 
 const DETECT_PROMPT = `Mirá esta foto de una heladera o alacena y listá todos los ingredientes y alimentos que puedas identificar.
@@ -72,7 +125,7 @@ function extractJson(rawText: string): unknown {
 }
 
 export async function detectIngredients(imageBuffer: Buffer, mimeType: string): Promise<string[]> {
-  const result = await modelFor("vision").generateContent([
+  const result = await generate("vision", [
     { inlineData: { data: imageBuffer.toString("base64"), mimeType } },
     { text: DETECT_PROMPT },
   ]);
@@ -148,7 +201,7 @@ ${restrictions ? `Restricciones alimentarias a respetar estrictamente: ${restric
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
 [{"name": "nombre de la comida", "description": "descripción corta de 1 línea", "ingredientsToBuy": ["ingrediente2"]}]`;
 
-  const result = await fastModelFor("menu").generateContent(prompt);
+  const result = await generate("menu", prompt, { lowThinking: true });
   const parsed = extractJson(result.response.text());
 
   if (!Array.isArray(parsed) || !parsed.every(isRawMeal)) {
@@ -212,7 +265,7 @@ export async function generateShoppingList(items: string[]): Promise<ShoppingCat
 Respondé UNICAMENTE con un array JSON de objetos con esta forma, sin texto adicional ni markdown:
 [{"category": "Verdulería", "items": ["tomate", "lechuga"]}]`;
 
-  const result = await modelFor("shopping").generateContent(prompt);
+  const result = await generate("shopping", prompt);
   const parsed = extractJson(result.response.text());
 
   if (!Array.isArray(parsed) || !parsed.every(isShoppingCategory)) {
@@ -274,7 +327,7 @@ Separá cada ingrediente en su nombre y su cantidad.
 Respondé UNICAMENTE con un objeto JSON con esta forma, sin texto adicional ni markdown:
 {"servings": "2 porciones", "time": "30 min", "difficulty": "Fácil", "ingredients": [{"name": "fideos", "qty": "200 g"}, {"name": "tomate", "qty": "1"}], "steps": ["Herví agua con sal.", "Cociná los fideos 8 minutos."]}`;
 
-  const result = await modelFor("recipe").generateContent(prompt);
+  const result = await generate("recipe", prompt);
   const parsed = extractJson(result.response.text());
 
   if (!isRecipe(parsed)) {

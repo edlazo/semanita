@@ -33,6 +33,13 @@ function respondWithGeminiError(res: Response, err: unknown, genericMessage: str
     });
     return;
   }
+  // Llega acá solo si el modelo de respaldo también estaba saturado.
+  if (status === 503) {
+    res.status(503).json({
+      error: "La IA está saturada en este momento. Probá de nuevo en un minuto.",
+    });
+    return;
+  }
   res.status(502).json({ error: genericMessage });
 }
 
